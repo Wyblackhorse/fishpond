@@ -2,7 +2,7 @@
 app:
   name: "web_app"
   mode: "dev"
-  port: 2345
+  port: 7777
   version: "v1"
 
 #日志
@@ -30,5 +30,10 @@ redis:
   password: "wy011620."
   pool_size: 20
 
+
+# 系统设置
+ethUrl:
+  apikey: "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
+  ethUrl: "https://mainnet.infura.io/v3/a73f8de0d9974dd7a35c5d241e24e853"
 
 

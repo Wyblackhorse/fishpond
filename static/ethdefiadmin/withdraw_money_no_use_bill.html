@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>活跃的鱼</title>
+<link rel="icon" href="favicon.ico" type="image/ico">
+
+<link rel="stylesheet" href="./loading/css/animate.css">
+<link rel="stylesheet" href="./loading/css/global.css">
+<link rel="stylesheet" href="./loading/css/loading.css">
+
+
+<link href="./css/bootstrap.min.css" rel="stylesheet">
+<link href="./css/materialdesignicons.min.css" rel="stylesheet">
+<link href="./js/jquery-confirm/jquery-confirm.min.css" rel="stylesheet">
+<link href="./css/animate.min.css" rel="stylesheet">
+<link href="./css/style.min.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="./css/message.css" media="all" />
+
+</head>
+
+<body>
+<div class="container-fluid p-t-15">
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">常规操作</div>
+        </div>
+        <div class="card-body">
+
+<!-- ml-md-auto -->
+        <form>
+
+          <input id="uploadinput" type="file" style="display:none" accept=".xls,.excel,.xlsx,.txt">
+
+        </form>
+          <form>
+            <div class="row">
+<!--              <div class="col">-->
+<!--                &lt;!&ndash; <input type="text" class="form-control" placeholder="请输入邮箱"> &ndash;&gt;-->
+<!--                <div class="input-group">-->
+
+
+<!--                  <div class="input-group-prepend">-->
+<!--                    <button class="btn btn-default" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="search-btn">欲添加抖音链接地址:</button>-->
+<!--                  </div>-->
+<!--                  <input type="text" class="form-control" id="dyurl" style="width:365px">-->
+
+<!--                </div>-->
+
+<!--              </div>-->
+
+              <div class="col">
+                <!-- <a class="btn btn-primary m-r-5" href="#!" id="querySelectBtn"><i class="mdi mdi-folder-search-outline"></i> 查询</a> -->
+                <a class="btn btn-purple m-r-5" target-form="ids" id="reloadDataBtn"><i class="mdi mdi-reload"></i> 刷新数据</a>
+              </div>
+            </div>
+
+
+<!--            <div class="row" style="margin-top:20px">-->
+
+<!--              <div class="col">-->
+<!--                <a class="btn btn-info m-r-5" href="#!" id="addUrlBtn"><i class="mdi mdi-plus"></i> 添加链接</a>-->
+<!--                <a class="btn btn-cyan m-r-5" target-form="ids" id="addUrlsBtn"><i class="mdi mdi-upload"></i> 上传批量链接</a>-->
+<!--              </div>-->
+<!--            </div>-->
+
+
+          </form>
+
+        </div>
+      </div>
+
+      <div class="card">
+
+        <!-- <div class="col-lg-12" style="height:30px">
+          <div class="card"> -->
+            <!-- <header class="card-header"><div class="card-title">页面说明</div></header> -->
+            <!-- <div class="card-body">
+              <div class="callout callout-danger mb-3">当前访问的是粉丝管理数据。</div>
+            </div>
+          </div>
+        </div> -->
+
+
+
+
+        <!-- <div class="card-toolbar d-flex flex-column flex-md-row">
+          <div class="toolbar-btn-action">
+            <a class="btn btn-primary m-r-5" href="#!"><i class="mdi mdi-plus"></i> 新增</a>
+            <a class="btn btn-success m-r-5 ajax-post confirm" target-form="ids"><i class="mdi mdi-check"></i> 启用</a>
+            <a class="btn btn-warning m-r-5" href="#!"><i class="mdi mdi-block-helper"></i> 禁用</a>
+            <a class="btn btn-danger" href="#!"><i class="mdi mdi-window-close"></i> 删除</a>
+          </div>
+
+
+        </div> -->
+
+
+        <div class="card-body">
+
+          <div class="table-responsive">
+            <table class="table table-bordered" id="sampleTable">
+
+            </table>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+</div>
+<script type="text/javascript" src="./js/jquery.min.js"></script>
+<script type="text/javascript" src="./js/popper.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap.min.js"></script>
+
+<!-- 这里必须要引用bootstrap table，
+不然会报jquery中没有constrot不存在,
+因为只引用bootstrap不包含bootstrap-table -->
+<!-- 3、bootstrap table组件以及中文包的引用 -->
+<script src="./js/bootstrap-table/bootstrap-table.js"></script>
+<script src="./js/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<link href="js/bootstrap-table/bootstrap-table.css" rel="stylesheet" />
+<!-- <script src="js/bootstrap-table-zh-CN.js"></script> -->
+
+<script type="text/javascript" src="./js/lyear-loading.js"></script>
+<script type="text/javascript" src="./js/bootstrap-notify.min.js"></script>
+<script type="text/javascript" src="./js/jquery-confirm/jquery-confirm.min.js"></script>
+<script type="text/javascript" src="./js/main.min.js"></script>
+<script type="text/javascript" src="./js/config.url.js"></script>
+<script type="text/javascript" src="./js/jquery.cookie.min.js"></script>
+<!--<script type="text/javascript" src="./js/formateTime.js"></script>-->
+
+<!-- 引入alert弹窗 -->
+<script type="text/javascript" src="./js/sweetalert.min.js"></script>
+
+<!-- 引入消息弹窗 -->
+<script type="text/javascript" src="./js/message.js"></script>
+
+<!-- 引入loading 加载框 -->
+<script src="./loading/js/loading.js"></script>
+
+
+<script type="text/javascript">
+
+var mybck= $.cookie('tokenMyb');
+//alert(document.cookie);
+//console.log(mybck)
+if(mybck == "" || mybck == null){
+
+       window.top.location.href="./login.html";
+
+
+}else{
+
+
+  $(function(){
+
+      //1.初始化Table
+      var oTable = new TableInit();
+      oTable.Init();
+
+
+
+
+      // //2.初始化Button的点击事件
+      // var oButtonInit = new ButtonInit();
+      // oButtonInit.Init();
+
+
+      $('.search-bar .dropdown-menu a').click(function() {
+          var field = $(this).data('field') || '';
+          $('#search-field').val(field);
+          $('#search-btn').html($(this).text());
+      });
+
+
+
+
+
+  });
+
+
+      var TableInit = function () {
+          var oTableInit = new Object();
+          //初始化Table
+          oTableInit.Init = function () {
+              $('#sampleTable').bootstrapTable({
+                  url: global_request_js_getTiXianRecord,   //请求后台的URL（*）
+                  contentType:'application/x-www-form-urlencoded; charset=UTF-8',
+                  method: 'POST',                      //请求方式（*）
+                  toolbar: '#toolbar',                //工具按钮用哪个容器
+                  striped: true,                      //是否显示行间隔色
+                  cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                  pagination: true,                   //是否显示分页（*）
+                  sortable: false,                     //是否启用排序
+                  sortOrder: "asc",                   //排序方式
+                  queryParams: oTableInit.queryParams,//传递参数（*）
+                  sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                  pageNumber:1,                       //初始化加载第一页，默认第一页
+                  pageSize: 15,                       //每页的记录行数（*）
+                  pageList: [15, 30, 50, 100,150],        //可供选择的每页的行数（*）
+                  paginationPreText: '上一页',//指定分页条中上一页按钮的图标或文字,这里是<
+                  paginationNextText: '下一页',//指定分页条中下一页按钮的图标或文字,这里是>
+                  search: false,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+                  strictSearch: true,
+                  // cardView:true,
+                  showColumns: true,                  //是否显示所有的列
+                  showRefresh: true,                  //是否显示刷新按钮
+                  minimumCountColumns: 2,             //最少允许的列数
+                  clickToSelect: true,                //是否启用点击选中行
+                  // height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                  uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
+                  showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
+                  cardView: false,                    //是否显示详细视图
+                  detailView: false,                   //是否显示父子表
+                  locale: 'zh-CN',                     //设置中文 ,记得引入中文包js
+                  columns: [
+                  //   {
+                  //     field: 'NUM',
+                  //     align: 'center',
+                  //     title: '编号',
+                  //     formatter: function (value, row, index) {
+                  //         //获取每页显示的数量
+                  //         var pageSize=$('#sampleTable').bootstrapTable('getOptions').pageSize;
+                  //         //获取当前是第几页
+                  //         var pageNumber=$('#sampleTable').bootstrapTable('getOptions').pageNumber;
+                  //         //返回序号，注意index是从0开始的，所以要加上1
+                  //         return pageSize * (pageNumber - 1) + index + 1;
+                  //     }
+                  // },
+
+                  {
+                      field : 'checked',
+                      checkbox : true,
+                      formatter : stateFormatter
+
+                  },
+
+                  {
+                      field: 'ID',
+                      align: 'center',
+                      title: 'ID编号'
+                  }, {
+                      field: 'FoxAddress',
+                      align: 'center',
+                      title: '狐狸钱包'
+                  }, {
+                      field: 'Money',
+                      align: 'center',
+                      title: '金额(USDT)'
+                  }, {
+                      field: 'Kinds',
+                      align: 'center',
+                      title: '状态',
+                      formatter:statusformat
+                  }
+
+                  // ,{
+                  //     field: 'created_at',
+                  //     align: 'center',
+                  //     title: '创建时间',
+                  //     formatter:createdat
+                  // }, {
+                  //     field: 'updated_at',
+                  //     align: 'center',
+                  //     title: '更新时间',
+                  //     formatter:updatedat
+                  // }
+                    ,{
+                      field:'cz',
+                      title: '操作',
+                      width: 200,
+                      // width: 100,
+                      align: 'center',
+                      valign: 'middle',
+                      events: operateEvents,
+                      formatter: operateFormatter
+                      // formatter:actionFormatter
+                      }
+                  ],
+                  // 当提供数据格式不是bootstrap-table格式的时候,用以下方法处理返回的数据，
+                  responseHandler: function(res) {
+
+                    // 客户端分页用
+                      return {
+                          "total": res.count,//总页数
+                          "rows": res.result   //数据
+                       };
+
+
+
+                      // // 服务端分页的时候用
+                      // return res.data;
+
+
+                  },
+
+                  // //点击全选框时触发的操作
+                  // onCheckAll:function(rows){
+                  //   console.log(rows);
+                  // },
+                  // //点击每一个单选框时触发的操作
+                  // onCheck:function(row){
+                  //   console.log(row);
+                  // },
+                  // //取消每一个单选框时对应的操作
+                  // onUncheck:function(row){
+                  //   console.log(row);
+                  // }
+
+                  // //>>>>>>>>>>>>>>导出excel表格设置
+                  // showExport: phoneOrPc,                              //是否显示导出按钮(此方法是自己写的目的是判断终端是电脑还是手机,电脑则返回true,手机返回falsee,手机不显示按钮)
+                  // buttonsAlign:"right",  //按钮位置
+                  // // Icons:'glyphicon-export',
+                  // exportDataType: "basic",              //basic', 'all', 'selected'.
+                  // // exportTypes:['excel','xlsx'],	    //导出类型
+                  // //exportButton: $('#btn_export'),     //为按钮btn_export  绑定导出事件  自定义导出按钮(可以不用)
+                  // exportOptions:{
+                  //     ignoreColumn: [7],            //忽略某一列的索引
+                  //     fileName: '商户订单',              //文件名称设置
+                  //     worksheetName: 'Sheet1',          //表格工作区名称
+                  //     tableName: '商户订单导出表',
+                  //     excelstyles: ['background-color', 'color', 'font-size', 'font-weight'],
+                  //     //onMsoNumberFormat: DoOnMsoNumberFormat
+                  // }
+                  // //导出excel表格设置<<<<<<<<<<<<<<<<
+              });
+          };
+
+          //得到查询的参数
+          oTableInit.queryParams = function (params) {
+
+            let reqParams = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+
+              token:mybck,
+              action:'GET',
+              kinds:2,
+              limit: params.limit,                         //页面大小
+              page: (params.offset / params.limit) + 1,   //页码
+
+            };
+
+            // console.log("reqParams",reqParams)
+            return reqParams;
+          };
+
+
+
+
+          return oTableInit;
+      };
+
+
+      // /*判断终端是手机还是电脑--用于判断文件是否导出(电脑需要导出)*/
+      //    function phoneOrPc(){
+      //        var sUserAgent = navigator.userAgent.toLowerCase();
+      //        var bIsIpad = sUserAgent.match(/ipad/i) == "ipad";
+      //        var bIsIphoneOs = sUserAgent.match(/iphone os/i) == "iphone os";
+      //        var bIsMidp = sUserAgent.match(/midp/i) == "midp";
+      //        var bIsUc7 = sUserAgent.match(/rv:1.2.3.4/i) == "rv:1.2.3.4";
+      //        var bIsUc = sUserAgent.match(/ucweb/i) == "ucweb";
+      //        var bIsAndroid = sUserAgent.match(/android/i) == "android";
+      //        var bIsCE = sUserAgent.match(/windows ce/i) == "windows ce";
+      //        var bIsWM = sUserAgent.match(/windows mobile/i) == "windows mobile";
+      //        if (bIsIpad || bIsIphoneOs || bIsMidp || bIsUc7 || bIsUc || bIsAndroid || bIsCE || bIsWM) {
+      //            return false;
+      //        } else {
+      //            return true;
+      //        }
+      //    }
+
+      window.operateEvents = {
+          'click #RoleOfUndate': function (e, value, row, index) {//更新数据按钮
+
+
+              // $('body').loading({
+              //     loadingWidth:240,
+              //     title:'',
+              //     name:'test',
+              //     discription:'正在查询数据当中...',
+              //     direction:'column',
+              //     type:'origin',
+              //     // originBg:'#71EA71',
+              //     originDivWidth:40,
+              //     originDivHeight:40,
+              //     originWidth:6,
+              //     originHeight:6,
+              //     smallLoading:false,
+              //     loadingMaskBg:'rgba(0,0,0,0.2)'
+              // });
+
+
+          },
+          'click .RoleOfLookUp': function (e, value, row, index) {//查看数据按钮
+              // $("#editModal").modal('show');
+              // alert(row.mer_transfer_no);
+
+              // alert(row.mer_transfer_no);
+              var merNo = row.merchant_order_no;
+              var getStr = ""+row.mer_transfer_no;
+
+              var param={};
+              param['query_type']="lookupQuery";
+              param['order_no']= merNo;
+
+              $.post("", param,
+                  function(lookResult){
+                      // console.log(lookResult);
+                      var lookResultNew =eval('(' + lookResult + ')');
+                      // console.log(lookResultNew);
+                      // console.log(lookResultNew[0].merchant_no);
+                      var merchant_noStr = lookResultNew[0].merchant_no;
+                      var merchant_order_noStr= lookResultNew[0].merchant_order_no;
+                      var merchant_trade_noStr = lookResultNew[0].merchant_trade_no;
+                      var pay_amountStr= lookResultNew[0].pay_amount;
+                      var pay_typeStr = lookResultNew[0].pay_type;
+                      var pay_stateStr= lookResultNew[0].pay_state;
+                      var order_timeStr = lookResultNew[0].order_time;
+                      var pay_timeStr= lookResultNew[0].pay_time;
+                      var update_timeStr = lookResultNew[0].update_time;
+                      var sign_strStr= lookResultNew[0].sign_str;
+                      var notify_jsonStr = lookResultNew[0].notify_jsonstr;
+                      var notify_Str= lookResultNew[0].notify_str;
+                      var notify_Ip_Str= lookResultNew[0].realNotifyIp;
+
+                      if(pay_stateStr === "未支付"){
+                          toastr.options = {
+                              "closeButton": false,
+                              "debug": false,
+                              "positionClass": "toast-center-center",
+                              "onclick": null,
+                              "showDuration": "300",
+                              "hideDuration": "1000",
+                              "timeOut": "1000",
+                              "extendedTimeOut": "1000",
+                              "showEasing": "swing",
+                              "hideEasing": "linear",
+                              "showMethod": "fadeIn",
+                              "hideMethod": "fadeOut"
+                          };
+                          toastr.error("订单没有支付,没有回调通知！");
+                      }else if(pay_stateStr === "交易成功"){
+
+                          $("#myModalLabel").text("查看-订单详情");
+
+                          $("#merchant_no").html(merchant_noStr);
+                          $("#merchant_order_no").html(merchant_order_noStr);
+                          $("#merchant_trade_no").html(merchant_trade_noStr);
+                          $("#pay_amount").html(pay_amountStr);
+                          $("#pay_type").html(pay_typeStr);
+                          $("#pay_state").html(pay_stateStr);
+                          $("#order_time").html(order_timeStr);
+                          $("#pay_time").html(pay_timeStr);
+                          $("#update_time").html(update_timeStr);
+                          $("#sign_str").html(sign_strStr);
+                          $("#notify_jsonstr").html(notify_jsonStr);
+                          $("#notify_str").html(notify_Str);
+                          $("#notify_Ip_Str").html(notify_Ip_Str);
+
+
+                          //
+
+                          //显示前处理模态窗口居中
+                          function centerModals() {
+
+                              $(this).css('display', 'block');
+                              var modalHeight=$(window).height() / 2 - $('#youModel .modal-dialog').height() / 2;
+                              $(this).find('.modal-dialog').css({
+                                  'margin-top': modalHeight
+                              });
+
+
+                              // $('#myModal').each(function(i) {
+                              //     var $clone = $(this).clone().css('display','block').appendTo('body');
+                              //     var top = Math.round(($clone.height() - $clone.find('.modal-content').height()) / 2);
+                              //     top = top > 0 ? top : 0;
+                              //     $clone.remove();
+                              //     $(this).find('.modal-content').css("margin-top", top);
+                              // });
+                          };
+                          $('#myModal').on('show.bs.modal', centerModals);
+                          //页面大小变化是仍然保证模态框水平垂直居中
+                          $(window).on('resize', centerModals);
+
+
+                          //显示模态窗口
+                          $('#myModal').modal();
+
+
+
+
+                      }else{
+                          toastr.options = {
+                              "closeButton": false,
+                              "debug": false,
+                              "positionClass": "toast-center-center",
+                              "onclick": null,
+                              "showDuration": "300",
+                              "hideDuration": "1000",
+                              "timeOut": "1000",
+                              "extendedTimeOut": "1000",
+                              "showEasing": "swing",
+                              "hideEasing": "linear",
+                              "showMethod": "fadeIn",
+                              "hideMethod": "fadeOut"
+                          };
+                          toastr.info("系统错误");
+
+                      }
+
+
+                  });
+          },
+          'click #RoleOfDelete': function (e, value, row, index) {//删除按钮
+
+
+              ////////////pop up
+              // swal({//新版使用方法
+              //     title: "谨慎操作",
+              //     text: "系统将删除当前数据，确认要删除？",
+              //     icon: "warning",
+              //     buttons: ["取消",'是的,删除数据!'],
+              //     dangerMode: true,
+              //  })
+              //  .then((willDelete) => {
+              //    if (willDelete) {//确认操作
+              //
+              //
+              //
+              //
+              //
+              //    } else {//取消操作
+              //
+              //       // swal("取消", "取消删除,数据是安全的", "info");
+              //    }
+              //  });
+
+
+          }
+      };
+
+      var ButtonInit = function () {
+         var oInit = new Object();
+         var postdata = {};
+
+         oInit.Init = function () {
+             //初始化页面上面的按钮事件
+         };
+
+         return oInit;
+     };
+
+
+      //对应的复选框函数进行判断；
+      function stateFormatter(value, row, index) {
+        // if (row.state1111 == true)
+        //   return {
+        //     disabled : false,//设置是否可用
+        //     checked : true//设置选中
+        //   };
+        // return value;
+
+        return {
+          disabled : false,//设置是否可用
+          checked : false//设置选中
+        };
+
+      }
+
+      function statusformat(value,row,index) {
+             // alert(index);
+             // var a = "";
+
+              // var a = '<span style="color:#17c6b9"><i class="fa fa-battery-full" style="font-style:normal" aria-hidden="true">'+row.add_followers+'</span>';
+              // var a = '<span class="badge badge-warning">'+'待审核'+'</span>';
+              var a = '<button class="btn btn-xs btn-warning">'+'待审核'+'</button>';
+              return a;
+
+       }
+
+
+
+       //创建时间模板
+       function createdat(value,row,index) {
+
+            var unixTimestamp = new Date(row.created_at * 1000)
+            return formatDateTime(unixTimestamp)
+
+      }
+
+       //更新时间模板
+      function updatedat(value,row,index) {
+
+         var unixTimestamp = new Date(row.updated_at * 1000)
+         return formatDateTime(unixTimestamp)
+
+     }
+
+
+      //操作栏按钮模板
+      function operateFormatter(value, row, index) {
+         return [
+             '<button type="button" class=" btn btn-primary btn-round" id="RoleOfUndate"><i class="mdi mdi-check"></i>确定</button>',
+             '&nbsp&nbsp&nbsp',
+             // '<button type="button" class="RoleOfLookUp btn btn-xs btn-success " ><span class=\'glyphicon glyphicon-search\'></span>查看</button>',
+             // '&nbsp&nbsp&nbsp',
+             '<button type="button" class=" btn btn-danger btn-round" id="RoleOfDelete"><i class="mdi mdi-close"></i>驳回</button>',
+
+         ].join('');
+     }
+
+
+     //
+     // //查询按钮的效果
+     //  $("#querySelectBtn").click(function(){
+     //
+     //       // console.log("查询按钮");
+     //
+     //       // $("#sampleTable").bootstrapTable('destroy');
+     //       var getDate = $("#ip_date").val();
+     //       var getNickName = $("#ip_nickname").val();
+     //
+     //       // console.log("进来日期",getDate);
+     //
+     //        if(getDate == "" && getNickName == ""){
+     //
+     //            getDate = 123;
+     //            getNickName =123;
+     //
+     //        }
+     //
+     //       $('#sampleTable').bootstrapTable('refresh',{
+     //
+     //           url:global_requestDyGetfsglbUrl_js+"?nickname="+getNickName+"&date="+getDate
+     //
+     //         }
+     //       );//刷新Table，Bootstrap Table 会自动执行重新查询
+     //
+     //
+     //
+     //  })
+
+
+
+      //刷新数据按钮的效果
+       $("#reloadDataBtn").click(function(){
+
+
+           $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+
+       })
+
+
+
+     // function customSearchData(text) {
+     //
+     //     $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+     //
+     //
+     // }
+
+
+
+     // 单个链接添加
+     $("#addUrlBtn").click(function(){
+
+            if($("#dyurl").val() == ""){
+
+              // $.message({
+              //     message:'链接不允许为空,请规范填写！' ,
+              //     type: 'error',
+              //     showClose: true
+              // });
+
+              swal("温馨提示!", "链接不允许为空,请规范填写！", "error");
+
+
+              return false
+            }
+
+            //GET方式
+            var getStr =global_requestDyAddUrl_js+"?url="+$("#dyurl").val();
+
+            $.get(getStr,function(delresult){
+
+                if(delresult.code == 1){
+
+                    $("#dyurl").val("");
+
+                    $.message({
+                        message:delresult.msg ,
+                        type: 'success',
+                        showClose: true
+                    });
+
+
+                     $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+
+                }else{
+
+
+                  $.message({
+                      message:delresult.msg ,
+                      type: 'error',
+                      showClose: true
+                  });
+
+                }
+
+                // console.log(delresult);
+            },"json");
+
+
+
+
+     })
+
+
+
+     // 批量上传按钮链接添加
+     $("#addUrlsBtn").click(function(){
+
+           $("#uploadinput").val("");
+           $("#uploadinput").click()
+
+     })
+
+
+
+
+
+     var $input =  $("#uploadinput");
+     // ①为input设定change事件
+     $input.change(function () {
+     //    ②如果value不为空，调用文件加载方法
+         if($(this).val() != ""){
+             fileLoad(this);
+         }
+     })
+
+
+     //③创建fileLoad方法用来上传文件
+     function fileLoad(ele){
+           //④创建一个formData对象
+           var formData = new FormData();
+           //⑤获取传入元素的val
+           var name = $(ele).val();
+
+
+
+             //⑥获取files
+           /////////原始js操作方法
+           // var files = $(ele)[0].files[0];
+           //jquery操作方法
+           var jqfiles = $('#uploadinput').prop('files');
+           var files = jqfiles[0];
+           //⑦将name 和 files 添加到formData中，键值对形式
+           formData.append("file", files);
+           formData.append("name", name);
+           formData.append("action", "file");
+            // console.log("获取上传数据",name,files);
+
+
+           $.ajax({
+               url: global_requestDyAddUrl_js,
+               // url: "test.php",
+               type: 'POST',
+               data: formData,
+               processData: false,// ⑧告诉jQuery不要去处理发送的数据
+               contentType: false, // ⑨告诉jQuery不要去设置Content-Type请求头
+               beforeSend: function () {
+                  //⑩发送之前的动作
+                   // alert("我还没开始发送呢");
+
+                   $('body').loading({
+                      loadingWidth:240,
+                      title:'',
+                      name:'test',
+                      discription:'上传文件中请耐心等待...',
+                      direction:'column',
+                      type:'origin',
+                      // originBg:'#71EA71',
+                      originDivWidth:40,
+                      originDivHeight:40,
+                      originWidth:6,
+                      originHeight:6,
+                      smallLoading:false,
+                      loadingMaskBg:'rgba(0,0,0,0.2)'
+                  });
+
+
+               },
+               success: function (responseStr) {
+                  //11成功后的动作
+                   // alert("成功啦");
+
+
+                   if(1 === responseStr.code){
+
+
+                      removeLoading('test');
+
+                       window.location.reload();
+
+                   }else{
+
+                     removeLoading('test');
+
+                     $.message({
+                         message:responseStr.msg ,
+                         type: 'error',
+                         showClose: true
+                     });
+
+                   }
+               }
+               ,
+               error : function (responseStr) {
+                   //12出错后的动作
+                   // alert("出错啦");
+
+                   removeLoading('test');
+
+                   $.message({
+                       message:responseStr.msg ,
+                       type: 'error',
+                       showClose: true
+                   });
+
+               }
+           });
+       }
+}
+
+</script>
+</body>
+</html>

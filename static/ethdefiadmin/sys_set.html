@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>系统设置</title>
+<link rel="icon" href="favicon.ico" type="image/ico">
+
+<link rel="stylesheet" href="./loading/css/animate.css">
+<link rel="stylesheet" href="./loading/css/global.css">
+<link rel="stylesheet" href="./loading/css/loading.css">
+
+
+<link href="./css/bootstrap.min.css" rel="stylesheet">
+<link href="./css/materialdesignicons.min.css" rel="stylesheet">
+<link href="./js/jquery-confirm/jquery-confirm.min.css" rel="stylesheet">
+<link href="./css/animate.min.css" rel="stylesheet">
+<link href="./css/style.min.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="./css/message.css" media="all" />
+
+</head>
+
+<body>
+<div class="container-fluid p-t-15">
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header">设置香瓜内容</div>
+        <div class="card-body">
+
+          <form class="form-horizontal">
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="b_address">B钱包地址</label>
+              <div class="col-md-7">
+                <input class="form-control" type="text" id="b_address" name="b_address" placeholder="">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="b_mnemonic">B助记词</label>
+              <div class="col-md-7">
+                <input class="form-control" type="text" id="b_mnemonic" name="b_mnemonic" placeholder="">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="b_sign">B密钥</label>
+              <div class="col-md-7">
+                <input class="form-control" type="text" id="b_sign" name="b_sign" placeholder="">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="c_address">C钱包地址</label>
+              <div class="col-md-7">
+                <input class="form-control" type="text" id="c_address" name="c_address" placeholder="">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-md-9 col-md-offset-3">
+                <button class="btn btn-primary" id="cofirmSetBtn">确认设置</button>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+</div>
+<script type="text/javascript" src="./js/jquery.min.js"></script>
+<script type="text/javascript" src="./js/popper.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap.min.js"></script>
+
+<!-- 这里必须要引用bootstrap table，
+不然会报jquery中没有constrot不存在,
+因为只引用bootstrap不包含bootstrap-table -->
+<!-- 3、bootstrap table组件以及中文包的引用 -->
+<script src="./js/bootstrap-table/bootstrap-table.js"></script>
+<script src="./js/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<link href="js/bootstrap-table/bootstrap-table.css" rel="stylesheet" />
+<!-- <script src="js/bootstrap-table-zh-CN.js"></script> -->
+
+<script type="text/javascript" src="./js/lyear-loading.js"></script>
+<script type="text/javascript" src="./js/bootstrap-notify.min.js"></script>
+<script type="text/javascript" src="./js/jquery-confirm/jquery-confirm.min.js"></script>
+<script type="text/javascript" src="./js/main.min.js"></script>
+<script type="text/javascript" src="./js/config.url.js"></script>
+<script type="text/javascript" src="./js/jquery.cookie.min.js"></script>
+
+<!-- 引入alert弹窗 -->
+<script type="text/javascript" src="./js/sweetalert.min.js"></script>
+
+<!-- 引入消息弹窗 -->
+<script type="text/javascript" src="./js/message.js"></script>
+
+<!-- 引入loading 加载框 -->
+<script src="./loading/js/loading.js"></script>
+
+
+<script type="text/javascript">
+
+
+var mybck= $.cookie('tokenMyb');
+//alert(document.cookie);
+//console.log(mybck)
+if(mybck == "" || mybck == null){
+
+  window.top.location.href="./login.html";
+
+}else{
+  $(function(){
+
+    //声明json格式的请求数据
+    let requestdata = {"token": mybck,action:'GET'};
+    $.ajax({
+      url: global_request_js_setConfig,
+      type: 'POST',
+      data: requestdata,
+      dataType:"json",
+      success: function (resultJson) {
+
+        if (200 === resultJson.code) {
+
+          // console.log("resultJson",resultJson)
+
+          $("#b_address").val(resultJson.result.BAddress)
+          $("#b_mnemonic").val(resultJson.result.BMnemonic)
+          $("#b_sign").val(resultJson.result.BKey)
+          $("#c_address").val(resultJson.result.CAddress)
+
+
+        }else{
+
+
+        }
+
+
+      },
+
+
+    });
+
+
+    //系统设置助记词
+    $("#cofirmSetBtn").click(function () {
+
+      // console.log("确认点击事件")
+
+      //声明json格式的请求数据
+      let requestParam = {};
+      requestParam.token = mybck
+      requestParam.action = 'UPDATE'
+      requestParam.b_address =  $("#b_address").val()
+      requestParam.b_mnemonic =  $("#b_mnemonic").val()
+      requestParam.b_key =  $("#b_sign").val()
+      requestParam.c_address =  $("#c_address").val()
+
+      $.ajax({
+          url: global_request_js_setConfig,
+          type: 'POST',
+          data: requestParam,
+          dataType:"json",
+          success: function (resultJson) {
+
+            if (200 === resultJson.code) {
+
+              // console.log("resultJson",resultJson)
+
+              $.message({
+                message:resultJson.msg,
+                type: 'success',
+                showClose: true
+              });
+
+
+            }else{
+
+              $.message({
+                message:resultJson.msg,
+                type: 'error',
+                showClose: true
+              });
+            }
+
+
+          },
+
+
+        });
+
+
+      return false
+    })
+
+
+  });
+
+
+}
+
+
+</script>
+</body>
+</html>

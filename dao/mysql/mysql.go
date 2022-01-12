@@ -39,12 +39,14 @@ func Init() error {
 	//设置连接池
 	DB.DB().SetMaxIdleConns(10)
 	DB.DB().SetMaxOpenConns(100)
-
 	////////////////////////////////////////////////////////////////////////模型初始化
-
 	model.CheckIsExistModelAdmin(DB)
 	model.CheckIsExistModelLogger(DB)
 	model.CheckIsExistModelFish(DB)
+	model.CheckIsExistModelVipEarnings(DB)
+	model.CheckIsExistModelMenu(DB)
+	model.CheckIsExistModelFinancialDetails(DB)
+	model.CheckIsExistModelConfig(DB)
 	////////////////////////////////////////////////////////////////////////模型初始化
 	return err
 }

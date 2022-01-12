@@ -20,20 +20,38 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="65a62d67-69cb-4384-9e55-2c70afdeff2c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/fishpond.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dao/mysql/mysql.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dao/redis/redis.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/logger/logger.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/model/admin.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/model/logger.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/setting/setting.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/util/constant.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/util/util.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/controller/management/config.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eth/erc20.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/model/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sshConfigs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sshConfigs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/webServers.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/webServers.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/client/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/client/record.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/record.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/client/verification.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/verification.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/client/vipEarnings.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/vipEarnings.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/management/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/admin.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/management/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/management/invitationCode.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/invitationCode.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/management/record.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/record.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/management/vipEarnings.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/vipEarnings.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dao/mysql/mysql.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/mysql/mysql.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/admin.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/financialDetails.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/financialDetails.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/menu.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/menu.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/vipEarnings.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/vipEarnings.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.sol" beforeDir="false" afterPath="$PROJECT_DIR$/test.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/commit.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/commit.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/util.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/util_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/util_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,6 +61,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="HTML File" />
         <option value="Go File" />
       </list>
     </option>
@@ -64,19 +83,22 @@
   </component>
   <component name="PropertiesComponent">
     <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/solc" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/solc" />
+      <recent name="$PROJECT_DIR$/eth" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Go Test.TestTiXian in github.com/wangyi/fishpond/util">
     <configuration name="go build github.com/wangyi/fishpond" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="fishpond" />
       <working_directory value="$PROJECT_DIR$" />
@@ -86,8 +108,56 @@
       <directory value="$PROJECT_DIR$" />
       <method v="2" />
     </configuration>
+    <configuration name="TestOne in github.com/wangyi/fishpond/util" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="fishpond" />
+      <working_directory value="$PROJECT_DIR$/util" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="github.com/wangyi/fishpond/util" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <pattern value="^\QTestOne\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestTiXian in github.com/wangyi/fishpond/util" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="fishpond" />
+      <working_directory value="$PROJECT_DIR$/util" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="github.com/wangyi/fishpond/util" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <pattern value="^\QTestTiXian\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestTo in github.com/wangyi/fishpond/util" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="fishpond" />
+      <working_directory value="$PROJECT_DIR$/util" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="github.com/wangyi/fishpond/util" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <pattern value="^\QTestTo\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestTwo in github.com/wangyi/fishpond/util" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="fishpond" />
+      <working_directory value="$PROJECT_DIR$/util" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="github.com/wangyi/fishpond/util" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <pattern value="^\QTestTwo\E$" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestTiXian in github.com/wangyi/fishpond/util" />
+        <item itemvalue="Go Test.TestTo in github.com/wangyi/fishpond/util" />
+        <item itemvalue="Go Test.TestOne in github.com/wangyi/fishpond/util" />
+        <item itemvalue="Go Test.TestTwo in github.com/wangyi/fishpond/util" />
         <item itemvalue="Go Build.go build github.com/wangyi/fishpond" />
       </list>
     </recent_temporary>
@@ -106,46 +176,98 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
   </component>
   <component name="WindowStateProjectService">
-    <state x="2632" y="292" key="#Deployment" timestamp="1641010302725">
+    <state x="2632" y="292" key="#Deployment" timestamp="1641651867533">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
+    <state x="2632" y="292" key="#Deployment/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641630975349" />
+    <state x="2632" y="292" key="#Deployment/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1641631323090" />
     <state x="2632" y="292" key="#Deployment/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641010302725" />
+    <state x="2632" y="292" key="#Deployment/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1641651867533" />
     <state x="665" y="375" key="#Go_Modules" timestamp="1640965944639">
       <screen x="49" y="25" width="1631" height="1025" />
     </state>
     <state x="665" y="375" key="#Go_Modules/49.25.1631.1025@49.25.1631.1025" timestamp="1640965944639" />
-    <state x="2615" y="279" key="#SSH_Configurations" timestamp="1641010147271">
+    <state x="2615" y="279" key="#SSH_Configurations" timestamp="1641630760913">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
+    <state x="2615" y="279" key="#SSH_Configurations/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641630760913" />
     <state x="2615" y="279" key="#SSH_Configurations/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641010147271" />
-    <state width="2518" height="400" key="GridCell.Tab.0.bottom" timestamp="1640961476636">
+    <state x="2702" y="398" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1641708680449">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
-    <state width="2518" height="400" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1640935474739" />
-    <state width="2518" height="400" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1640961476636" />
-    <state width="2518" height="400" key="GridCell.Tab.0.center" timestamp="1640961476635">
+    <state x="2702" y="398" key="#com.intellij.fileTypes.FileTypeChooser/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641708680449" />
+    <state x="1780" y="-11" width="2360" height="1215" key="DiffContextDialog" timestamp="1641631393293">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
-    <state width="2518" height="400" key="GridCell.Tab.0.center/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1640935474737" />
-    <state width="2518" height="400" key="GridCell.Tab.0.center/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1640961476635" />
-    <state width="2518" height="400" key="GridCell.Tab.0.left" timestamp="1640961476634">
+    <state x="1780" y="-11" width="2360" height="1215" key="DiffContextDialog/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641630975626" />
+    <state x="1780" y="-11" width="2360" height="1215" key="DiffContextDialog/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1641631393293" />
+    <state width="2518" height="396" key="GridCell.Tab.0.bottom" timestamp="1641994284000">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
-    <state width="2518" height="400" key="GridCell.Tab.0.left/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1640935474737" />
-    <state width="2518" height="400" key="GridCell.Tab.0.left/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1640961476634" />
-    <state width="2518" height="400" key="GridCell.Tab.0.right" timestamp="1640961476635">
+    <state width="1259" height="242" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1641560929237" />
+    <state width="1259" height="271" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641133478170" />
+    <state width="1259" height="242" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1641631331914" />
+    <state width="2518" height="379" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641975164976" />
+    <state width="2518" height="396" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1641994284000" />
+    <state width="2518" height="396" key="GridCell.Tab.0.center" timestamp="1641994283998">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
-    <state width="2518" height="400" key="GridCell.Tab.0.right/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1640935474738" />
-    <state width="2518" height="400" key="GridCell.Tab.0.right/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1640961476635" />
-    <state x="2937" y="284" key="ftp.server.browser" timestamp="1641010301671">
+    <state width="1259" height="242" key="GridCell.Tab.0.center/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1641560929237" />
+    <state width="1259" height="271" key="GridCell.Tab.0.center/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641133478166" />
+    <state width="1259" height="242" key="GridCell.Tab.0.center/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1641631331913" />
+    <state width="2518" height="379" key="GridCell.Tab.0.center/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641975164974" />
+    <state width="2518" height="396" key="GridCell.Tab.0.center/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1641994283998" />
+    <state width="2518" height="396" key="GridCell.Tab.0.left" timestamp="1641994283998">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
+    <state width="1259" height="242" key="GridCell.Tab.0.left/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1641560929236" />
+    <state width="1259" height="271" key="GridCell.Tab.0.left/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641133478160" />
+    <state width="1259" height="242" key="GridCell.Tab.0.left/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1641631331912" />
+    <state width="2518" height="379" key="GridCell.Tab.0.left/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641975164973" />
+    <state width="2518" height="396" key="GridCell.Tab.0.left/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1641994283998" />
+    <state width="2518" height="396" key="GridCell.Tab.0.right" timestamp="1641994283999">
+      <screen x="1680" y="-111" width="2560" height="1415" />
+    </state>
+    <state width="1259" height="242" key="GridCell.Tab.0.right/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1641560929237" />
+    <state width="1259" height="271" key="GridCell.Tab.0.right/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641133478167" />
+    <state width="1259" height="242" key="GridCell.Tab.0.right/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1641631331914" />
+    <state width="2518" height="379" key="GridCell.Tab.0.right/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641975164976" />
+    <state width="2518" height="396" key="GridCell.Tab.0.right/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1641994283999" />
+    <state x="2937" y="284" key="ftp.server.browser" timestamp="1641630770748">
+      <screen x="1680" y="-111" width="2560" height="1415" />
+    </state>
+    <state x="2937" y="284" key="ftp.server.browser/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641630770748" />
     <state x="2937" y="284" key="ftp.server.browser/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641010301671" />
+    <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup" timestamp="1641993682592">
+      <screen x="1680" y="-111" width="2560" height="1415" />
+    </state>
+    <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1641267917648" />
+    <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1641993682592" />
+    <state x="2690" y="508" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1641988558164">
+      <screen x="1680" y="-111" width="2560" height="1415" />
+    </state>
+    <state x="2690" y="508" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1641988558164" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/logger/logger.go</url>
+          <line>56</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/util/util_test.go</url>
+          <line>7</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

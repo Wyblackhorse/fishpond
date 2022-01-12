@@ -2,8 +2,8 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="a30399fd-ef25-412e-bd7d-17ff16dcd1d1" name="鱼塘">
-        <fileTransfer accessType="SFTP" host="172.81.248.168" port="22" sshConfigId="0afdb485-45a4-4ec1-aedc-597bf28d31c7" sshConfig="root@172.81.248.168:22 password">
+      <webServer id="353f0c05-d432-4c68-8834-c689d1502c4a" name="香港鱼塘">
+        <fileTransfer accessType="SFTP" host="47.243.65.9" port="22" sshConfigId="1ed95b0d-6096-452f-9124-aa9b53be5d04" sshConfig="root@47.243.65.9:22 password">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

@@ -22,6 +22,7 @@ type Admin struct {
 	Token    string `gorm:"varchar(225)"`
 	Level    int    `gorm:"int(10);default:0"`
 	Status   int    `gorm:"int(10);default:1"`
+	Ip       string `gorm:"varchar(225)"`
 	Updated  int64
 	Created  int64
 }
@@ -49,6 +50,7 @@ func CheckIsExistModelAdmin(db *gorm.DB) {
 				Created:  time.Now().Unix(),
 			}
 			err := db.Save(&addAdmin).Error
+
 			if err != nil {
 				fmt.Println("表admin初始化失败")
 			}

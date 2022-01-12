@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>抖音管理后台登录界面</title>
+<link rel="icon" href="favicon.ico" type="image/ico">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/materialdesignicons.min.css" rel="stylesheet">
+<link href="css/style.min.css" rel="stylesheet">
+
+
+  <link href="css/waves.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="./css/message.css" media="all" />
+
+
+
+
+</head>
+
+<body>
+<div class="row no-gutters bg-white vh-100">
+  <div class="col-md-6 col-lg-7 col-xl-8 d-none d-md-block" style="background-image: url(images/login-bg-1.jpg); background-size: cover;">
+
+    <!-- <div class="d-flex vh-100">
+      <div class="p-5 align-self-end">
+        <img src="images/logo.png" alt="...">
+        <br><br><br>
+        <p class="text-white">Light Year Admin V4是一个后台管理系统的HTML模板，基于Bootstrap v4.4.1。</p>
+      </div>
+    </div> -->
+
+  </div>
+
+  <div class="col-md-6 col-lg-5 col-xl-4 align-self-center">
+    <div class="p-5">
+      <div class="text-center">
+        <a href="#"> <img alt="light year admin" src="./images/logo-sidebar.png"> </a>
+      </div>
+      <p class="text-center text-muted"><small>请使用您的账号登录系统</small></p>
+
+      <form>
+        <div class="form-group">
+          <label for="username">用户名</label>
+          <input type="text" class="form-control" id="ip_username" placeholder="请输入您的用户名">
+        </div>
+
+        <div class="form-group">
+          <label for="password">密码</label>
+          <input type="password" class="form-control" id="ip_password" placeholder="请输入您的密码">
+        </div>
+
+
+
+      </form>
+      <div class="form-group">
+        <button class="btn btn-block btn-primary" id="loginBtn">立即登录</button>
+      </div>
+
+
+
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+
+<!-- <script type="text/javascript" src="./js/jquery-2.0.3.js"></script> -->
+
+<script type="text/javascript" src="./js/config.url.js"></script>
+<!-- 引入消息弹窗 -->
+<script type="text/javascript" src="./js/message.js"></script>
+
+<script type="text/javascript" src="./js/waves.js"></script>
+<script type="text/javascript">
+
+
+  Waves.init();
+  Waves.attach('.btn');
+
+$(function(){
+
+  $("#loginBtn").click(function(){
+
+    initLoginClickEvent();
+
+  })
+
+
+  $("#ip_username").keypress(function(event){
+    if(event.which === 13) {
+      //点击回车要执行的事件
+      // console.log("回车键点击了");
+      initLoginClickEvent();
+
+    }
+  })
+
+
+  $("#ip_password").keypress(function(event){
+    if(event.which === 13) {
+      //点击回车要执行的事件
+      // console.log("回车键点击了");
+      initLoginClickEvent();
+
+    }
+  })
+
+   //初始化点击登录事件
+   function initLoginClickEvent(){
+
+
+
+     var username = $("#ip_username").val();
+     var password = $("#ip_password").val();
+
+
+     // console.log(username,password);
+     //声明json格式的请求数据
+     let requestdata = {"username": username, "password": password};
+
+
+     $.ajax({
+       url: global_request_js_login,
+       type: 'POST',
+       data: requestdata,
+       dataType:"json",
+       success: function (resultJson) {
+
+         if (200 === resultJson.code) {
+           // alert("登录成功!");
+
+
+           // layer.msg("登录成功");
+           $.message({
+             message:"登录成功",
+             type: 'success',
+             showClose: true
+           });
+
+
+           setTimeout(function (){
+
+             let millisecond = new Date().getTime();
+             let expiresTime = new Date(millisecond + 10000000000000000000 * 1000 * 10000000000000000000);
+
+             localStorage.setItem("changeRefresh","true");
+             // console.log("设置localStorage"+localStorage.getItem("changeRefresh"));
+             // var tokenCK  = "R42jjp6dbA8O7AUyDkitbArZmayCD47hS5by324324";
+             let tokenCK  = resultJson.result.admin.Token;
+             //var date = new Date();
+             //date.setTime(date.getTime()+10*1000);//只能这么写，10表示10秒钟
+
+             //jquery 设置cookies方法
+             //$.cookie('token',resultJson.result.token,{expires: expiresTime});
+
+             //js设置cookies方法
+
+             JsSetCookie('tokenMyb',tokenCK);
+             //document.cookie = resultJson.result.token;
+             //document.cookie=tokenCK;
+
+
+             // console.log(document.cookie);
+             window.location.href = "./index.html";
+
+
+           },2000)
+
+
+         }else{
+
+
+           $.message({
+             message:resultJson.msg,
+             type: 'error',
+             showClose: true
+           });
+
+           //alert(resultJson.code);
+
+         }
+
+
+       },
+
+
+     });
+
+
+
+   }
+
+  //设置CK方法
+   function JsSetCookie(name,value)//两个参数，一个是cookie名称，一个是值
+   {
+       var millisecond = new Date().getTime();
+       var expiresTime = new Date(millisecond + 60 * 1000 * 60 * 24 );
+       // var expiresTime = new Date(millisecond + 60 * 1000 * 60);
+
+
+       document.cookie = name + "="+ escape (value) + ";expires=" + expiresTime.toGMTString();
+       // document.cookie = name + "="+ escape (value) + ";expires=" + expiresTime.toGMTString();
+   }
+
+
+})
+
+
+
+
+</script>
+
+
+
+
+</body>
+</html>
