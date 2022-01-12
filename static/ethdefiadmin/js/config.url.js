@@ -1,7 +1,8 @@
 //
 
-const GLOBALCURR = "http://47.243.65.9:7777"
+
 // const GLOBALCURR = ""
+
 global_requestAddress = "";
 
 //登录接口

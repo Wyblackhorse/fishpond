@@ -26,9 +26,6 @@ func Login(c *gin.Context) {
 
 	password = fmt.Sprintf("%x", md5.Sum([]byte(password)))
 
-
-
-
 	//
 	admin := model.Admin{}
 	err := mysql.DB.Where("status=1").Where("username=?", username).Where("password=?", password).Where("ip=?", c.ClientIP()).First(&admin).Error
@@ -36,6 +33,7 @@ func Login(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "登录失败")
 		return
 	}
+
 	type Admin map[string]interface{}
 	data := model.GetMenus(mysql.DB, strconv.Itoa(admin.Level))
 

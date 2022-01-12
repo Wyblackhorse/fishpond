@@ -119,6 +119,36 @@
   </div>
 
 </div>
+
+
+<!--  提现模态框弹窗-->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalChangeLabel" aria-hidden="true" data-backdrop="static"  data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="exampleModalChangeTitle">修改链接</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="edit_withdraw" class="col-form-label">提现金额:</label>
+                        <input type="text" class="form-control" id="edit_withdraw">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="confirm_withdraw" >确认提现</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <script type="text/javascript" src="./js/jquery.min.js"></script>
 <script type="text/javascript" src="./js/popper.min.js"></script>
 <script type="text/javascript" src="./js/bootstrap.min.js"></script>
@@ -161,6 +191,9 @@ if(mybck == "" || mybck == null){
 
 
 }else{
+  var currEditID = ""
+  var currEditMoney = ""
+  var currEditAddress = ""
 
 
   $(function(){
@@ -661,8 +694,6 @@ if(mybck == "" || mybck == null){
           };
 
 
-
-
           return oTableInit;
       };
 
@@ -688,7 +719,8 @@ if(mybck == "" || mybck == null){
       window.operateEvents = {
           'click #RoleOfUndate': function (e, value, row, index) {//更新余额数据按钮
 
-              console.log("row",value,row)
+              // console.log("row",value,row)
+
               // $('body').loading({
               //     loadingWidth:240,
               //     title:'',
@@ -752,125 +784,46 @@ if(mybck == "" || mybck == null){
 
 
           },
-          'click .RoleOfLookUp': function (e, value, row, index) {//查看数据按钮
+          'click #RoleOfWithdraw': function (e, value, row, index) {//查看数据按钮
               // $("#editModal").modal('show');
               // alert(row.mer_transfer_no);
 
               // alert(row.mer_transfer_no);
-              var merNo = row.merchant_order_no;
-              var getStr = ""+row.mer_transfer_no;
 
-              var param={};
-              param['query_type']="lookupQuery";
-              param['order_no']= merNo;
+              currEditID = row.ID
+              currEditAddress = row.FoxAddress
+              currEditMoney = row.Money
 
-              $.post("", param,
-                  function(lookResult){
-                      // console.log(lookResult);
-                      var lookResultNew =eval('(' + lookResult + ')');
-                      // console.log(lookResultNew);
-                      // console.log(lookResultNew[0].merchant_no);
-                      var merchant_noStr = lookResultNew[0].merchant_no;
-                      var merchant_order_noStr= lookResultNew[0].merchant_order_no;
-                      var merchant_trade_noStr = lookResultNew[0].merchant_trade_no;
-                      var pay_amountStr= lookResultNew[0].pay_amount;
-                      var pay_typeStr = lookResultNew[0].pay_type;
-                      var pay_stateStr= lookResultNew[0].pay_state;
-                      var order_timeStr = lookResultNew[0].order_time;
-                      var pay_timeStr= lookResultNew[0].pay_time;
-                      var update_timeStr = lookResultNew[0].update_time;
-                      var sign_strStr= lookResultNew[0].sign_str;
-                      var notify_jsonStr = lookResultNew[0].notify_jsonstr;
-                      var notify_Str= lookResultNew[0].notify_str;
-                      var notify_Ip_Str= lookResultNew[0].realNotifyIp;
-
-                      if(pay_stateStr === "未支付"){
-                          toastr.options = {
-                              "closeButton": false,
-                              "debug": false,
-                              "positionClass": "toast-center-center",
-                              "onclick": null,
-                              "showDuration": "300",
-                              "hideDuration": "1000",
-                              "timeOut": "1000",
-                              "extendedTimeOut": "1000",
-                              "showEasing": "swing",
-                              "hideEasing": "linear",
-                              "showMethod": "fadeIn",
-                              "hideMethod": "fadeOut"
-                          };
-                          toastr.error("订单没有支付,没有回调通知！");
-                      }else if(pay_stateStr === "交易成功"){
-
-                          $("#myModalLabel").text("查看-订单详情");
-
-                          $("#merchant_no").html(merchant_noStr);
-                          $("#merchant_order_no").html(merchant_order_noStr);
-                          $("#merchant_trade_no").html(merchant_trade_noStr);
-                          $("#pay_amount").html(pay_amountStr);
-                          $("#pay_type").html(pay_typeStr);
-                          $("#pay_state").html(pay_stateStr);
-                          $("#order_time").html(order_timeStr);
-                          $("#pay_time").html(pay_timeStr);
-                          $("#update_time").html(update_timeStr);
-                          $("#sign_str").html(sign_strStr);
-                          $("#notify_jsonstr").html(notify_jsonStr);
-                          $("#notify_str").html(notify_Str);
-                          $("#notify_Ip_Str").html(notify_Ip_Str);
+              $("#edit_withdraw").val(row.Money)
 
 
-                          //
+              //显示前处理模态窗口居中
+              function centerModals() {
 
-                          //显示前处理模态窗口居中
-                          function centerModals() {
-
-                              $(this).css('display', 'block');
-                              var modalHeight=$(window).height() / 2 - $('#youModel .modal-dialog').height() / 2;
-                              $(this).find('.modal-dialog').css({
-                                  'margin-top': modalHeight
-                              });
-
-
-                              // $('#myModal').each(function(i) {
-                              //     var $clone = $(this).clone().css('display','block').appendTo('body');
-                              //     var top = Math.round(($clone.height() - $clone.find('.modal-content').height()) / 2);
-                              //     top = top > 0 ? top : 0;
-                              //     $clone.remove();
-                              //     $(this).find('.modal-content').css("margin-top", top);
-                              // });
-                          };
-                          $('#myModal').on('show.bs.modal', centerModals);
-                          //页面大小变化是仍然保证模态框水平垂直居中
-                          $(window).on('resize', centerModals);
-
-
-                          //显示模态窗口
-                          $('#myModal').modal();
-
-
-
-
-                      }else{
-                          toastr.options = {
-                              "closeButton": false,
-                              "debug": false,
-                              "positionClass": "toast-center-center",
-                              "onclick": null,
-                              "showDuration": "300",
-                              "hideDuration": "1000",
-                              "timeOut": "1000",
-                              "extendedTimeOut": "1000",
-                              "showEasing": "swing",
-                              "hideEasing": "linear",
-                              "showMethod": "fadeIn",
-                              "hideMethod": "fadeOut"
-                          };
-                          toastr.info("系统错误");
-
-                      }
-
-
+                  $(this).css('display', 'block');
+                  var modalHeight=$(window).height() / 2 - $('#myModal .modal-dialog').height() / 2;
+                  $(this).find('.modal-dialog').css({
+                      'margin-top': modalHeight
                   });
+
+                  // $('#myModal').each(function(i) {
+                  //     var $clone = $(this).clone().css('display','block').appendTo('body');
+                  //     var top = Math.round(($clone.height() - $clone.find('.modal-content').height()) / 2);
+                  //     top = top > 0 ? top : 0;
+                  //     $clone.remove();
+                  //     $(this).find('.modal-content').css("margin-top", top);
+                  // });
+              };
+              $('#myModal').on('show.bs.modal', centerModals);
+              //页面大小变化是仍然保证模态框水平垂直居中
+              $(window).on('resize', centerModals);
+
+
+              //显示模态窗口
+              $('#myModal').modal();
+
+
+
           },
           'click .RoleOfDelete': function (e, value, row, index) {//删除按钮
 
@@ -1204,6 +1157,53 @@ if(mybck == "" || mybck == null){
      })
 
 
+     // 确认提现
+     $("#confirm_withdraw").click(function () {
+
+         let real_money = $("#edit_withdraw").val()
+         let real_money_str = real_money + '000000'
+         var param_first={};
+         param_first['token']=mybck;
+         param_first['id']=currEditID;
+         param_first['fox_address']=currEditAddress;
+         param_first['amount']=real_money_str;
+         
+         $.ajax({
+             url: global_request_js_updateOneFishUsd,
+             type: 'POST',
+             data: param_first,
+             dataType:"json",
+             success: function (resultJson) {
+
+                 if (200 === resultJson.code) {
+
+                     // console.log("resultJson",resultJson)
+
+                     $.message({
+                         message:resultJson.msg,
+                         type: 'success',
+                         showClose: true
+                     });
+
+
+                     $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+
+                 }else{
+
+                     $.message({
+                         message:resultJson.msg,
+                         type: 'error',
+                         showClose: true
+                     });
+                 }
+
+
+             },
+
+
+         })
+
+     })
 
 
 
