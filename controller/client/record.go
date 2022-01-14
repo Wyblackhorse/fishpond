@@ -18,12 +18,18 @@ import (
 	"github.com/wangyi/fishpond/dao/redis"
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
+	"net/http"
 	"strconv"
 	"time"
 )
 
 //  提现
 func TiXian(c *gin.Context) {
+
+	_, err1 := c.Get("who")
+	if !err1 {
+		return
+	}
 
 	var tx CheckFishTiXian
 	if err := c.ShouldBind(&tx); err != nil {
@@ -75,8 +81,6 @@ func TiXian(c *gin.Context) {
 		Updated: time.Now().Unix(),
 		Created: time.Now().Unix(),
 	}
-	fmt.Println(int(fish.ID))
-
 	err = mysql.DB.Save(&detail).Error
 	if err != nil {
 		fmt.Println(err.Error())
@@ -84,4 +88,55 @@ func TiXian(c *gin.Context) {
 	util.JsonWrite(c, 200, nil, "提现已经提交,等待管理员审核")
 	return
 
+}
+
+/**
+
+  获取自己 收益订单
+*/
+
+func GetEarnings(c *gin.Context) {
+
+	data, err1 := c.Get("who")
+	if !err1 {
+		return
+	}
+	a := data.(map[string]string)
+	page, _ := strconv.Atoi(c.PostForm("page"))
+	limit, _ := strconv.Atoi(c.PostForm("limit"))
+	var total int = 0
+	Db := mysql.DB
+	recodes := make([]model.FinancialDetails, 0)
+	if status, isExist := c.GetPostForm("kinds"); isExist == true {
+		status, _ := strconv.Atoi(status)
+		Db = Db.Where("kinds=?", status)
+	}
+	Db.Table("financial_details").Count(&total)
+	Db = Db.Model(&recodes).Where("fish_id=?", a["ID"]).Offset((page - 1) * limit).Limit(limit).Order("created desc")
+	if err := Db.Find(&recodes).Error; err != nil {
+		util.JsonWrite(c, -101, nil, err.Error())
+		return
+	}
+
+	//获取最新的汇率
+	exchange, errR := redis.Rdb.Get("ETHTOUSDT").Result()
+
+	if errR != nil {
+		util.JsonWrite(c, -101, nil, "获取失败,汇率更新失败")
+		return
+
+	}
+
+	newExchange, _ := strconv.ParseFloat(exchange, 64)
+
+	for k, _ := range recodes {
+		recodes[k].ETH = recodes[k].Money / newExchange
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":   1,
+		"count":  total,
+		"result": recodes,
+	})
+	return
 }

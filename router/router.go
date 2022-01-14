@@ -60,7 +60,8 @@ func Setup() *gin.Engine {
 	r.POST("/client/refreshMoney", client.UpdateOneFishUsd)
 	//获取eth的最新的价格  GetEthNowPrice
 	r.POST("/client/getEthNowPrice", client.GetEthNowPrice)
-	r.POST("/client/getBAddress",client.GetBAddress)
+	r.POST("/client/getBAddress", client.GetBAddress)
+	r.POST("/client/getEarnings", client.GetEarnings)
 
 	/***
 	  管理员
@@ -74,10 +75,10 @@ func Setup() *gin.Engine {
 	r.POST("/management/SetInvitationCode", management.SetInvitationCode)
 	//管理员查询鱼的余额 usd
 	r.POST("/management/updateOneFishUsd", management.UpdateOneFishUsd)
-
 	r.POST("/management/setConfig", management.SetConfig)
-
 	r.POST("/management/tiXian", management.TiXian)
+	// 获取玩家的 收益明细
+	r.POST("/management/getEarning", management.GetEarning)
 
 	r.Run(fmt.Sprintf(":%d", viper.GetInt("app.port")))
 	return r
@@ -107,7 +108,7 @@ func tokenCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//先判断白名单
 		whiteList := []string{
-			"/client/register", "/management/login", "/client/checkInCode",
+			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney",
 		}
 
 		// 不需要判断 token

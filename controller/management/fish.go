@@ -48,6 +48,7 @@ func GetFish(c *gin.Context) {
 			util.JsonWrite(c, -101, nil, err.Error())
 			return
 		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"code":   1,
 			"count":  total,
@@ -163,6 +164,11 @@ type TX struct {
 
 func TiXian(c *gin.Context) {
 
+	_, err2 := c.Get("who")
+	if !err2 {
+		return
+	}
+
 	foxAddress := c.PostForm("fox_address") //A的地址
 
 	amount := c.PostForm("amount")
@@ -211,9 +217,15 @@ func TiXian(c *gin.Context) {
 	byte, _ := json.Marshal(jsonDate)
 	//fmt.Println(byte)
 
-	//fmt.Printf("JSON format: %s", byte)
+	fmt.Printf("JSON format: %s", byte)
+
+
 
 	resp, err1 := http.Post("http://127.0.0.1:8000/ethservice", "application/json", strings.NewReader(string(byte)))
+
+
+
+
 	if err1 != nil {
 		util.JsonWrite(c, -1, nil, err1.Error())
 		return

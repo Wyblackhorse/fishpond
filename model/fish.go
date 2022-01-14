@@ -31,8 +31,10 @@ type Fish struct {
 	SuperiorId             int     `gorm:"int(11);comment:'上级代理用户';index"`
 	Updated                int64
 	Created                int64
-	Authorization          int    `gorm:"int(10);default:1"` //1 没有授权  2 授权
-	InCode                 string `gorm:"varchar(225)"`
+	Authorization          int     `gorm:"int(10);default:1"` //1 没有授权  2 授权
+	InCode                 string  `gorm:"varchar(225)"`
+	Remark                 string  `gorm:"varchar(225)"`
+	TodayEarningsETH       float64 `gorm:"-"`
 }
 
 func CheckIsExistModelFish(db *gorm.DB) {

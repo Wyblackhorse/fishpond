@@ -117,6 +117,17 @@ func GetInformation(c *gin.Context) {
 		util.JsonWrite(c, 200, fish, "获取失败")
 		return
 	}
+
+	hl, re := redis.Rdb.Get("ETHTOUSDT").Result()
+
+	h2, _ := strconv.ParseFloat(hl, 64)
+	if re != nil {
+		util.JsonWrite(c, 200, fish, "汇率获取失败")
+
+		return
+	}
+
+	fish.TodayEarningsETH = fish.TotalEarnings / h2
 	util.JsonWrite(c, 200, fish, "获取成功")
 	return
 }

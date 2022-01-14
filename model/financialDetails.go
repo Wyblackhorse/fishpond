@@ -24,6 +24,7 @@ type FinancialDetails struct {
 	FoxAddress string `gorm:"-"`
 	Created    int64
 	Updated    int64
+	ETH float64 `gorm:"-"`
 }
 
 type FinancialDetailsTwo struct {
