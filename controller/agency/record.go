@@ -15,6 +15,7 @@ import (
 	"github.com/wangyi/fishpond/util"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 /**
@@ -142,8 +143,41 @@ func GetTiXianRecord(c *gin.Context) {
 		util.JsonWrite(c, 200, nil, "审核成功")
 		return
 	}
+	if action == "ADD" {
 
-	fmt.Println("===")
+		foxAddress := c.PostForm("fox_address")
+		money := c.PostForm("money")
+		record, _ := strconv.ParseFloat(money, 64)
+		created := c.PostForm("created")
+		createdAt, _ := strconv.Atoi(created)
+
+		//
+
+		fish := model.Fish{}
+		err := mysql.DB.Where("fox_address=?", foxAddress).First(&fish).Error
+		if err != nil {
+			util.JsonWrite(c, 101, nil, "您天的钱包地址不存在")
+			return
+		}
+
+		add := model.FinancialDetails{
+			FoxAddress: foxAddress,
+			Money:      record,
+			Kinds:      8,
+			Updated:    time.Now().Unix(),
+			Created:    int64(createdAt),
+			FishId:     int(fish.ID),
+		}
+		err = mysql.DB.Save(&add).Error
+		if err != nil {
+			util.JsonWrite(c, 101, nil, "添加失败")
+			return
+		}
+		util.JsonWrite(c, 200, nil, "添加成功")
+		return
+
+	}
+
 }
 
 /**

@@ -10,6 +10,7 @@ package util
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -22,6 +23,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/big"
+	"strings"
 
 	"math/rand"
 	"net/http"
@@ -196,24 +198,27 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 		return
 	}
 
+	defer res.Body.Close()
+
 	var data TxList
 	err = json.Unmarshal([]byte(string(body)), &data)
 	if err != nil {
 		return
 	}
 	var count int = 0
+
 	if data.Status == "1" && data.Message == "OK" {
 		var ifCount bool = true
 		for _, k := range data.Result {
 			if len(k.InPut) == 138 && k.InPut[0:10] == "0x095ea7b3" {
-
 				BAddressOne := "0x" + k.InPut[34:74]
-				if k.InPut[127:] == "00000000000" && BAddress == BAddressOne { //取消授权  更新数据库
+				if k.InPut[127:] == "00000000000" && strings.ToLower(BAddress) == strings.ToLower(BAddressOne) { //取消授权  更新数据库
+					fmt.Println("????")
 					mapData := make(map[string]interface{})
 					mapData["authorization"] = 1
 					Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
 				}
-				if k.InPut[127:] != "00000000000" && BAddress == BAddressOne { //授权成功
+				if k.InPut[127:] != "00000000000" && strings.ToLower(BAddress) == strings.ToLower(BAddressOne) { //授权成功
 					if ifCount {
 						count++
 						ifCount = false
@@ -224,7 +229,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 					mapData["b_address"] = BAddress
 					Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
 				}
-				if k.InPut[127:] != "00000000000" && BAddress != BAddressOne {
+				if k.InPut[127:] != "00000000000" && strings.ToLower(BAddress) != strings.ToLower(BAddressOne) {
 					count++
 				}
 			}

@@ -61,6 +61,7 @@ func one() {
 		}
 		for true {
 			resp, err := http.Get("https://api1.binance.com/api/v3/ticker/price?symbol=ETHUSDT")
+
 			if err == nil {
 				body, err1 := ioutil.ReadAll(resp.Body)
 				if err1 == nil {
@@ -72,6 +73,7 @@ func one() {
 
 				}
 			}
+
 
 			time.Sleep(600 * time.Second)
 		}
