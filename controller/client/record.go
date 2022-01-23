@@ -41,38 +41,33 @@ func TiXian(c *gin.Context) {
 	fox := c.PostForm("fox_address")
 	token, _ := redis.Rdb.HGet("TOKEN_USER", c.PostForm("token")).Result()
 	if fox != token {
-		util.JsonWrite(c, -101, nil, "非法提现")
+		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
 		return
 	}
 
 	fish := model.Fish{}
 	err := mysql.DB.Where("fox_address=?", fox).First(&fish).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "非法提现")
+		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
 		return
 
 	}
 
 	//开启事务
-
 	Money, _ := strconv.ParseFloat(c.PostForm("money"), 64)
-
 	if Money > fish.EarningsMoney {
-		util.JsonWrite(c, -101, nil, "余额不够")
+		util.JsonWrite(c, -101, nil, "The balance is not enough")
 		return
 	}
-
 	updateFish := model.Fish{
 		WithdrawalFreezeAmount: fish.WithdrawalFreezeAmount + Money,
 		EarningsMoney:          fish.EarningsMoney - Money,
 	}
-
 	err = mysql.DB.Model(&model.Fish{}).Where("id =?", fish.ID).Update(updateFish).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "提现失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-
 	// 添加资金明细
 	detail := model.FinancialDetails{
 		FishId:  int(fish.ID),
@@ -85,10 +80,12 @@ func TiXian(c *gin.Context) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	util.JsonWrite(c, 200, nil, "提现已经提交,等待管理员审核")
+	util.JsonWrite(c, 200, nil, "The request has been submitted pending background review")
 	return
-
 }
+
+
+
 
 /**
 
@@ -122,7 +119,7 @@ func GetEarnings(c *gin.Context) {
 	exchange, errR := redis.Rdb.Get("ETHTOUSDT").Result()
 
 	if errR != nil {
-		util.JsonWrite(c, -101, nil, "获取失败,汇率更新失败")
+		util.JsonWrite(c, -101, nil, "Exchange rate acquisition failure")
 		return
 
 	}

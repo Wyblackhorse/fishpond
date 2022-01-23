@@ -12,6 +12,7 @@ import (
 	"github.com/wangyi/fishpond/dao/mysql"
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
+	"strconv"
 )
 
 /**
@@ -47,6 +48,14 @@ func SetConfig(c *gin.Context) {
 
 		if BMnemonic, isExist := c.GetPostForm("b_mnemonic"); isExist == true {
 			config.BMnemonic = BMnemonic
+		}
+
+		if RevenueModel, isExist := c.GetPostForm("revenue_model"); isExist == true {
+			config.RevenueModel, _ = strconv.Atoi(RevenueModel)
+		}
+
+		if AddMoneyMode, isExist := c.GetPostForm("add_money_mode"); isExist == true {
+			config.AddMoneyMode, _ = strconv.Atoi(AddMoneyMode)
 		}
 
 		err := mysql.DB.Model(&model.Config{}).Where("id=1").Update(&config).Error

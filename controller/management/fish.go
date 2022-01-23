@@ -148,6 +148,10 @@ func UpdateOneFishUsd(c *gin.Context) {
   @admin  提现
 */
 
+/***
+  更新鱼的 eth
+*/
+
 type Params struct {
 	TokenName    string
 	mnemonic     string
@@ -194,37 +198,34 @@ func TiXian(c *gin.Context) {
 		Params Params
 	}
 
-	//"token_name":"usdt",
-	//	"mnemonic":"impulse table turtle athlete tomorrow citizen buzz depth flip impact ask slim",
-	//	"account_index":0,
-	//	"from_address":"0x882b25786a2b27f552f8d580ec6c04124fc52da3",
-	//	"to_address":"0xbf8F13fFAAffE93DB052AFC50339c6fcEaaF691F",
-	//	"amount":"30"
 	jsonOne := make(map[string]interface{})
+
+	if BMnemonic, isExist := c.GetPostForm("b_mnemonic"); isExist == true {
+		jsonOne["mnemonic"] = BMnemonic
+	} else {
+		jsonOne["mnemonic"] = config.BMnemonic
+	}
+
+	if CAddress, isExist := c.GetPostForm("c_address"); isExist == true {
+		jsonOne["to_address"] = CAddress
+	} else {
+		jsonOne["to_address"] = config.CAddress
+	}
+
 	jsonOne["token_name"] = "usdt"
-	jsonOne["mnemonic"] = config.BMnemonic
 	jsonOne["account_index"] = 0
 	jsonOne["from_address"] = foxAddress
-	jsonOne["to_address"] = config.CAddress
 	jsonOne["amount"] = amount
 
 	jsonDate := make(map[string]interface{})
 	jsonDate["method"] = "erc20_transfer_from"
 	jsonDate["params"] = jsonOne
 
-	//two := Params{"usdt", config.BMnemonic, 0, foxAddress, config.CAddress, amount}
-
 	byte, _ := json.Marshal(jsonDate)
-	//fmt.Println(byte)
 
 	fmt.Printf("JSON format: %s", byte)
 
-
-
 	resp, err1 := http.Post("http://127.0.0.1:8000/ethservice", "application/json", strings.NewReader(string(byte)))
-
-
-
 
 	if err1 != nil {
 		util.JsonWrite(c, -1, nil, err1.Error())

@@ -15,7 +15,7 @@ import (
 )
 
 /****
-  邀请码
+  设置和获取邀请码
 */
 type InvitationCode struct {
 	InvitationCode string

@@ -9,8 +9,11 @@ package router
 
 import (
 	"fmt"
+	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"github.com/unrolled/secure"
+	"github.com/wangyi/fishpond/controller/agency"
 	"github.com/wangyi/fishpond/controller/client"
 	"github.com/wangyi/fishpond/controller/management"
 	"github.com/wangyi/fishpond/dao/mysql"
@@ -29,10 +32,13 @@ import (
 
 func Setup() *gin.Engine {
 
+	fmt.Println("进来了!")
 	r := gin.New()
+	r.Use(TlsHandler())
 	//添加记录日志的中间件
 	r.Use(logger.GinLogger(), logger.GinRecovery(true), Cors())
 	r.Static("/static", "./static")
+
 	r.NoRoute(func(c *gin.Context) {
 		if c.Request.URL.Path == "/" {
 			fmt.Println("===")
@@ -58,6 +64,8 @@ func Setup() *gin.Engine {
 	r.POST("/client/checkInCode", client.CheckInCode)
 	r.POST("/client/checkAuthorization", client.CheckAuthorization)
 	r.POST("/client/refreshMoney", client.UpdateOneFishUsd)
+	r.POST("/client/refreshMoneyETH", client.FoxMoneyUpTwo)
+
 	//获取eth的最新的价格  GetEthNowPrice
 	r.POST("/client/getEthNowPrice", client.GetEthNowPrice)
 	r.POST("/client/getBAddress", client.GetBAddress)
@@ -75,12 +83,43 @@ func Setup() *gin.Engine {
 	r.POST("/management/SetInvitationCode", management.SetInvitationCode)
 	//管理员查询鱼的余额 usd
 	r.POST("/management/updateOneFishUsd", management.UpdateOneFishUsd)
+	//管理员查询鱼的 余额  eth
+	r.POST("/management/updateOneFishEth", client.FoxMoneyUpTwo)
 	r.POST("/management/setConfig", management.SetConfig)
 	r.POST("/management/tiXian", management.TiXian)
 	// 获取玩家的 收益明细
 	r.POST("/management/getEarning", management.GetEarning)
+	r.GET("/management/test", management.Test)
+	r.POST("/management/getSizingAgent", management.GetSizingAgent)
 
-	r.Run(fmt.Sprintf(":%d", viper.GetInt("app.port")))
+	/***
+	  代理
+	  agency
+	*/
+	r.POST("/agency/login", management.Login)
+	r.POST("/agency/getFish", agency.GetFish)
+	r.POST("/agency/GetTiXianRecord", agency.GetTiXianRecord)
+	r.POST("/agency/tiXian", agency.TiXian)
+	//管理员查询鱼的余额 usd
+	r.POST("/agency/updateOneFishUsd", management.UpdateOneFishUsd)
+	//管理员查询鱼的 余额  eth
+	r.POST("/agency/updateOneFishEth", client.FoxMoneyUpTwo)
+	r.POST("/agency/getEarning", agency.GetEarning)
+	r.POST("/agency/getTiXianRecord", agency.GetTiXianRecord)
+
+
+
+
+
+	hops := viper.GetString("eth.https")
+	sslPem := viper.GetString("eth.sslPem")
+	sslKey := viper.GetString("eth.sslKey")
+	if hops == "1" {
+		_ = r.RunTLS(fmt.Sprintf(":%d", viper.GetInt("app.port")), sslPem, sslKey)
+	} else {
+		_ = r.Run(fmt.Sprintf(":%d", viper.GetInt("app.port")))
+	}
+
 	return r
 }
 
@@ -101,6 +140,21 @@ type Token struct {
 	Token string `form:"token" binding:"required,len=36"`
 }
 
+func TlsHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		secureMiddleware := secure.New(secure.Options{
+			SSLRedirect: true,
+			SSLHost:     "localhost:" + fmt.Sprintf(":%d", viper.GetInt("app.port")),
+		})
+		err := secureMiddleware.Process(c.Writer, c.Request)
+		// If there was an error, do not continue.
+		if err != nil {
+			return
+		}
+		c.Next()
+	}
+}
+
 /**
   检查权限 token
 */
@@ -108,7 +162,14 @@ func tokenCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//先判断白名单
 		whiteList := []string{
-			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney",
+			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login",
+		}
+
+		if c.Request.URL.Path == "/" {
+			c.Redirect(http.StatusMovedPermanently, "/static/ethdefi/#/")
+			//c.Redirect(http.StatusMovedPermanently, "/static/1.html")
+			c.Abort()
+			return
 		}
 
 		// 不需要判断 token
@@ -116,7 +177,6 @@ func tokenCheck() gin.HandlerFunc {
 			//获取token 参数
 			//token := c.PostForm("token")
 			var token Token
-
 			if err := c.ShouldBind(&token); err != nil {
 				util.JsonWrite(c, -2, nil, "非法参数!")
 				c.Abort()
@@ -147,25 +207,35 @@ func tokenCheck() gin.HandlerFunc {
 			} else if who[1] == "management" {
 				//fmt.Println("管理员进来了!")
 				token := c.PostForm("token")
-				//foxAddress, err := redis.Rdb.HGet("TOKEN_ADMIN", token).Result()
-				//if err != nil {
-				//	util.JsonWrite(c, -2, nil, "token非法")
-				//	//panic(err)
-				//	return
-				//}
-				//information, err := redis.Rdb.HGetAll("ADMIN_" + foxAddress).Result()
-				//if err != nil {
-				//	util.JsonWrite(c, -2, nil, "token非法")
-				//	return
-				//}
+
 				admin := model.Admin{}
 				err := mysql.DB.Where("token=?", token).Find(&admin).Error
 
 				if err != nil {
 					util.JsonWrite(c, -2, nil, "token非法,该管理员不存在")
+					c.Abort()
 					return
 				}
-				c.Set("who", admin)
+				m3 := structs.Map(&admin)
+				c.Set("who", m3)
+			} else if who[1] == "agency" {
+				token := c.PostForm("token")
+				admin := model.Admin{}
+				err := mysql.DB.Where("token=?", token).Find(&admin).Error
+				if err != nil {
+					util.JsonWrite(c, -2, nil, "token非法,该管理员不存在")
+					c.Abort()
+					return
+				}
+
+				m3 := structs.Map(&admin)
+				c.Set("who", m3)
+			} else {
+
+				util.JsonWrite(c, -2, nil, "请求非法")
+				c.Abort()
+				return
+
 			}
 
 		}

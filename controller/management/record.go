@@ -14,6 +14,7 @@ package management
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 	"github.com/wangyi/fishpond/dao/mysql"
 	"github.com/wangyi/fishpond/dao/redis"
 	"github.com/wangyi/fishpond/model"
@@ -32,10 +33,10 @@ func GetTiXianRecord(c *gin.Context) {
 	if action == "GET" {
 		page, _ := strconv.Atoi(c.PostForm("page"))
 		limit, _ := strconv.Atoi(c.PostForm("limit"))
-		var total int = 0
+		//var total int = 0
 		Db := mysql.DB
 		vipEarnings := make([]model.FinancialDetails, 0)
-		Db.Table("financial_details").Count(&total)
+		//Db.Table("financial_details").Count(&total)
 
 		Db = Db.Model(&model.FinancialDetails{}).Offset((page - 1) * limit).Limit(limit).Order("updated desc")
 
@@ -62,9 +63,10 @@ func GetTiXianRecord(c *gin.Context) {
 				vipEarnings[key].FoxAddress = fish.FoxAddress
 			}
 		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"code":   1,
-			"count":  total,
+			"count":  len(vipEarnings),
 			"result": vipEarnings,
 		})
 		return
@@ -79,12 +81,50 @@ func GetTiXianRecord(c *gin.Context) {
 		upS := model.FinancialDetails{}
 		upS.Kinds = kind
 
+
+		if createdAt, err := c.GetPostForm("createdAt"); err {
+			createdAt, _ := strconv.Atoi(createdAt)
+			upS.Created = int64(createdAt)
+		}
+
+		//查询这个账单是否存在
+		cords := model.FinancialDetails{}
+
+		err2 := mysql.DB.Where("id=?", id).First(&cords).Error
+		if err2 != nil {
+			util.JsonWrite(c, -101, nil, "审核失败,没有查找到账单")
+			return
+		}
+
 		if remark, isExist := c.GetPostForm("remark"); isExist == true {
 			upS.Remark = remark
 		}
 
 		if money, isExist := c.GetPostForm("money"); isExist == true {
 			upS.Money, _ = strconv.ParseFloat(money, 64)
+		}
+
+		if kind == 3 {
+
+			//更新用户的 可提现余额
+			fish := model.Fish{}
+			err := mysql.DB.Where("id=?", cords.FishId).First(&fish).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "审核失败,没有查找到用户")
+				return
+			}
+
+			updateFish := model.Fish{
+				WithdrawalFreezeAmount: fish.WithdrawalFreezeAmount - cords.Money,
+				EarningsMoney:          fish.EarningsMoney + cords.Money,
+			}
+
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&updateFish).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "审核失败,用户收益回滚失败")
+				return
+			}
+
 		}
 
 		err := mysql.DB.Model(&model.FinancialDetails{}).Where("id= ?", id).Update(&upS).Error
@@ -110,18 +150,16 @@ func EverydayToAddMoney(c *gin.Context) {
 	db := mysql.DB
 	err := db.Where("authorization=2").Find(&fish).Error
 	if err != nil {
-
 		return
 	}
 
 	for _, b := range fish {
-
 		//redis 进行判断今日是否加过欠了
 		_, err = redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(b.ID))).Result()
 		if err == nil {
 			continue
 		}
-
+		util.UpdateUsdAndEth(b.FoxAddress, mysql.DB)
 		//判断 vip等级
 		vip := model.VipEarnings{}
 		err := db.Where("id=?", b.VipLevel).First(&vip).Error
@@ -130,7 +168,38 @@ func EverydayToAddMoney(c *gin.Context) {
 			model.WriteLogger(db, 2, "fishId"+strconv.Itoa(int(b.ID))+" 没有找到对应的vipId"+strconv.Itoa(int(b.ID)), int(b.ID), 1)
 			continue
 		}
-		// 获取vip 的收益比例
+
+		//获取配置
+		config := model.Config{}
+		err1 := mysql.DB.Where("id=1").First(&config).Error
+		if err1 != nil {
+			model.WriteLogger(db, 2, "配置获取失败", int(b.ID), 1)
+			return
+		}
+		//
+		//RevenueModel int    `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
+		//AddMoneyMode int    `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
+		fmt.Println(b.Money)
+		if config.AddMoneyMode == 2 { //只算余额
+			b.Money = b.Money + b.EarningsMoney
+		}
+
+		if config.RevenueModel == 2 {
+			//ETH 换算成 usdt
+			c := decimal.NewFromFloat(3217.54)
+			d := decimal.NewFromFloat(b.MoneyEth)
+			e, _ := c.Mul(d).Float64()
+			b.Money = e
+		}
+		if config.RevenueModel == 3 {
+			//ETH 换算成 usdt
+			c := decimal.NewFromFloat(3217.54)
+			d := decimal.NewFromFloat(b.MoneyEth)
+			e, _ := c.Mul(d).Float64()
+			b.Money = e + b.Money
+		}
+		//fmt.Println(b.Money)
+		// 获取vip 的收益比例  uSDT
 		earring := b.Money * vip.EarningsPer
 
 		//对 fish 表进行 更新  更新数据为
@@ -207,9 +276,14 @@ func GetEarning(c *gin.Context) {
 		// 账单的id
 		recodeId := c.PostForm("id")
 		money, err := strconv.ParseFloat(c.PostForm("money"), 64)
+		created := c.PostForm("createdAt")
+		createdAt, _ := strconv.Atoi(created)
 		ups := model.FinancialDetails{
-			Money: money,
+			Money:   money,
+			Created: int64(createdAt),
 		}
+
+		fmt.Println(ups)
 		err = mysql.DB.Model(&model.FinancialDetails{}).Where("id=?", recodeId).Update(ups).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "修改失败")
@@ -218,5 +292,11 @@ func GetEarning(c *gin.Context) {
 		util.JsonWrite(c, 200, nil, "修改成功")
 		return
 	}
+
+}
+
+func Test(c *gin.Context) {
+
+	util.UpdateUsdAndEth("0x882B25786a2b27f552F8d580EC6c04124fC52DA3", mysql.DB)
 
 }

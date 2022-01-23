@@ -14,7 +14,7 @@ import (
 	"github.com/wangyi/fishpond/util"
 )
 
-func GetVipEarnings(c *gin.Context)  {
+func GetVipEarnings(c *gin.Context) {
 
 	_, err1 := c.Get("who")
 	if !err1 {
@@ -23,10 +23,10 @@ func GetVipEarnings(c *gin.Context)  {
 	vip := make([]model.VipEarnings, 0)
 	err := mysql.DB.Find(&vip).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "获取失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-	util.JsonWrite(c, 200, vip, "获取成功")
+	util.JsonWrite(c, 200, vip, "success")
 	return
 
 }

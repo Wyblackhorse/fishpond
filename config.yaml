@@ -32,8 +32,9 @@ redis:
 
 
 # 系统设置
-ethUrl:
+eth:
   apikey: "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
   ethUrl: "https://mainnet.infura.io/v3/a73f8de0d9974dd7a35c5d241e24e853"
-
-
+  https: "1"     #  1 代表htttps 请求  2代表http 请求
+  sslPem: "1_wyLoveeat.com_bundle.pem"
+  sslKey: "0_wyLoveeat.com.key"

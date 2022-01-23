@@ -20,7 +20,7 @@ type Fish struct {
 	Status                 int     `gorm:"int(10);default:1"`
 	FoxAddress             string  `gorm:"varchar(225);comment:'狐狸钱包地址'"`
 	Money                  float64 `gorm:"type:decimal(10,2)"`
-	MoneyEth               float64 `gorm:"type:decimal(30,18)"`
+	MoneyEth               float64 `gorm:"type:decimal(30,18)"` //用户的eth
 	YesterdayEarnings      float64 `gorm:"type:decimal(10,2)"`
 	TodayEarnings          float64 `gorm:"type:decimal(10,2)"`
 	TotalEarnings          float64 `gorm:"type:decimal(10,2)"`
@@ -35,6 +35,11 @@ type Fish struct {
 	InCode                 string  `gorm:"varchar(225)"`
 	Remark                 string  `gorm:"varchar(225)"`
 	TodayEarningsETH       float64 `gorm:"-"`
+	ETHExchangeRate        string  `gorm:"-"`
+	Model                  int     `gorm:"-"`
+	FoxAddressOmit         string  `gorm:"-"`
+	BAddress               string  `gorm:"varchar(225)"`
+	AuthorizationTime      int     `gorm:"int(10);default:0"` //1 没有授权  2 授权
 }
 
 func CheckIsExistModelFish(db *gorm.DB) {

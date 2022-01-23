@@ -6,6 +6,7 @@ import (
 	"github.com/wangyi/fishpond/dao/mysql"
 	"github.com/wangyi/fishpond/dao/redis"
 	"github.com/wangyi/fishpond/logger"
+	"github.com/wangyi/fishpond/process"
 	"github.com/wangyi/fishpond/router"
 	"github.com/wangyi/fishpond/setting"
 	"go.uber.org/zap"
@@ -17,6 +18,11 @@ import (
 func main() {
 	one()
 
+	//file, _ := os.Open("lss.key")
+	//
+	//defer file.Close()
+	//content, _ := ioutil.ReadAll(file)
+	//fmt.Println(string(content))
 
 }
 
@@ -71,6 +77,11 @@ func one() {
 		}
 
 	}()
+
+	/**8
+	  检查授权
+	*/
+	go process.CheckAu(mysql.DB)
 
 	// 1.创建路
 	router.Setup()
