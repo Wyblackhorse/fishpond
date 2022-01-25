@@ -170,7 +170,19 @@ func GetTiXianRecord(c *gin.Context) {
 		return
 
 	}
+	if action == "DEL" {
 
+		id := c.PostForm("id")
+
+		err := mysql.DB.Delete(&model.FinancialDetails{}, id).Error
+		if err != nil {
+			util.JsonWrite(c, 101, nil, "删除失败")
+
+			return
+		}
+		util.JsonWrite(c, 200, nil, "删除成功")
+		return
+	}
 }
 
 /**

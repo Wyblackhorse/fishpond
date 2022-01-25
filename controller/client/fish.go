@@ -30,6 +30,7 @@ import (
 */
 func FishRegister(c *gin.Context) {
 
+	var IsCode bool = false
 	var Register CheckFishRegister
 	if err := c.ShouldBind(&Register); err != nil {
 		util.JsonWrite(c, -2, nil, err.Error())
@@ -37,12 +38,14 @@ func FishRegister(c *gin.Context) {
 	}
 
 	//判断邀请码是否有效
-	inCode := c.PostForm("inCode")
 
-	_, inErr := redis.Rdb.HGet("InvitationCode", inCode).Result()
-	if inErr != nil {
-		util.JsonWrite(c, -101, nil, "Invitation code invalid")
-		return
+	if inCode, isExist := c.GetPostForm("inCode"); isExist {
+		_, inErr := redis.Rdb.HGet("InvitationCode", inCode).Result()
+		if inErr != nil {
+			util.JsonWrite(c, -101, nil, "Invitation code invalid")
+			return
+		}
+		IsCode = true
 	}
 
 	//这个用户已经存在了
@@ -84,8 +87,11 @@ func FishRegister(c *gin.Context) {
 		Updated:                time.Now().Unix(),
 		Authorization:          1,
 		MoneyEth:               eth2,
-		InCode:                 inCode,
 	}
+	if IsCode {
+		addFish.InCode = c.PostForm("inCode")
+	}
+
 	result := mysql.DB.Save(&addFish).Error
 	if result != nil {
 		util.JsonWrite(c, -101, nil, "Registration failed, ")
@@ -455,5 +461,20 @@ func GetEthNowPrice(c *gin.Context) {
 		return
 	}
 	util.JsonWrite(c, 200, string(body), "success")
+	return
+}
+
+func GetIfNeedInCode(c *gin.Context) {
+
+	config := model.Config{}
+	err := mysql.DB.Where("id=1").First(&config).Error
+	if err != nil {
+
+		util.JsonWrite(c, -101, nil, "获取配置失败")
+		return
+	}
+	data := make(map[string]interface{})
+	data["ifCode"] = config.IfNeedInCode
+	util.JsonWrite(c, 200, data, "获取成功")
 	return
 }

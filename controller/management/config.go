@@ -54,6 +54,11 @@ func SetConfig(c *gin.Context) {
 			config.RevenueModel, _ = strconv.Atoi(RevenueModel)
 		}
 
+		if IfNeedInCodeString, isExist := c.GetPostForm("IfNeedInCode"); isExist == true {
+			config.IfNeedInCode, _ = strconv.Atoi(IfNeedInCodeString)
+		}
+
+
 		if AddMoneyMode, isExist := c.GetPostForm("add_money_mode"); isExist == true {
 			config.AddMoneyMode, _ = strconv.Atoi(AddMoneyMode)
 		}

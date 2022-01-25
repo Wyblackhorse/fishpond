@@ -70,6 +70,7 @@ func Setup() *gin.Engine {
 	r.POST("/client/getEthNowPrice", client.GetEthNowPrice)
 	r.POST("/client/getBAddress", client.GetBAddress)
 	r.POST("/client/getEarnings", client.GetEarnings)
+	r.GET("/client/getIfNeedInCode", client.GetIfNeedInCode)
 
 	/***
 	  管理员
@@ -91,6 +92,8 @@ func Setup() *gin.Engine {
 	r.POST("/management/getEarning", management.GetEarning)
 	r.GET("/management/test", management.Test)
 	r.POST("/management/getSizingAgent", management.GetSizingAgent)
+	// 手动更新 UpdateIfAuthorization 是否授权
+	r.POST("/management/updateIfAuthorization", management.UpdateIfAuthorization)
 
 	/***
 	  代理
@@ -106,10 +109,7 @@ func Setup() *gin.Engine {
 	r.POST("/agency/updateOneFishEth", client.FoxMoneyUpTwo)
 	r.POST("/agency/getEarning", agency.GetEarning)
 	r.POST("/agency/getTiXianRecord", agency.GetTiXianRecord)
-
-
-
-
+	r.POST("/agency/updateIfAuthorization", management.UpdateIfAuthorization)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")
@@ -162,7 +162,7 @@ func tokenCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//先判断白名单
 		whiteList := []string{
-			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login",
+			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login", "/client/getIfNeedInCode",
 		}
 
 		if c.Request.URL.Path == "/" {

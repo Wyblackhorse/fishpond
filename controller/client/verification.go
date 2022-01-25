@@ -14,7 +14,7 @@ type CheckFishRegister struct {
 	FoxAddress string `form:"fox_address" binding:"required,len=42"`
 	AdminId    *int   `form:"admin_id" binding:"required"`
 	SuperiorId *int   `form:"superior_id" binding:"required"`
-	InCode     string `form:"inCode" binding:"required"`
+	//InCode     string `form:"inCode" binding:"required"`
 }
 
 /**
