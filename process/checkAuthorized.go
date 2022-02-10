@@ -32,9 +32,9 @@ func CheckAu(Db *gorm.DB) {
 				}
 			}
 		}
-
 		time.Sleep(3600 * time.Second)
-
 	}
 
 }
+
+

@@ -41,6 +41,7 @@ type Fish struct {
 	BAddress               string  `gorm:"varchar(225)"`
 	AuthorizationTime      int     `gorm:"int(10);default:0"`                 //1 没有授权  2 授权
 	MiningEarningETH       float64 `gorm:"type:decimal(10,2);comment:'挖矿收益'"` //挖矿收益
+	Belong                 int     //子代理 需要填写的字段
 }
 
 func CheckIsExistModelFish(db *gorm.DB) {

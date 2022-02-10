@@ -32,7 +32,7 @@ func GetFish(c *gin.Context) {
 		page, _ := strconv.Atoi(c.PostForm("page"))
 		limit, _ := strconv.Atoi(c.PostForm("limit"))
 		var total int = 0
-		Db := mysql.DB.Where("admin_id=?", whoMap["ID"])
+		Db := mysql.DB.Where("admin_id=? or belong=?", whoMap["ID"], whoMap["ID"])
 		fish := make([]model.Fish, 0)
 
 		if status, isExist := c.GetPostForm("status"); isExist == true {
@@ -132,6 +132,15 @@ func GetFish(c *gin.Context) {
 				return
 			}
 			updateData.TotalEarnings = m
+		}
+		//YesterdayEarnings
+		if money, isExist := c.GetPostForm("YesterdayEarnings"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.YesterdayEarnings = m
 		}
 
 		err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error

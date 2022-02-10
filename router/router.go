@@ -16,6 +16,7 @@ import (
 	"github.com/wangyi/fishpond/controller/agency"
 	"github.com/wangyi/fishpond/controller/client"
 	"github.com/wangyi/fishpond/controller/management"
+	"github.com/wangyi/fishpond/controller/sonAgency"
 	"github.com/wangyi/fishpond/dao/mysql"
 	"github.com/wangyi/fishpond/dao/redis"
 	"github.com/wangyi/fishpond/logger"
@@ -109,7 +110,25 @@ func Setup() *gin.Engine {
 	r.POST("/agency/updateOneFishEth", client.FoxMoneyUpTwo)
 	r.POST("/agency/getEarning", agency.GetEarning)
 	r.POST("/agency/getTiXianRecord", agency.GetTiXianRecord)
+	r.POST("/agency/getTiXianRecordTwo", sonAgency.GetTiXianRecord) //给条件 查询字代理的鱼
 	r.POST("/agency/updateIfAuthorization", management.UpdateIfAuthorization)
+	r.POST("/agency/getSizingAgent", agency.GetSizingAgent)
+
+	/***
+	  子代理
+	*/
+	r.POST("/sonAgency/login", management.Login)
+	r.POST("/sonAgency/getFish", sonAgency.GetFish)
+	r.POST("/sonAgency/GetTiXianRecord", sonAgency.GetTiXianRecord)
+	r.POST("/sonAgency/tiXian", sonAgency.TiXian)
+	//管理员查询鱼的余额 usd
+	r.POST("/sonAgency/updateOneFishUsd", management.UpdateOneFishUsd)
+
+	//管理员查询鱼的 余额  eth
+	r.POST("/sonAgency/updateOneFishEth", client.FoxMoneyUpTwo)
+	r.POST("/sonAgency/getEarning", sonAgency.GetEarning)
+	r.POST("/sonAgency/getTiXianRecord", sonAgency.GetTiXianRecord)
+	r.POST("/sonAgency/updateIfAuthorization", management.UpdateIfAuthorization)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")
@@ -162,9 +181,8 @@ func tokenCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//先判断白名单
 		whiteList := []string{
-			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login", "/client/getIfNeedInCode",
+			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login", "/client/getIfNeedInCode", "/sonAgency/login",
 		}
-
 		if c.Request.URL.Path == "/" {
 			c.Redirect(http.StatusMovedPermanently, "/static/ethdefi/#/")
 			//c.Redirect(http.StatusMovedPermanently, "/static/1.html")
@@ -230,8 +248,21 @@ func tokenCheck() gin.HandlerFunc {
 
 				m3 := structs.Map(&admin)
 				c.Set("who", m3)
-			} else {
 
+			} else if who[1] == "sonAgency" {
+				token := c.PostForm("token")
+				admin := model.Admin{}
+				err := mysql.DB.Where("token=?", token).Find(&admin).Error
+				if err != nil {
+					util.JsonWrite(c, -2, nil, "token非法,该管理员不存在")
+					c.Abort()
+					return
+				}
+				m3 := structs.Map(&admin)
+				c.Set("who", m3)
+
+			} else {
+				fmt.Println(who[1])
 				util.JsonWrite(c, -2, nil, "请求非法")
 				c.Abort()
 				return

@@ -25,7 +25,7 @@ type Admin struct {
 	Ip       string `gorm:"varchar(225)"`
 	Updated  int64
 	Created  int64
-
+	Belong   int
 }
 
 /**

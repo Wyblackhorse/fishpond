@@ -2,10 +2,10 @@
  * @Author $
  * @Description //TODO $
  * @Date $ $
- * @Param $
+ * @Param $   子代理 管理
  * @return $
  **/
-package management
+package agency
 
 import (
 	"crypto/md5"
@@ -17,53 +17,6 @@ import (
 	"strconv"
 	"time"
 )
-
-/**
-  管理员登录
-*/
-func Login(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-
-	password = fmt.Sprintf("%x", md5.Sum([]byte(password)))
-
-	//
-	admin := model.Admin{}
-	err := mysql.DB.Where("status=1").Where("username=?", username).Where("password=?", password).First(&admin).Error
-	if err != nil {
-		util.JsonWrite(c, -101, nil, "登录失败")
-		return
-	}
-
-	ArrayUrl := []string{"/management/login", "/agency/login", "/sonAgency/login"}
-	for k, v := range ArrayUrl {
-		if v == c.Request.URL.Path {
-			if k != admin.Level {
-				util.JsonWrite(c, -101, nil, "登录失败")
-				return
-			}
-		}
-	}
-
-	//fmt.Println(c.ClientIP())
-	//ss := strings.Split(admin.Ip, ",")
-	//
-	//if !util.InArray(c.ClientIP(), ss) {
-	//	util.JsonWrite(c, -101, nil, "登录失败")
-	//	return
-	//}
-
-	type Admin map[string]interface{}
-	data := model.GetMenus(mysql.DB, strconv.Itoa(admin.Level))
-
-	one := Admin{
-		"data":  data,
-		"admin": admin,
-	}
-
-	util.JsonWrite(c, 200, one, "登录成功")
-	return
-}
 
 /***
 
@@ -78,7 +31,8 @@ func GetSizingAgent(c *gin.Context) {
 	action := c.PostForm("action")
 	if action == "GET" {
 		data := make([]model.Admin, 0)
-		err := mysql.DB.Where("level =1").Find(&data).Error
+		belong := c.PostForm("belong")
+		err := mysql.DB.Where("level > 0").Where("belong=?", belong).Find(&data).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "获取失败")
 			return
@@ -92,6 +46,8 @@ func GetSizingAgent(c *gin.Context) {
 		password := c.PostForm("password")
 		password = fmt.Sprintf("%x", md5.Sum([]byte(password)))
 		level := c.PostForm("level")
+		belongOne := c.PostForm("belong")
+		belong, _ := strconv.Atoi(belongOne)
 		//判断这个用户是否存在
 		admin := model.Admin{}
 		err := mysql.DB.Where("username=?", username).First(&admin).Error
@@ -107,8 +63,8 @@ func GetSizingAgent(c *gin.Context) {
 			Updated:  time.Now().Unix(),
 			Created:  time.Now().Unix(),
 			Token:    util.RandStr(36),
+			Belong:   belong,
 		}
-
 		err = mysql.DB.Save(&add).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "保存成功")
@@ -118,7 +74,6 @@ func GetSizingAgent(c *gin.Context) {
 
 		return
 	}
-
 	if action == "UPDATE" {
 		id := c.PostForm("id")
 		//判断  这个管理员是否存在
@@ -128,11 +83,10 @@ func GetSizingAgent(c *gin.Context) {
 			util.JsonWrite(c, -101, nil, "这个管理员不存在!")
 			return
 		}
-
 		username := c.PostForm("username")
+
 		password := c.PostForm("password")
 		password = fmt.Sprintf("%x", md5.Sum([]byte(password)))
-
 		up := model.Admin{
 			Username: username,
 			Password: password,
@@ -142,12 +96,29 @@ func GetSizingAgent(c *gin.Context) {
 			util.JsonWrite(c, -101, nil, "更新失败")
 			return
 		}
-
 		util.JsonWrite(c, 200, nil, "修改成功")
+		return
+	}
+
+	if action == "DEL" {
+		id := c.PostForm("id")
+		admin := model.Admin{}
+		err := mysql.DB.Where("id=?", id).First(&admin).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "这个管理员不存在!")
+			return
+		}
+
+		err = mysql.DB.Delete(&model.Admin{}, id).Error
+		if err != nil {
+			util.JsonWrite(c, 101, nil, "删除失败")
+
+			return
+		}
+		util.JsonWrite(c, 200, nil, "删除成功")
 
 		return
 
 	}
-
 	return
 }

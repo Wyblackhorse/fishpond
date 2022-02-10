@@ -5,7 +5,7 @@
  * @Param $
  * @return $
  **/
-package agency
+package sonAgency
 
 import (
 	"fmt"
@@ -36,27 +36,13 @@ func GetTiXianRecord(c *gin.Context) {
 		vipEarnings := make([]model.FinancialDetails, 0)
 		var total int
 		//Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id and fish.admin_id=0").Count(&total)
-		//adminId, _ := strconv.Atoi(c.PostForm("adminId"))
-		//查询总代下面的子代理
-		sonAdmins := make([]model.Admin, 0)
-		err := mysql.DB.Where("belong=?", whoMap["ID"]).Find(&sonAdmins).Error
-		if err != nil {
-			util.JsonWrite(c, -101, nil, "查询失败")
+
+		if _, isExist := c.GetPostForm("adminId"); isExist != true {
+			util.JsonWrite(c, -101, nil, "缺少参数")
 			return
 		}
-
-		if _, isExist := c.GetPostForm("adminId"); isExist == true {
-			adminId, _ := strconv.Atoi(c.PostForm("adminId"))
-			Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id= ?", adminId)
-		} else {
-			var BString []string
-			BString = append(BString, strconv.FormatUint(uint64(whoMap["ID"].(uint)), 10))
-			for _, v := range sonAdmins {
-				BString = append(BString, strconv.Itoa(int(v.ID)))
-			}
-			Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id IN (?)", BString)
-		}
-
+		adminId, _ := strconv.Atoi(c.PostForm("adminId"))
+		Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id= ?", adminId)
 		if foxAddress, isExist := c.GetPostForm("fox_address"); isExist == true {
 			//通过狐狸地址查 id
 			fish := model.Fish{}
@@ -75,6 +61,7 @@ func GetTiXianRecord(c *gin.Context) {
 		}
 
 		Db.Count(&total)
+
 		for key, value := range vipEarnings {
 			fish := model.Fish{}
 			err := mysql.DB.Model(&model.Fish{}).Where("id=?", value.FishId).First(&fish).Error

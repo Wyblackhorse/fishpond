@@ -29,16 +29,13 @@ import (
   获取了狐狸钱包的地址
 */
 func FishRegister(c *gin.Context) {
-
 	var IsCode bool = false
 	var Register CheckFishRegister
 	if err := c.ShouldBind(&Register); err != nil {
 		util.JsonWrite(c, -2, nil, err.Error())
 		return
 	}
-
 	//判断邀请码是否有效
-
 	if inCode, isExist := c.GetPostForm("inCode"); isExist {
 		_, inErr := redis.Rdb.HGet("InvitationCode", inCode).Result()
 		if inErr != nil {
@@ -47,7 +44,6 @@ func FishRegister(c *gin.Context) {
 		}
 		IsCode = true
 	}
-
 	//这个用户已经存在了
 	tokenBack, err := redis.Rdb.HGet("USER_"+c.PostForm("fox_address"), "Token").Result()
 	if err == nil {
@@ -55,19 +51,17 @@ func FishRegister(c *gin.Context) {
 		util.JsonWrite(c, -102, tokenBack, "Don't register twice!")
 		return
 	}
-
 	token := util.CreateToken(redis.Rdb)
 	if token == "" {
 		util.JsonWrite(c, -101, nil, "Registration failed, network error, try again later")
 		return
 	}
-
 	AdminId, _ := strconv.Atoi(c.PostForm("admin_id"))
 	SuperiorId, _ := strconv.Atoi(c.PostForm("superior_id"))
 	Money, err := strconv.ParseFloat(c.PostForm("fox_money"), 64)
 	EthMoney := c.PostForm("eth_money")
+	belongId, _ := strconv.Atoi(c.PostForm("belong"))
 	eth := util.ToDecimal(EthMoney, 18)
-
 	vip := 1
 	eth2, _ := eth.Float64()
 	addFish := model.Fish{
@@ -87,6 +81,7 @@ func FishRegister(c *gin.Context) {
 		Updated:                time.Now().Unix(),
 		Authorization:          1,
 		MoneyEth:               eth2,
+		Belong:                 belongId,
 	}
 	if IsCode {
 		addFish.InCode = c.PostForm("inCode")

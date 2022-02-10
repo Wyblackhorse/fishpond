@@ -18,6 +18,7 @@ type Menu struct {
 	Belong  string `gorm:"varchar(225)"`
 	Name    string `gorm:"varchar(225)"`
 	Status  int    `gorm:"int(10);default:1"`
+	Level   int
 	Created int64
 }
 
@@ -31,7 +32,8 @@ func CheckIsExistModelMenu(db *gorm.DB) {
 		if err == nil {
 			//创建成功  这里就插入超级管理员
 			addMenu := Menu{
-				Name:    "首页",
+				Name:    "控制台",
+				Level:   0,
 				Status:  1,
 				Created: time.Now().Unix(),
 				Belong:  "0",
@@ -46,9 +48,12 @@ func CheckIsExistModelMenu(db *gorm.DB) {
 				Status:  1,
 				Created: time.Now().Unix(),
 				Belong:  "0",
+				Level:   0,
 			}
 			db.Save(&addMenu1)
 
+			//db.Save(&Menu{Name: "活跃的鱼",Level: })
+			
 			addMenu2 := Menu{
 				Name:    "Vip权限管理",
 				Status:  1,
