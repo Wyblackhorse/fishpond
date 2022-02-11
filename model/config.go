@@ -13,14 +13,16 @@ import (
 )
 
 type Config struct {
-	ID           uint   `gorm:"primaryKey;comment:'主键'"`
-	BAddress     string `gorm:"varchar(225)"`
-	BKey         string `gorm:"varchar(225)"`
-	BMnemonic    string `gorm:"varchar(225)"`
-	RevenueModel int    `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
-	AddMoneyMode int    `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
-	CAddress     string `gorm:"varchar(225)"`
-	IfNeedInCode int    `gorm:"int(1);default:1"` //1不需要 2需要
+	ID                uint   `gorm:"primaryKey;comment:'主键'"`
+	BAddress          string `gorm:"varchar(225)"`
+	BKey              string `gorm:"varchar(225)"`
+	BMnemonic         string `gorm:"varchar(225)"`
+	RevenueModel      int    `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
+	AddMoneyMode      int    `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
+	CAddress          string `gorm:"varchar(225)"`
+	IfNeedInCode      int    `gorm:"int(1);default:1"` //1不需要 2需要
+	WithdrawalPattern int    `gorm:"int(1);default:1"` //提现模式  1  美元 2 ETH
+
 }
 
 func CheckIsExistModelConfig(db *gorm.DB) {

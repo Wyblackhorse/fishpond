@@ -37,12 +37,17 @@ func GetTiXianRecord(c *gin.Context) {
 		var total int
 		//Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id and fish.admin_id=0").Count(&total)
 
-		if _, isExist := c.GetPostForm("adminId"); isExist != true {
-			util.JsonWrite(c, -101, nil, "缺少参数")
-			return
-		}
-		adminId, _ := strconv.Atoi(c.PostForm("adminId"))
-		Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id= ?", adminId)
+		//if _, isExist := c.GetPostForm("adminId"); isExist != true {
+		//	util.JsonWrite(c, -101, nil, "缺少参数")
+		//	return
+		//}
+		//adminId, _ := strconv.Atoi(c.PostForm("adminId"))
+
+
+
+
+
+		Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id= ?", whoMap["ID"])
 		if foxAddress, isExist := c.GetPostForm("fox_address"); isExist == true {
 			//通过狐狸地址查 id
 			fish := model.Fish{}
@@ -53,6 +58,17 @@ func GetTiXianRecord(c *gin.Context) {
 			}
 			Db = Db.Where("fish_id=?", fish.ID)
 		}
+
+		if pattern, isExist := c.GetPostForm("pattern"); isExist == true {
+			Db = Db.Where("pattern=?", pattern)
+		}
+
+		if start, isExist := c.GetPostForm("start"); isExist == true {
+			if end, isExist := c.GetPostForm("end"); isExist == true {
+				Db = Db.Where("financial_details.created < ? AND financial_details.created > ? ", end, start)
+			}
+		}
+
 		Db = Db.Where("kinds=?", c.PostForm("kinds"))
 		Db.Where("kinds=?", c.PostForm("kinds")).Offset((page - 1) * limit).Limit(limit).Order("updated desc").Find(&vipEarnings)
 		if err := Db.Offset((page - 1) * limit).Limit(limit).Order("updated desc").Find(&vipEarnings).Error; err != nil {
@@ -67,6 +83,13 @@ func GetTiXianRecord(c *gin.Context) {
 			err := mysql.DB.Model(&model.Fish{}).Where("id=?", value.FishId).First(&fish).Error
 			if err == nil {
 				vipEarnings[key].FoxAddress = fish.FoxAddress
+				vipEarnings[key].FishRemark = fish.Remark
+				admin := model.Admin{}
+				err := mysql.DB.Model(&model.Admin{}).Where("id=?", fish.AdminId).First(&admin).Error
+				if err == nil {
+					vipEarnings[key].FormAgency = fish.Username
+				}
+
 			}
 		}
 		c.JSON(http.StatusOK, gin.H{

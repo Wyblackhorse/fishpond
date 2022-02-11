@@ -146,6 +146,11 @@ func GetFish(c *gin.Context) {
 			}
 			updateData.YesterdayEarnings = m
 		}
+		if money, isExist := c.GetPostForm("Remark"); isExist == true {
+
+
+			updateData.Remark = money
+		}
 
 		err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
 		if err != nil {
@@ -330,5 +335,13 @@ func UpdateIfAuthorization(c *gin.Context) {
 	go util.ChekAuthorizedFoxAddress(foxAddress, apiKey, BAdd, mysql.DB)
 
 	util.JsonWrite(c, 200, nil, "执行成功!")
+
+}
+
+/**
+  批量更新自己的鱼
+*/
+
+func UpdateAll() {
 
 }

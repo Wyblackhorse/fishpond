@@ -50,15 +50,36 @@ func TiXian(c *gin.Context) {
 	if err != nil {
 		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
 		return
-
 	}
 
 	//开启事务
-	Money, _ := strconv.ParseFloat(c.PostForm("money"), 64)
+	Money, _ := strconv.ParseFloat(c.PostForm("money"), 64) //提现
 	if Money > fish.EarningsMoney {
 		util.JsonWrite(c, -101, nil, "The balance is not enough")
 		return
 	}
+	//换算成ETH
+
+	// 添加资金明细
+	detail := model.FinancialDetails{
+		FishId:  int(fish.ID),
+		Money:   Money,
+		Kinds:   2,
+		Updated: time.Now().Unix(),
+		Created: time.Now().Unix(),
+	}
+	if kinds, isExist := c.GetPostForm("kinds"); isExist == true {
+		if kinds == "2" { //提现 ETH
+			//获取eth 汇率
+			HuiLV, _ := redis.Rdb.Get("ETHTOUSDT").Result()
+			HH, _ := strconv.ParseFloat(HuiLV, 64) //提现
+			EthNew := Money / HH
+			detail.MoneyEth = EthNew
+			detail.Pattern = 2
+			detail.TheExchangeRateAtThatTime = HH
+		}
+	}
+
 	updateFish := model.Fish{
 		WithdrawalFreezeAmount: fish.WithdrawalFreezeAmount + Money,
 		EarningsMoney:          fish.EarningsMoney - Money,
@@ -68,14 +89,7 @@ func TiXian(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-	// 添加资金明细
-	detail := model.FinancialDetails{
-		FishId:  int(fish.ID),
-		Money:   Money,
-		Kinds:   2,
-		Updated: time.Now().Unix(),
-		Created: time.Now().Unix(),
-	}
+
 	err = mysql.DB.Save(&detail).Error
 	if err != nil {
 		fmt.Println(err.Error())
@@ -83,9 +97,6 @@ func TiXian(c *gin.Context) {
 	util.JsonWrite(c, 200, nil, "The request has been submitted pending background review")
 	return
 }
-
-
-
 
 /**
 

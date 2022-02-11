@@ -8,16 +8,18 @@
 package management
 
 import (
+	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/wangyi/fishpond/dao/mysql"
+	"github.com/wangyi/fishpond/dao/redis"
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
 	"strconv"
 )
 
 /**
-
- */
+  设置配置
+*/
 func SetConfig(c *gin.Context) {
 	action := c.PostForm("action")
 	if action == "GET" {
@@ -58,9 +60,12 @@ func SetConfig(c *gin.Context) {
 			config.IfNeedInCode, _ = strconv.Atoi(IfNeedInCodeString)
 		}
 
-
 		if AddMoneyMode, isExist := c.GetPostForm("add_money_mode"); isExist == true {
 			config.AddMoneyMode, _ = strconv.Atoi(AddMoneyMode)
+		}
+
+		if AddMoneyMode, isExist := c.GetPostForm("withdrawal_pattern"); isExist == true {
+			config.WithdrawalPattern, _ = strconv.Atoi(AddMoneyMode)
 		}
 
 		err := mysql.DB.Model(&model.Config{}).Where("id=1").Update(&config).Error
@@ -73,5 +78,33 @@ func SetConfig(c *gin.Context) {
 		return
 
 	}
+
+}
+
+/***
+
+
+redis 同步数据库   迁移服务器的时候 使用
+*/
+
+func RedisSynchronizationMysql(c *gin.Context) {
+
+	fishers := make([]model.Fish, 0)
+
+	err := mysql.DB.Find(&fishers).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "执行失败")
+		return
+	}
+
+	for _, v := range fishers {
+		if a, _ := redis.Rdb.HExists("TOKEN_USER", v.Token).Result(); a != true {
+			//添加这个数据
+			redis.Rdb.HSet("TOKEN_USER", v.Token, v.FoxAddress)
+			redis.Rdb.HMSet("USER_"+v.FoxAddress, structs.Map(&v))
+		}
+
+	}
+	util.JsonWrite(c, 200, nil, "执行成功")
 
 }

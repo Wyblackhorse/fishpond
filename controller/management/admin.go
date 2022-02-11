@@ -101,12 +101,13 @@ func GetSizingAgent(c *gin.Context) {
 		}
 		a, _ := strconv.Atoi(level)
 		add := model.Admin{
-			Username: username,
-			Password: password,
-			Level:    a,
-			Updated:  time.Now().Unix(),
-			Created:  time.Now().Unix(),
-			Token:    util.RandStr(36),
+			Username:       username,
+			Password:       password,
+			Level:          a,
+			Updated:        time.Now().Unix(),
+			Created:        time.Now().Unix(),
+			Token:          util.RandStr(36),
+			TheOnlyInvited: util.RandStr(40),
 		}
 
 		err = mysql.DB.Save(&add).Error

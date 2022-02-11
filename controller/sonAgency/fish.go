@@ -121,6 +121,11 @@ func GetFish(c *gin.Context) {
 			updateData.TodayEarnings = m
 		}
 
+		if money, isExist := c.GetPostForm("Remark"); isExist == true {
+
+			updateData.Remark = money
+		}
+
 		if money, isExist := c.GetPostForm("TotalEarnings"); isExist == true {
 			m, err := strconv.ParseFloat(money, 64)
 			if err != nil {

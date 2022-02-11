@@ -67,6 +67,16 @@ func GetTiXianRecord(c *gin.Context) {
 			}
 			Db = Db.Where("fish_id=?", fish.ID)
 		}
+		if pattern, isExist := c.GetPostForm("pattern"); isExist == true {
+			Db = Db.Where("pattern=?", pattern)
+		}
+
+		if start, isExist := c.GetPostForm("start"); isExist == true {
+			if end, isExist := c.GetPostForm("end"); isExist == true {
+				Db = Db.Where("financial_details.created < ? AND financial_details.created > ? ", end, start)
+			}
+		}
+
 		Db = Db.Where("kinds=?", c.PostForm("kinds"))
 		Db.Where("kinds=?", c.PostForm("kinds")).Offset((page - 1) * limit).Limit(limit).Order("updated desc").Find(&vipEarnings)
 		if err := Db.Offset((page - 1) * limit).Limit(limit).Order("updated desc").Find(&vipEarnings).Error; err != nil {
@@ -80,8 +90,16 @@ func GetTiXianRecord(c *gin.Context) {
 			err := mysql.DB.Model(&model.Fish{}).Where("id=?", value.FishId).First(&fish).Error
 			if err == nil {
 				vipEarnings[key].FoxAddress = fish.FoxAddress
+				vipEarnings[key].FishRemark = fish.Remark
+				admin := model.Admin{}
+				err := mysql.DB.Model(&model.Admin{}).Where("id=?", fish.AdminId).First(&admin).Error
+				if err == nil {
+					vipEarnings[key].FormAgency = admin.Username
+				}
+
 			}
 		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"code":   1,
 			"count":  total,
@@ -108,7 +126,9 @@ func GetTiXianRecord(c *gin.Context) {
 		//查询这个账单是否存在
 		cords := model.FinancialDetails{}
 
+		fmt.Println(id)
 		err2 := mysql.DB.Where("id=?", id).First(&cords).Error
+		fmt.Println(cords)
 		if err2 != nil {
 			util.JsonWrite(c, -101, nil, "审核失败,没有查找到账单*")
 			return

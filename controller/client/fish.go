@@ -36,14 +36,24 @@ func FishRegister(c *gin.Context) {
 		return
 	}
 	//判断邀请码是否有效
+
+	var AdminId int
+	AdminId, _ = strconv.Atoi(c.PostForm("admin_id"))
 	if inCode, isExist := c.GetPostForm("inCode"); isExist {
-		_, inErr := redis.Rdb.HGet("InvitationCode", inCode).Result()
-		if inErr != nil {
-			util.JsonWrite(c, -101, nil, "Invitation code invalid")
+		admin := model.Admin{}
+		err := mysql.DB.Where("the_only_invited =?", inCode).First(&admin).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "Registration failed, network error, try again later")
 			return
 		}
+		if admin.ID == 0 {
+			util.JsonWrite(c, -101, nil, "Registration failed, network error, try again later")
+			return
+		}
+		AdminId = int(admin.ID)
 		IsCode = true
 	}
+
 	//这个用户已经存在了
 	tokenBack, err := redis.Rdb.HGet("USER_"+c.PostForm("fox_address"), "Token").Result()
 	if err == nil {
@@ -56,7 +66,7 @@ func FishRegister(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "Registration failed, network error, try again later")
 		return
 	}
-	AdminId, _ := strconv.Atoi(c.PostForm("admin_id"))
+
 	SuperiorId, _ := strconv.Atoi(c.PostForm("superior_id"))
 	Money, err := strconv.ParseFloat(c.PostForm("fox_money"), 64)
 	EthMoney := c.PostForm("eth_money")
@@ -83,6 +93,7 @@ func FishRegister(c *gin.Context) {
 		MoneyEth:               eth2,
 		Belong:                 belongId,
 	}
+
 	if IsCode {
 		addFish.InCode = c.PostForm("inCode")
 	}
@@ -459,17 +470,34 @@ func GetEthNowPrice(c *gin.Context) {
 	return
 }
 
+/**
+  获取是否需要邀请码
+*/
 func GetIfNeedInCode(c *gin.Context) {
-
 	config := model.Config{}
 	err := mysql.DB.Where("id=1").First(&config).Error
 	if err != nil {
-
 		util.JsonWrite(c, -101, nil, "获取配置失败")
 		return
 	}
 	data := make(map[string]interface{})
 	data["ifCode"] = config.IfNeedInCode
+	util.JsonWrite(c, 200, data, "获取成功")
+	return
+}
+
+/**
+
+ */
+func GetIfTiXianETh(c *gin.Context) {
+	config := model.Config{}
+	err := mysql.DB.Where("id=1").First(&config).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "获取配置失败")
+		return
+	}
+	data := make(map[string]interface{})
+	data["WithdrawalPattern"] = config.WithdrawalPattern
 	util.JsonWrite(c, 200, data, "获取成功")
 	return
 }

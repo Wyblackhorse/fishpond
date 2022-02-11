@@ -47,6 +47,12 @@ func GetFish(c *gin.Context) {
 			return
 		}
 
+		for k, v := range fish {
+			admin := model.Admin{}
+			mysql.DB.Where("id=?", v.AdminId).First(&admin)
+			fish[k].BelongString = admin.Username
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"code":   1,
 			"count":  total,
@@ -58,7 +64,8 @@ func GetFish(c *gin.Context) {
 	if action == "UPDATE" { //暂时一个禁用 功能
 		id := c.PostForm("id")
 		//判断这个是否存在
-		err := mysql.DB.Where("id=?", id).Where("admin_id=?", whoMap["ID"]).First(&model.Fish{}).Error
+		//err := mysql.DB.Where("id=?", id).Where("admin_id=?", whoMap["ID"]).First(&model.Fish{}).Error
+		err := mysql.DB.Where("id=?", id).First(&model.Fish{}).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "这个id不存在!")
 			return
@@ -143,6 +150,11 @@ func GetFish(c *gin.Context) {
 			updateData.YesterdayEarnings = m
 		}
 
+		if money, isExist := c.GetPostForm("Remark"); isExist == true {
+
+			updateData.Remark = money
+		}
+
 		err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "修改失败!")
@@ -212,4 +224,20 @@ func TiXian(c *gin.Context) {
 	fmt.Println(string(respByte))
 	util.JsonWrite(c, 200, nil, "提现成功,等待到账!")
 	return
+}
+
+/**
+  批量更新自己的鱼 余额
+*/
+func UpdateAllFishMoney(c *gin.Context) {
+	who, err2 := c.Get("who")
+	if !err2 {
+		return
+	}
+	whoMap := who.(map[string]interface{})
+	id, _ := strconv.Atoi(strconv.FormatUint(uint64(whoMap["ID"].(uint)), 10))
+	util.BatchUpdateBalance(id, mysql.DB)
+	util.JsonWrite(c, 200, nil, "执行成功")
+	return
+
 }

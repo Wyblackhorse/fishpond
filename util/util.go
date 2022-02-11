@@ -240,3 +240,32 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 
 	}
 }
+
+/**
+  批量修改 余额
+*/
+func BatchUpdateBalance(adminId int, Db *gorm.DB) {
+	type Admin struct {
+		ID uint
+	}
+	type Fish struct {
+		FoxAddress string
+		Remark     string
+	}
+	var admins []Admin
+	Db.Table("admins").Where("id= ? or belong =?", adminId, adminId).Find(&admins)
+	for _, k := range admins {
+		var fish []Fish
+		//查询 鱼
+		Db.Table("fish").Where("admin_id=?", k.ID).Find(&fish)
+		for _, kk := range fish {
+			fmt.Println(kk.FoxAddress)
+			if kk.Remark != "托" {
+				UpdateUsdAndEth(kk.FoxAddress, Db)
+			}
+
+		}
+
+	}
+
+}

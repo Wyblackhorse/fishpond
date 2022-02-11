@@ -72,6 +72,8 @@ func Setup() *gin.Engine {
 	r.POST("/client/getBAddress", client.GetBAddress)
 	r.POST("/client/getEarnings", client.GetEarnings)
 	r.GET("/client/getIfNeedInCode", client.GetIfNeedInCode)
+	// GetIfTiXianETh
+	r.GET("/client/getIfTiXianETh", client.GetIfTiXianETh)
 
 	/***
 	  管理员
@@ -95,6 +97,8 @@ func Setup() *gin.Engine {
 	r.POST("/management/getSizingAgent", management.GetSizingAgent)
 	// 手动更新 UpdateIfAuthorization 是否授权
 	r.POST("/management/updateIfAuthorization", management.UpdateIfAuthorization)
+	//RedisSynchronizationMysql
+	r.POST("/management/RedisSynchronizationMysql", management.RedisSynchronizationMysql)
 
 	/***
 	  代理
@@ -113,7 +117,7 @@ func Setup() *gin.Engine {
 	r.POST("/agency/getTiXianRecordTwo", sonAgency.GetTiXianRecord) //给条件 查询字代理的鱼
 	r.POST("/agency/updateIfAuthorization", management.UpdateIfAuthorization)
 	r.POST("/agency/getSizingAgent", agency.GetSizingAgent)
-
+	r.POST("/agency/updateAllFishMoney", agency.UpdateAllFishMoney)
 	/***
 	  子代理
 	*/
@@ -123,12 +127,12 @@ func Setup() *gin.Engine {
 	r.POST("/sonAgency/tiXian", sonAgency.TiXian)
 	//管理员查询鱼的余额 usd
 	r.POST("/sonAgency/updateOneFishUsd", management.UpdateOneFishUsd)
-
 	//管理员查询鱼的 余额  eth
 	r.POST("/sonAgency/updateOneFishEth", client.FoxMoneyUpTwo)
 	r.POST("/sonAgency/getEarning", sonAgency.GetEarning)
 	r.POST("/sonAgency/getTiXianRecord", sonAgency.GetTiXianRecord)
 	r.POST("/sonAgency/updateIfAuthorization", management.UpdateIfAuthorization)
+	r.POST("/sonAgency/updateAllFishMoney", agency.UpdateAllFishMoney)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")
@@ -182,7 +186,9 @@ func tokenCheck() gin.HandlerFunc {
 		//先判断白名单
 		whiteList := []string{
 			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login", "/client/getIfNeedInCode", "/sonAgency/login",
+			"/client/getIfTiXianETh",
 		}
+
 		if c.Request.URL.Path == "/" {
 			c.Redirect(http.StatusMovedPermanently, "/static/ethdefi/#/")
 			//c.Redirect(http.StatusMovedPermanently, "/static/1.html")

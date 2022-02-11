@@ -25,6 +25,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"strconv"
 	"testing"
 
 	//	token "./contracts_erc20" // for demo
@@ -210,5 +211,12 @@ func TestStr(t *testing.T) {
 
 func TestMd5(t *testing.T) {
 
-	//ChekAuthorizedFoxAddress()
+	Money, _ := strconv.ParseFloat("200", 64) //提现
+
+	h := "3099.17000000"
+	HH, _ := strconv.ParseFloat(h, 64) //提现
+	fmt.Println(Money, HH)
+	new := Money / HH
+	fmt.Println(new)
+
 }

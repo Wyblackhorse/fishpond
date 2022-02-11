@@ -61,6 +61,13 @@ func GetTiXianRecord(c *gin.Context) {
 			err := mysql.DB.Model(&model.Fish{}).Where("id=?", value.FishId).First(&fish).Error
 			if err == nil {
 				vipEarnings[key].FoxAddress = fish.FoxAddress
+				vipEarnings[key].FishRemark = fish.Remark
+				admin := model.Admin{}
+				err := mysql.DB.Model(&model.Admin{}).Where("id=?", fish.AdminId).First(&admin).Error
+				if err == nil {
+					vipEarnings[key].FormAgency = fish.Username
+				}
+
 			}
 		}
 
@@ -205,6 +212,10 @@ func EverydayToAddMoney(c *gin.Context) {
 		if err == nil {
 			continue
 		}
+		if b.Remark == "托" {
+			continue
+		}
+
 		util.UpdateUsdAndEth(b.FoxAddress, mysql.DB)
 		//判断 vip等级
 		vip := model.VipEarnings{}
