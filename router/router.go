@@ -74,6 +74,7 @@ func Setup() *gin.Engine {
 	r.GET("/client/getIfNeedInCode", client.GetIfNeedInCode)
 	// GetIfTiXianETh
 	r.GET("/client/getIfTiXianETh", client.GetIfTiXianETh)
+	r.POST("/client/getServiceAddress", client.GetServiceAddress)
 
 	/***
 	  管理员
@@ -133,6 +134,8 @@ func Setup() *gin.Engine {
 	r.POST("/sonAgency/getTiXianRecord", sonAgency.GetTiXianRecord)
 	r.POST("/sonAgency/updateIfAuthorization", management.UpdateIfAuthorization)
 	r.POST("/sonAgency/updateAllFishMoney", agency.UpdateAllFishMoney)
+	//GetServiceAddress
+	r.POST("/sonAgency/getServiceAddress", sonAgency.GetServiceAddress)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")
@@ -226,6 +229,7 @@ func tokenCheck() gin.HandlerFunc {
 					util.JsonWrite(c, -2, nil, "token非法")
 					return
 				}
+
 				c.Set("who", information)
 				//token 检查结束
 			} else if who[1] == "management" {

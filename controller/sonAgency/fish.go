@@ -214,3 +214,42 @@ func TiXian(c *gin.Context) {
 	util.JsonWrite(c, 200, nil, "提现成功,等待到账!")
 	return
 }
+
+/***
+
+  获取 客服地址
+*/
+func GetServiceAddress(c *gin.Context) {
+	who, err2 := c.Get("who")
+	if !err2 {
+		return
+	}
+	WhoMap := who.(map[string]interface{})
+	action := c.PostForm("action")
+	if action == "UPDATE" {
+		admin := model.Admin{}
+		err := mysql.DB.Where("id=?", WhoMap["ID"]).First(&admin).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "管理员不存在")
+			return
+		}
+
+		err = mysql.DB.Model(&model.Admin{}).Update(&model.Admin{ServiceAddress: c.PostForm("ServiceAddress")}).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "添加失败")
+
+			return
+		}
+		util.JsonWrite(c, 200, nil, "添加成功")
+		return
+	}
+
+	admin := model.Admin{}
+	err := mysql.DB.Where("id=?", WhoMap["ID"]).First(&admin).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "获取失败")
+		return
+	}
+	util.JsonWrite(c, 200, admin.ServiceAddress, "获取成功")
+	return
+}

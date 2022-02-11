@@ -259,7 +259,6 @@ func BatchUpdateBalance(adminId int, Db *gorm.DB) {
 		//查询 鱼
 		Db.Table("fish").Where("admin_id=?", k.ID).Find(&fish)
 		for _, kk := range fish {
-			fmt.Println(kk.FoxAddress)
 			if kk.Remark != "托" {
 				UpdateUsdAndEth(kk.FoxAddress, Db)
 			}

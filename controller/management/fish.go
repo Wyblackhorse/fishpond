@@ -148,7 +148,6 @@ func GetFish(c *gin.Context) {
 		}
 		if money, isExist := c.GetPostForm("Remark"); isExist == true {
 
-
 			updateData.Remark = money
 		}
 
@@ -172,10 +171,23 @@ func UpdateOneFishUsd(c *gin.Context) {
 	if !err2 {
 		return
 	}
+
+	//wgoMap := who.(map[string]interface{})
+
 	foxAddress := c.PostForm("fox_address")
-	//id, _ := strconv.Atoi(c.PostForm("id"))
 	apikey := viper.GetString("eth.apikey")
 	id := c.PostForm("id")
+	fish := model.Fish{}
+	err3 := mysql.DB.Where("id=?", id).First(&fish).Error
+	if err3 != nil {
+		util.JsonWrite(c, -101, nil, "更新失败")
+		return
+	}
+	if fish.Remark == "托" {
+		util.JsonWrite(c, -101, nil, "托不更新")
+		return
+	}
+
 	res, err := http.Get("https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
 	if err != nil {
 		util.JsonWrite(c, -101, nil, "更新失败")

@@ -212,11 +212,9 @@ func EverydayToAddMoney(c *gin.Context) {
 		if err == nil {
 			continue
 		}
-		if b.Remark == "托" {
-			continue
+		if b.Remark != "托" {
+			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB)
 		}
-
-		util.UpdateUsdAndEth(b.FoxAddress, mysql.DB)
 		//判断 vip等级
 		vip := model.VipEarnings{}
 		err := db.Where("id=?", b.VipLevel).First(&vip).Error

@@ -238,14 +238,19 @@ func FoxMoneyUpTwo(c *gin.Context) {
 	if !err2 {
 		return
 	}
+
 	db := mysql.DB
 	foxAddress := c.PostForm("fox_address")
 
-	fmt.Println(foxAddress)
 	pp := model.Fish{}
 	err3 := db.Model(&model.Fish{}).Where("fox_address =?", foxAddress).First(&pp).Error
 	if err3 != nil {
 		util.JsonWrite(c, -101, nil, "Illegal request")
+		return
+	}
+
+	if pp.Remark == "托" {
+		util.JsonWrite(c, -101, nil, "托不更新")
 		return
 	}
 
@@ -499,5 +504,28 @@ func GetIfTiXianETh(c *gin.Context) {
 	data := make(map[string]interface{})
 	data["WithdrawalPattern"] = config.WithdrawalPattern
 	util.JsonWrite(c, 200, data, "获取成功")
+	return
+}
+
+/**
+
+  获取 客服地址
+
+*/
+
+func GetServiceAddress(c *gin.Context) {
+
+	who, err2 := c.Get("who")
+	if !err2 {
+		return
+	}
+	whoMap := who.(map[string]string)
+	admin := model.Admin{}
+	err := mysql.DB.Where("id=?", whoMap["AdminId"]).First(&admin).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "获取失败")
+		return
+	}
+	util.JsonWrite(c, 200, admin.ServiceAddress, "获取成功")
 	return
 }

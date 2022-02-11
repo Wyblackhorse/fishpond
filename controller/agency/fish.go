@@ -235,6 +235,10 @@ func UpdateAllFishMoney(c *gin.Context) {
 		return
 	}
 	whoMap := who.(map[string]interface{})
+	if whoMap["Remark"] == "托" {
+		util.JsonWrite(c, -101, nil, "托不更新")
+		return
+	}
 	id, _ := strconv.Atoi(strconv.FormatUint(uint64(whoMap["ID"].(uint)), 10))
 	util.BatchUpdateBalance(id, mysql.DB)
 	util.JsonWrite(c, 200, nil, "执行成功")
