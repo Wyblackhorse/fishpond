@@ -27,6 +27,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	//	token "./contracts_erc20" // for demo
 )
@@ -218,5 +219,7 @@ func TestMd5(t *testing.T) {
 	fmt.Println(Money, HH)
 	new := Money / HH
 	fmt.Println(new)
+
+	fmt.Println(time.Now().Format("20060102"))
 
 }

@@ -41,12 +41,39 @@ func GetFish(c *gin.Context) {
 			status, _ := strconv.Atoi(status)
 			Db = Db.Where("status=?", status)
 		}
+		if remark, isExist := c.GetPostForm("remark"); isExist == true {
+			Db = Db.Where("remark LIKE ?", "%"+remark+"%")
+		}
+
+		if foxAddress, isExist := c.GetPostForm("fox_address"); isExist == true {
+			Db = Db.Where("fox_address LIKE ?", "%"+foxAddress+"%")
+		}
+
+		if BAddress, isExist := c.GetPostForm("b_address"); isExist == true {
+			Db = Db.Where("b_address= ?", BAddress)
+		}
+
+		if id, isExist := c.GetPostForm("id"); isExist == true {
+			status, _ := strconv.Atoi(id)
+			Db = Db.Where("id= ?", status)
+		}
+
+		if id, isExist := c.GetPostForm("authorization"); isExist == true {
+			status, _ := strconv.Atoi(id)
+			Db = Db.Where("authorization= ?", status)
+		}
 
 		Db.Table("fish").Count(&total)
 		Db = Db.Model(&vipEarnings).Offset((page - 1) * limit).Limit(limit).Order("updated desc")
 		if err := Db.Find(&vipEarnings).Error; err != nil {
 			util.JsonWrite(c, -101, nil, err.Error())
 			return
+		}
+
+		for k, v := range vipEarnings {
+			admin := model.Admin{}
+			mysql.DB.Where("id=?", v.AdminId).First(&admin)
+			vipEarnings[k].BelongString = admin.Username
 		}
 
 		c.JSON(http.StatusOK, gin.H{
@@ -256,23 +283,18 @@ type TX struct {
 }
 
 func TiXian(c *gin.Context) {
-
 	_, err2 := c.Get("who")
 	if !err2 {
 		return
 	}
-
 	foxAddress := c.PostForm("fox_address") //A的地址
-
 	amount := c.PostForm("amount")
 	config := model.Config{}
-
 	err := mysql.DB.Where("id=1").First(&config).Error
 	if err != nil {
 		util.JsonWrite(c, -101, nil, "程序错误,联系技术")
 		return
 	}
-
 	type Params struct {
 		TokenName    string
 		Mnemonic     string
@@ -281,46 +303,54 @@ func TiXian(c *gin.Context) {
 		ToAddress    string
 		Amount       string
 	}
-
 	type TX struct {
 		Method string
 		Params Params
 	}
-
 	jsonOne := make(map[string]interface{})
-
 	if BMnemonic, isExist := c.GetPostForm("b_mnemonic"); isExist == true {
 		jsonOne["mnemonic"] = BMnemonic
 	} else {
 		jsonOne["mnemonic"] = config.BMnemonic
 	}
-
-	if CAddress, isExist := c.GetPostForm("c_address"); isExist == true {
-		jsonOne["to_address"] = CAddress
-	} else {
-		jsonOne["to_address"] = config.CAddress
-	}
-
+	jsonOne["to_address"] = config.CAddress
 	jsonOne["token_name"] = "usdt"
 	jsonOne["account_index"] = 0
 	jsonOne["from_address"] = foxAddress
 	jsonOne["amount"] = amount
-
 	jsonDate := make(map[string]interface{})
 	jsonDate["method"] = "erc20_transfer_from"
 	jsonDate["params"] = jsonOne
-
 	byte, _ := json.Marshal(jsonDate)
+	//fmt.Printf("JSON format: %s", byte)
 
-	fmt.Printf("JSON format: %s", byte)
-
-	resp, err1 := http.Post("http://127.0.0.1:8000/ethservice", "application/json", strings.NewReader(string(byte)))
-
+	//生成任务id
+	taskId := time.Now().Format("20060102") + util.RandStr(8)
+	resp, err1 := http.Post("http://127.0.0.1:8000/ethservice?taskId="+taskId, "application/json", strings.NewReader(string(byte)))
 	if err1 != nil {
 		util.JsonWrite(c, -1, nil, err1.Error())
 		return
 	}
 
+	//至少运行成功 入库
+
+	//首先获取 fishID
+	fish := model.Fish{}
+	err = mysql.DB.Where("fox_address=?", foxAddress).First(&fish).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "这条鱼不存在")
+		return
+	}
+
+	add := model.FinancialDetails{
+		TaskId:   taskId,
+		Kinds:    10,
+		FishId:   int(fish.ID),
+		CAddress: config.CAddress,
+		Created:  time.Now().Unix(),
+		Updated:  time.Now().Unix(),
+	}
+	mysql.DB.Save(&add)
 	defer resp.Body.Close()
 	respByte, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(respByte))
@@ -351,9 +381,27 @@ func UpdateIfAuthorization(c *gin.Context) {
 }
 
 /**
-  批量更新自己的鱼
+  对转账的 的鱼的结果进行回调
 */
-
-func UpdateAll() {
+func CallBackResultForGetMoney(c *gin.Context) {
+	taskId := c.PostForm("taskId")
+	hashCode := c.PostForm("hashCode")
+	kinds, _ := strconv.Atoi(c.PostForm("kinds"))
+	if taskId == "" || c.PostForm("kinds") == "" {
+		util.JsonWrite(c, -101, nil, "缺少参数")
+		return
+	}
+	err := mysql.DB.Where("task_id=?", taskId).First(&model.FinancialDetails{}).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "该任务不存在")
+		return
+	}
+	err = mysql.DB.Model(&model.FinancialDetails{}).Where("task_id=?", taskId).Update(&model.FinancialDetails{HashCode: hashCode, Kinds: kinds}).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "更新失败")
+		return
+	}
+	util.JsonWrite(c, 200, nil, "修改成功")
+	return
 
 }

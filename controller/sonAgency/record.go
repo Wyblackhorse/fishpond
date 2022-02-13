@@ -43,10 +43,6 @@ func GetTiXianRecord(c *gin.Context) {
 		//}
 		//adminId, _ := strconv.Atoi(c.PostForm("adminId"))
 
-
-
-
-
 		Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id= ?", whoMap["ID"])
 		if foxAddress, isExist := c.GetPostForm("fox_address"); isExist == true {
 			//通过狐狸地址查 id
@@ -145,7 +141,7 @@ func GetTiXianRecord(c *gin.Context) {
 			upS.Money, _ = strconv.ParseFloat(money, 64)
 		}
 
-		if kind == 3 {
+		if kind == 3 { //驳回
 			//更新用户的 可提现余额
 			fish := model.Fish{}
 			err := mysql.DB.Where("id=?", cords.FishId).First(&fish).Error
@@ -153,6 +149,7 @@ func GetTiXianRecord(c *gin.Context) {
 				util.JsonWrite(c, -101, nil, "审核失败,没有查找到用户")
 				return
 			}
+
 			updateFish := model.Fish{
 				WithdrawalFreezeAmount: fish.WithdrawalFreezeAmount - cords.Money,
 				EarningsMoney:          fish.EarningsMoney + cords.Money,
@@ -162,13 +159,35 @@ func GetTiXianRecord(c *gin.Context) {
 				util.JsonWrite(c, -101, nil, "审核失败,用户收益回滚失败")
 				return
 			}
+		} else {
+
+			fish := model.Fish{}
+			err := mysql.DB.Where("id=?", cords.FishId).First(&fish).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "审核失败,没有查找到用户")
+				return
+			}
+			updateFish := model.Fish{}
+			if cords.Pattern == 2 {
+				updateFish.AlreadyGeyETH = upS.Money
+			} else {
+				updateFish.AlreadyGeyUSDT = upS.Money
+			}
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&updateFish).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "审核失败,用户收益回滚失败")
+				return
+			}
+
 		}
+
 		err := mysql.DB.Model(&model.FinancialDetails{}).Where("id= ?", id).Update(&upS).Error
 		if err != nil {
 			fmt.Println(err.Error())
 			util.JsonWrite(c, -101, nil, "审核失败")
 			return
 		}
+
 		util.JsonWrite(c, 200, nil, "审核成功")
 		return
 	}

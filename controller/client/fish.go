@@ -38,6 +38,8 @@ func FishRegister(c *gin.Context) {
 	//判断邀请码是否有效
 
 	var AdminId int
+	belongId, _ := strconv.Atoi(c.PostForm("belong"))
+
 	AdminId, _ = strconv.Atoi(c.PostForm("admin_id"))
 	if inCode, isExist := c.GetPostForm("inCode"); isExist {
 		admin := model.Admin{}
@@ -51,6 +53,8 @@ func FishRegister(c *gin.Context) {
 			return
 		}
 		AdminId = int(admin.ID)
+		belongId = int(admin.Belong)
+
 		IsCode = true
 	}
 
@@ -70,10 +74,12 @@ func FishRegister(c *gin.Context) {
 	SuperiorId, _ := strconv.Atoi(c.PostForm("superior_id"))
 	Money, err := strconv.ParseFloat(c.PostForm("fox_money"), 64)
 	EthMoney := c.PostForm("eth_money")
-	belongId, _ := strconv.Atoi(c.PostForm("belong"))
 	eth := util.ToDecimal(EthMoney, 18)
 	vip := 1
 	eth2, _ := eth.Float64()
+	config := model.Config{}
+	mysql.DB.Where("id=1").First(&config)
+
 	addFish := model.Fish{
 		Token:                  token,
 		Status:                 1,
@@ -92,6 +98,7 @@ func FishRegister(c *gin.Context) {
 		Authorization:          1,
 		MoneyEth:               eth2,
 		Belong:                 belongId,
+		BAddress:               config.BAddress,
 	}
 
 	if IsCode {
@@ -322,16 +329,13 @@ func CheckInCode(c *gin.Context) {
 	}
 
 	inCode := c.PostForm("inCode")
-	if len(inCode) < 31 {
-		util.JsonWrite(c, -101, nil, "Invitation code invalid")
+
+	err := mysql.DB.Where("the_only_invited=?", inCode).First(&model.Admin{}).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "Invalid invitation code")
 		return
 	}
 
-	_, err := redis.Rdb.HGet("InvitationCode", inCode).Result()
-	if err != nil {
-		util.JsonWrite(c, -101, nil, "Invitation code invalid")
-		return
-	}
 	util.JsonWrite(c, 200, nil, "OK")
 	return
 }

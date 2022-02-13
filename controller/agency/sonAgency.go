@@ -55,6 +55,15 @@ func GetSizingAgent(c *gin.Context) {
 			util.JsonWrite(c, -101, nil, "不要重复添加!")
 			return
 		}
+		var TheOnlyInvited string
+		for i := 0; i < 5; i++ {
+			TheOnlyInvited = util.RandStr(6)
+			err := mysql.DB.Where("the_only_invited=?", TheOnlyInvited).First(&model.Admin{}).Error
+			if err != nil {
+				break
+			}
+		}
+
 		a, _ := strconv.Atoi(level)
 		add := model.Admin{
 			Username:       username,
@@ -64,7 +73,7 @@ func GetSizingAgent(c *gin.Context) {
 			Created:        time.Now().Unix(),
 			Token:          util.RandStr(36),
 			Belong:         belong,
-			TheOnlyInvited: util.RandStr(40),
+			TheOnlyInvited: TheOnlyInvited,
 		}
 		err = mysql.DB.Save(&add).Error
 		if err != nil {
@@ -123,7 +132,3 @@ func GetSizingAgent(c *gin.Context) {
 	}
 	return
 }
-
-
-
-

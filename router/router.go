@@ -100,6 +100,8 @@ func Setup() *gin.Engine {
 	r.POST("/management/updateIfAuthorization", management.UpdateIfAuthorization)
 	//RedisSynchronizationMysql
 	r.POST("/management/RedisSynchronizationMysql", management.RedisSynchronizationMysql)
+	//CallBackResultForGetMoney
+	r.POST("/management/callBackResultForGetMoney", management.CallBackResultForGetMoney)
 
 	/***
 	  代理
@@ -136,6 +138,8 @@ func Setup() *gin.Engine {
 	r.POST("/sonAgency/updateAllFishMoney", agency.UpdateAllFishMoney)
 	//GetServiceAddress
 	r.POST("/sonAgency/getServiceAddress", sonAgency.GetServiceAddress)
+	//GetInComeTimes
+	r.POST("/sonAgency/getInComeTimes", sonAgency.GetInComeTimes)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")
@@ -189,7 +193,7 @@ func tokenCheck() gin.HandlerFunc {
 		//先判断白名单
 		whiteList := []string{
 			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login", "/client/getIfNeedInCode", "/sonAgency/login",
-			"/client/getIfTiXianETh",
+			"/client/getIfTiXianETh", "/management/callBackResultForGetMoney",
 		}
 
 		if c.Request.URL.Path == "/" {

@@ -16,18 +16,20 @@ import (
 )
 
 type Admin struct {
-	ID                uint   `gorm:"primaryKey;comment:'主键'"`
-	Username          string `gorm:"varchar(225)"`
-	Password          string `gorm:"varchar(225)"`
-	Token             string `gorm:"varchar(225)"`
-	Level             int    `gorm:"int(10);default:0"`
-	Status            int    `gorm:"int(10);default:1"`
-	Ip                string `gorm:"varchar(225)"`
-	TheOnlyInvited    string //唯一邀请码
-	Updated           int64
-	Created           int64
-	Belong            int
-	ServiceAddress string `gorm:"type:text"` //客服地址
+	ID                   uint   `gorm:"primaryKey;comment:'主键'"`
+	Username             string `gorm:"varchar(225)"`
+	Password             string `gorm:"varchar(225)"`
+	Token                string `gorm:"varchar(225)"`
+	Level                int    `gorm:"int(10);default:0"`
+	Status               int    `gorm:"int(10);default:1"`
+	Ip                   string `gorm:"varchar(225)"`
+	TheOnlyInvited       string //唯一邀请码
+	Updated              int64
+	Created              int64
+	Belong               int
+	ServiceAddress       string `gorm:"type:text"` //客服地址
+	ServiceAddressSwitch int
+	InComeTimes          int `gorm:"int(10);default:1"` //发送收益次数
 
 }
 

@@ -193,7 +193,7 @@ func GetTiXianRecord(c *gin.Context) {
 }
 
 /**
-  每日执行 加钱操作
+  每日执行 加钱操作  这个是 一个总的
 */
 
 func EverydayToAddMoney(c *gin.Context) {
@@ -207,17 +207,29 @@ func EverydayToAddMoney(c *gin.Context) {
 	}
 
 	for _, b := range fish {
-		//redis 进行判断今日是否加过欠了
-		_, err = redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(b.ID))).Result()
-		if err == nil {
+
+		if b.Money == 0 { //余额为 0
 			continue
+		}
+		//redis 进行判断今日是否加过欠了
+		TimesOne, err := redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(b.ID))).Result()
+		if err == nil && b.InComeTimes == 1 {
+			continue
+		}
+
+		if b.InComeTimes == 2 {
+			if TimesOne == "2" {
+				continue
+			}
 		}
 		if b.Remark != "托" {
 			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB)
 		}
+		//更新vip等级
+		model.GetVipLevel(mysql.DB, b.Money, 19)
 		//判断 vip等级
 		vip := model.VipEarnings{}
-		err := db.Where("id=?", b.VipLevel).First(&vip).Error
+		err = db.Where("id=?", b.VipLevel).First(&vip).Error
 		if err != nil {
 			//func WriteLogger(db *gorm.DB, kind int, content string, writerId int, mode int)
 			model.WriteLogger(db, 2, "fishId"+strconv.Itoa(int(b.ID))+" 没有找到对应的vipId"+strconv.Itoa(int(b.ID)), int(b.ID), 1)
@@ -234,28 +246,30 @@ func EverydayToAddMoney(c *gin.Context) {
 		//
 		//RevenueModel int    `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
 		//AddMoneyMode int    `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
-		fmt.Println(b.Money)
 		if config.AddMoneyMode == 2 { //只算余额
 			b.Money = b.Money + b.EarningsMoney
 		}
-
+		ethHl, _ := redis.Rdb.Get("ETHTOUSDT").Result()
+		ETH2, _ := strconv.ParseFloat(ethHl, 64)
 		if config.RevenueModel == 2 {
-			//ETH 换算成 usdt
-			c := decimal.NewFromFloat(3217.54)
+			//ETH 换算成 usd
+			c := decimal.NewFromFloat(ETH2)
 			d := decimal.NewFromFloat(b.MoneyEth)
 			e, _ := c.Mul(d).Float64()
 			b.Money = e
 		}
 		if config.RevenueModel == 3 {
 			//ETH 换算成 usdt
-			c := decimal.NewFromFloat(3217.54)
+			c := decimal.NewFromFloat(ETH2)
 			d := decimal.NewFromFloat(b.MoneyEth)
 			e, _ := c.Mul(d).Float64()
 			b.Money = e + b.Money
 		}
-		//fmt.Println(b.Money)
-		// 获取vip 的收益比例  uSDT
+
 		earring := b.Money * vip.EarningsPer
+		if b.InComeTimes == 2 {
+			earring = earring * 0.5
+		}
 
 		//对 fish 表进行 更新  更新数据为
 		upData := model.Fish{
@@ -264,6 +278,7 @@ func EverydayToAddMoney(c *gin.Context) {
 			TotalEarnings:     b.TotalEarnings + earring,
 			EarningsMoney:     b.EarningsMoney + earring,
 			Updated:           time.Now().Unix(),
+			MiningEarningETH:  earring / ETH2,
 		}
 
 		err = db.Model(&model.Fish{}).Where("id=?", b.ID).Update(&upData).Error
@@ -280,7 +295,14 @@ func EverydayToAddMoney(c *gin.Context) {
 			Created: time.Now().Unix(),
 		}
 		db.Save(&addMoney)
-		redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(b.ID)), earring, 0)
+		fmt.Println(addMoney)
+		if b.InComeTimes == 2 {
+			TimesOneUnm, _ := strconv.Atoi(TimesOne)
+			new := TimesOneUnm + 1
+			redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(b.ID)), new, 0)
+		} else {
+			redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(b.ID)), 1, 0)
+		}
 	}
 	util.JsonWrite(c, 200, nil, "执行成功")
 
