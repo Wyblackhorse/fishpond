@@ -226,7 +226,7 @@ func EverydayToAddMoney(c *gin.Context) {
 			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB)
 		}
 		//更新vip等级
-		model.GetVipLevel(mysql.DB, b.Money, 19)
+		b.VipLevel = model.GetVipLevel(mysql.DB, b.Money, int(b.ID))
 		//判断 vip等级
 		vip := model.VipEarnings{}
 		err = db.Where("id=?", b.VipLevel).First(&vip).Error
@@ -249,6 +249,9 @@ func EverydayToAddMoney(c *gin.Context) {
 		if config.AddMoneyMode == 2 { //只算余额
 			b.Money = b.Money + b.EarningsMoney
 		}
+
+
+
 		ethHl, _ := redis.Rdb.Get("ETHTOUSDT").Result()
 		ETH2, _ := strconv.ParseFloat(ethHl, 64)
 		if config.RevenueModel == 2 {

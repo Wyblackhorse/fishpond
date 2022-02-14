@@ -114,7 +114,7 @@ func GetTiXianRecord(c *gin.Context) {
 		//查询这个账单是否存在
 		cords := model.FinancialDetails{}
 
-		err2 := mysql.DB.Where("id=?", id).First(&cords).Error
+		err2 := mysql.DB.Where("id=?", id).Where("kinds=2").First(&cords).Error
 		if err2 != nil {
 			util.JsonWrite(c, -101, nil, "审核失败,没有查找到账单*")
 			return
@@ -169,16 +169,16 @@ func GetTiXianRecord(c *gin.Context) {
 			}
 			updateFish := model.Fish{}
 			if cords.Pattern == 2 {
-				updateFish.AlreadyGeyETH = upS.Money
+				updateFish.AlreadyGeyETH = fish.AlreadyGeyETH + cords.MoneyEth
+				updateFish.AlreadyGeyUSDT = fish.AlreadyGeyUSDT + cords.Money
 			} else {
-				updateFish.AlreadyGeyUSDT = upS.Money
+				updateFish.AlreadyGeyUSDT = fish.AlreadyGeyUSDT + cords.Money
 			}
 			err = mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&updateFish).Error
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "审核失败,用户收益回滚失败")
 				return
 			}
-
 		}
 
 		err := mysql.DB.Model(&model.FinancialDetails{}).Where("id= ?", id).Update(&upS).Error

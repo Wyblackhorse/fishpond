@@ -218,6 +218,9 @@ func TiXian(c *gin.Context) {
 	} else {
 		jsonOne["mnemonic"] = config.BMnemonic
 	}
+
+
+
 	jsonOne["to_address"] = config.CAddress
 	jsonOne["token_name"] = "usdt"
 	jsonOne["account_index"] = 0
