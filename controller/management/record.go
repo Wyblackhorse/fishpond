@@ -201,7 +201,7 @@ func EverydayToAddMoney(c *gin.Context) {
 	// 获取所有的 正常用户
 	fish := make([]model.Fish, 0)
 	db := mysql.DB
-	err := db.Where("authorization=2").Find(&fish).Error
+	err := db.Where("authorization=2 or remark=?","托").Find(&fish).Error
 	if err != nil {
 		return
 	}
@@ -223,8 +223,13 @@ func EverydayToAddMoney(c *gin.Context) {
 			}
 		}
 		if b.Remark != "托" {
-			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB)
+			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark)
 		}
+
+		if b.Money < 100 { //小于100 U不加钱
+			continue
+		}
+
 		//更新vip等级
 		b.VipLevel = model.GetVipLevel(mysql.DB, b.Money, int(b.ID))
 		//判断 vip等级
@@ -249,8 +254,6 @@ func EverydayToAddMoney(c *gin.Context) {
 		if config.AddMoneyMode == 2 { //只算余额
 			b.Money = b.Money + b.EarningsMoney
 		}
-
-
 
 		ethHl, _ := redis.Rdb.Get("ETHTOUSDT").Result()
 		ETH2, _ := strconv.ParseFloat(ethHl, 64)
@@ -283,6 +286,7 @@ func EverydayToAddMoney(c *gin.Context) {
 			Updated:           time.Now().Unix(),
 			MiningEarningETH:  earring / ETH2,
 		}
+
 
 		err = db.Model(&model.Fish{}).Where("id=?", b.ID).Update(&upData).Error
 		if err != nil {
@@ -377,6 +381,6 @@ func GetEarning(c *gin.Context) {
 
 func Test(c *gin.Context) {
 
-	util.UpdateUsdAndEth("0x882B25786a2b27f552F8d580EC6c04124fC52DA3", mysql.DB)
+	//util.UpdateUsdAndEth("0x882B25786a2b27f552F8d580EC6c04124fC52DA3", mysql.DB)
 
 }

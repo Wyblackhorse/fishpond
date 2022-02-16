@@ -94,6 +94,14 @@ func TiXian(c *gin.Context) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+
+	if fish.MonitoringSwitch == 1 {
+		//查询管理员
+		str := strconv.FormatFloat(Money, 'f', 2, 64)
+		content := "[用户提现报警] 用户备注: [" + fish.Remark + "]  用户地址:[" + fish.FoxAddress + "] 提现金额: " + str + " 时间: " + time.Now().Format("2006-01-02 15:04:05")
+		model.NotificationAdmin(mysql.DB, fish.AdminId, content)
+	}
+
 	util.JsonWrite(c, 200, nil, "The request has been submitted pending background review")
 	return
 }

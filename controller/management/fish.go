@@ -256,6 +256,19 @@ func UpdateOneFishUsd(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "更新失败")
 		return
 	}
+
+	b, _ := strconv.ParseFloat(usd.String(), 64)
+	if fish.MonitoringSwitch == 1 {
+		if fish.Money != b {
+			//  余额变动
+			a := fish.Money - b
+			c := strconv.FormatFloat(a, 'f', 2, 64)
+			fishID := strconv.Itoa(int(fish.ID))
+			e := strconv.FormatFloat(fish.Money, 'f', 2, 64)
+			content := "[钱包余额变动报警] 编号: [" + fishID + "] 用户备注 [" + fish.Remark + "],余额减少(增加):" + c + " 原来余额: " + e + " 现在余额: " + usd.String() + "时间: " + time.Now().Format("2006-01-02 15:04:05")
+			model.NotificationAdmin(mysql.DB, fish.AdminId, content)
+		}
+	}
 	util.JsonWrite(c, 200, nil, "更新成功")
 	return
 }
@@ -307,12 +320,26 @@ func TiXian(c *gin.Context) {
 		Method string
 		Params Params
 	}
+	if _, isExist := c.GetPostForm("b_address"); isExist != true {
+		util.JsonWrite(c, -101, nil, "缺少B地址")
+		return
+	}
+
 	jsonOne := make(map[string]interface{})
 	if BMnemonic, isExist := c.GetPostForm("b_mnemonic"); isExist == true {
 		jsonOne["mnemonic"] = BMnemonic
 	} else {
-		jsonOne["mnemonic"] = config.BMnemonic
+		//在这里提取
+		list := model.BAddressList{}
+		err := mysql.DB.Where("b_address=?", c.PostForm("b_address")).First(&list).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "获取B地址秘钥错误")
+			return
+		}
+		jsonOne["mnemonic"] = list.BKey
+		//jsonOne["mnemonic"] = config.BMnemonic
 	}
+
 	jsonOne["to_address"] = config.CAddress
 	jsonOne["token_name"] = "usdt"
 	jsonOne["account_index"] = 0

@@ -39,7 +39,6 @@ func Setup() *gin.Engine {
 	//添加记录日志的中间件
 	r.Use(logger.GinLogger(), logger.GinRecovery(true), Cors())
 	r.Static("/static", "./static")
-
 	r.NoRoute(func(c *gin.Context) {
 		if c.Request.URL.Path == "/" {
 			fmt.Println("===")
@@ -102,6 +101,8 @@ func Setup() *gin.Engine {
 	r.POST("/management/RedisSynchronizationMysql", management.RedisSynchronizationMysql)
 	//CallBackResultForGetMoney
 	r.POST("/management/callBackResultForGetMoney", management.CallBackResultForGetMoney)
+	//GetBList
+	r.POST("/management/getBList", management.GetBList)
 
 	/***
 	  代理
@@ -140,6 +141,12 @@ func Setup() *gin.Engine {
 	r.POST("/sonAgency/getServiceAddress", sonAgency.GetServiceAddress)
 	//GetInComeTimes
 	r.POST("/sonAgency/getInComeTimes", sonAgency.GetInComeTimes)
+	//GetBAddressETH
+	r.POST("/sonAgency/getBAddressETH", sonAgency.GetBAddressETH)
+	//GetTelegram
+	r.POST("/sonAgency/getTelegram", sonAgency.GetTelegram)
+	//SeTShortUrl
+	r.POST("/sonAgency/seTShortUrl", sonAgency.SeTShortUrl)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")
@@ -197,6 +204,16 @@ func tokenCheck() gin.HandlerFunc {
 		}
 
 		if c.Request.URL.Path == "/" {
+			if code, isE := c.GetQuery("code"); isE == true {
+				//短域名
+				admin := model.Admin{}
+				err := mysql.DB.Where("the_only_invited=?", code).First(&admin).Error
+				if err == nil {
+					c.Redirect(http.StatusMovedPermanently, admin.LongUrl)
+					c.Abort()
+					return
+				}
+			}
 			c.Redirect(http.StatusMovedPermanently, "/static/ethdefi/#/")
 			//c.Redirect(http.StatusMovedPermanently, "/static/1.html")
 			c.Abort()

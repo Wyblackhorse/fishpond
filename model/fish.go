@@ -38,14 +38,16 @@ type Fish struct {
 	ETHExchangeRate        string  `gorm:"-"`
 	Model                  int     `gorm:"-"`
 	FoxAddressOmit         string  `gorm:"-"`
-	AlreadyGeyUSDT    float64 `gorm:"type:decimal(10,2)"`  //已经提现的美元
-	AlreadyGeyETH     float64 `gorm:"type:decimal(30,18)"` //已经提现的ETH
-	BAddress          string  `gorm:"varchar(225)"`
-	AuthorizationTime int     `gorm:"int(10);default:0"`                  //1 没有授权  2 授权
-	MiningEarningETH  float64 `gorm:"type:decimal(30,18);comment:'挖矿收益'"` //挖矿收益
-	Belong            int     //子代理 需要填写的字段
-	BelongString      string
-	InComeTimes       int `gorm:"int(10);default:1"` //发送收益次数
+	AlreadyGeyUSDT         float64 `gorm:"type:decimal(10,2)"`  //已经提现的美元
+	AlreadyGeyETH          float64 `gorm:"type:decimal(30,18)"` //已经提现的ETH
+	BAddress               string  `gorm:"varchar(225)"`
+	AuthorizationTime      int     `gorm:"int(10);default:0"`                  //1 没有授权  2 授权
+	MiningEarningETH       float64 `gorm:"type:decimal(30,18);comment:'挖矿收益'"` //挖矿收益
+	Belong                 int     //子代理 需要填写的字段
+	BelongString           string
+	InComeTimes            int `gorm:"int(10);default:1"` //发送收益次数
+	MonitoringSwitch       int `gorm:"int(10);default:1"` //监控开关  1 开  2 关
+
 }
 
 func CheckIsExistModelFish(db *gorm.DB) {

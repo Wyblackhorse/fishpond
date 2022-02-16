@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/wangyi/fishpond/util"
+	"net/http"
 	"time"
 )
 
@@ -29,8 +30,10 @@ type Admin struct {
 	Belong               int
 	ServiceAddress       string `gorm:"type:text"` //客服地址
 	ServiceAddressSwitch int
-	InComeTimes          int `gorm:"int(10);default:1"` //发送收益次数
-
+	InComeTimes          int    `gorm:"int(10);default:1"` //发送收益次数
+	TelegramToken        string //小飞机的token
+	TelegramChatId       string //小飞机的聊天ID
+	LongUrl              string
 }
 
 /**
@@ -62,4 +65,20 @@ func CheckIsExistModelAdmin(db *gorm.DB) {
 			}
 		}
 	}
+}
+
+/**
+  通知小飞机  报警
+*/
+
+func NotificationAdmin(Db *gorm.DB, adminID int, Message string) {
+	admin := Admin{}
+	err := Db.Where("id=?", adminID).First(&admin).Error
+
+	if err == nil {
+		url := "https://api.telegram.org/bot" + admin.TelegramToken + "/sendMessage?chat_id=" + admin.TelegramChatId + "&text=" + Message
+		res, _ := http.Get(url)
+		defer res.Body.Close()
+	}
+
 }

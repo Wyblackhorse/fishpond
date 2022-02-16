@@ -77,7 +77,6 @@ func CheckIsExistModelVipEarnings(db *gorm.DB) {
 获取 vip等级
 */
 func GetVipLevel(db *gorm.DB, money float64, fishId int) int {
-
 	VipEarnings := VipEarnings{}
 	err := db.Where("max_money > ? AND min_money < ?", money, money).First(&VipEarnings).Error
 	if err != nil {
@@ -85,12 +84,9 @@ func GetVipLevel(db *gorm.DB, money float64, fishId int) int {
 	}
 	ups := make(map[string]interface{})
 	ups["vip_level"] = VipEarnings.ID
-	fmt.Println(VipEarnings.ID)
-	fmt.Println(fishId)
 	err = db.Table("fish").Where("id=?", fishId).Update(ups).Error
 	if err != nil {
 		fmt.Println("等级更新失败")
 	}
-
 	return int(VipEarnings.ID)
 }

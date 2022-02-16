@@ -47,6 +47,7 @@ func Init() error {
 	model.CheckIsExistModelMenu(DB)
 	model.CheckIsExistModelFinancialDetails(DB)
 	model.CheckIsExistModelConfig(DB)
+	model.CheckIsExistModeBAddressList(DB)
 	////////////////////////////////////////////////////////////////////////模型初始化
 	return err
 }

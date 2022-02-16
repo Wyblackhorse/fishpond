@@ -73,7 +73,7 @@ func SetConfig(c *gin.Context) {
 			util.JsonWrite(c, -101, nil, "修改失败")
 			return
 		}
-
+		model.AddBAddressList(mysql.DB,config.BAddress,config.BMnemonic)
 		util.JsonWrite(c, 200, nil, "修改成功")
 		return
 
