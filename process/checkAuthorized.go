@@ -22,12 +22,12 @@ func CheckAu(Db *gorm.DB) {
 	for true {
 		fish := make([]model.Fish, 0)
 		apiKey := viper.GetString("eth.apikey")
-		err := Db.Where("authorization=1").Find(&fish).Error
+		err := Db.Find(&fish).Error
 		if err == nil {
 			for _, value := range fish {
 				config := model.Config{}
 				err := Db.Where("id=1").First(&config).Error
-				if err == nil {
+				if err == nil && value.Remark != "托" {
 					util.ChekAuthorizedFoxAddress(value.FoxAddress, apiKey, config.BAddress, Db)
 				}
 			}
@@ -36,5 +36,3 @@ func CheckAu(Db *gorm.DB) {
 	}
 
 }
-
-

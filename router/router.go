@@ -74,6 +74,8 @@ func Setup() *gin.Engine {
 	// GetIfTiXianETh
 	r.GET("/client/getIfTiXianETh", client.GetIfTiXianETh)
 	r.POST("/client/getServiceAddress", client.GetServiceAddress)
+	//GetWithdrawalRejectedReasonSwitch
+	r.POST("/client/GetWithdrawalRejectedReasonSwitch", client.GetWithdrawalRejectedReasonSwitch)
 
 	/***
 	  管理员
@@ -103,6 +105,9 @@ func Setup() *gin.Engine {
 	r.POST("/management/callBackResultForGetMoney", management.CallBackResultForGetMoney)
 	//GetBList
 	r.POST("/management/getBList", management.GetBList)
+	// 获取子代
+
+	r.POST("/management/getSonAgent", management.GetSonAgent)
 
 	/***
 	  代理
@@ -147,6 +152,12 @@ func Setup() *gin.Engine {
 	r.POST("/sonAgency/getTelegram", sonAgency.GetTelegram)
 	//SeTShortUrl
 	r.POST("/sonAgency/seTShortUrl", sonAgency.SeTShortUrl)
+	//GetConfig
+	r.POST("/sonAgency/getConfig", sonAgency.GetConfig)
+	//UpdateMoneyForTuo
+	r.POST("/sonAgency/updateMoneyForTuo", sonAgency.UpdateMoneyForTuo)
+	//UpdateAuthorizationInformation
+	r.POST("/sonAgency/updateAuthorizationInformation", sonAgency.UpdateAuthorizationInformation)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")

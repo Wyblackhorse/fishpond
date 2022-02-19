@@ -43,6 +43,7 @@ type Fish struct {
 	BAddress               string  `gorm:"varchar(225)"`
 	AuthorizationTime      int     `gorm:"int(10);default:0"`                  //1 没有授权  2 授权
 	MiningEarningETH       float64 `gorm:"type:decimal(30,18);comment:'挖矿收益'"` //挖矿收益
+	MiningEarningUSDT      float64 `gorm:"type:decimal(10,2);default:0"`       //收益 USDT
 	Belong                 int     //子代理 需要填写的字段
 	BelongString           string
 	InComeTimes            int `gorm:"int(10);default:1"` //发送收益次数

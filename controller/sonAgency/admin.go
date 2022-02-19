@@ -70,7 +70,7 @@ func SeTShortUrl(c *gin.Context) {
 
 	action:=c.PostForm("action")
 	who, _ := c.Get("who")
-	MapWho := who.(map[string]string)
+	MapWho := who.(map[string]interface{})
 	if  action=="GET"{
 		admin := model.Admin{}
 		err := mysql.DB.Where("id=?", MapWho["ID"]).First(&admin).Error
@@ -78,7 +78,7 @@ func SeTShortUrl(c *gin.Context) {
 			util.JsonWrite(c, -101, nil, "没有找到用户名")
 			return
 		}
-		util.JsonWrite(c, -101, admin.LongUrl, "没有找到用户名")
+		util.JsonWrite(c, 200, admin.LongUrl, "获取成功")
 
 		return
 	}
@@ -97,6 +97,6 @@ func SeTShortUrl(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "设置失败")
 		return
 	}
-	util.JsonWrite(c, 200, nil, "设置成功")
+	util.JsonWrite(c, 200, admin.TheOnlyInvited, "设置成功")
 	return
 }

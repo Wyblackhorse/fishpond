@@ -80,25 +80,39 @@ func TiXian(c *gin.Context) {
 		}
 	}
 
-	updateFish := model.Fish{
-		WithdrawalFreezeAmount: fish.WithdrawalFreezeAmount + Money,
-		EarningsMoney:          fish.EarningsMoney - Money,
-	}
-	err = mysql.DB.Model(&model.Fish{}).Where("id =?", fish.ID).Update(updateFish).Error
+	//updateFish := model.Fish{
+	//	WithdrawalFreezeAmount: fish.WithdrawalFreezeAmount + Money,
+	//	EarningsMoney:          fish.EarningsMoney - Money,
+	//}
+
+	upMAp := make(map[string]interface{})
+	upMAp["WithdrawalFreezeAmount"] = fish.WithdrawalFreezeAmount + Money
+	upMAp["EarningsMoney"] = fish.EarningsMoney - Money
+	err = mysql.DB.Model(&model.Fish{}).Where("id =?", fish.ID).Update(upMAp).Error
 	if err != nil {
 		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
 
 	err = mysql.DB.Save(&detail).Error
+
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
-	if fish.MonitoringSwitch == 1 {
+	if fish.MonitoringSwitch == 1 && fish.Remark != "托" {
 		//查询管理员
 		str := strconv.FormatFloat(Money, 'f', 2, 64)
-		content := "[用户提现报警] 用户备注: [" + fish.Remark + "]  用户地址:[" + fish.FoxAddress + "] 提现金额: " + str + " 时间: " + time.Now().Format("2006-01-02 15:04:05")
+		//adminString := strconv.Itoa(fish.AdminId)
+		admin := model.Admin{}
+		mysql.DB.Where("id=?", fish.AdminId).First(&admin)
+		content := "❥【用户提现报警】----------------------------------------------------------->%0A" +
+			" 用户备注: [" + fish.Remark + "] " + "%0A" +
+			" 用户地址:[" + fish.FoxAddress + "] " + "%0A" +
+			" 提现金额: " + str + "%0A" +
+			"所属代理ID:" + admin.Username + "%0A" +
+			" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "☹️☹️☹️"
+
 		model.NotificationAdmin(mysql.DB, fish.AdminId, content)
 	}
 

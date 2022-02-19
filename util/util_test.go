@@ -24,6 +24,7 @@ import (
 	"log"
 	"math/big"
 	"net/http"
+	url2 "net/url"
 	"os"
 	"strconv"
 	"testing"
@@ -220,10 +221,9 @@ func TestMd5(t *testing.T) {
 	new := Money / HH
 	fmt.Println(new)
 	fmt.Println(time.Now().Format("20060102"))
-	foxAddress:="0x547292F7B0f57f492933ba88B990925B3BEcf993"
-	apikey :="5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
+	foxAddress := "0x547292F7B0f57f492933ba88B990925B3BEcf993"
+	apikey := "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
 	resp, _ := http.Get("https://api.etherscan.io/api?module=account&action=balance&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
-
 
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -241,8 +241,14 @@ func TestMd5(t *testing.T) {
 
 	eth := ToDecimal(maxMoney, 18)
 
-
 	fmt.Println(eth)
 
+}
+
+func TestMd6(t *testing.T) {
+
+
+
+	fmt.Println(url2.QueryEscape("\n"))
 
 }

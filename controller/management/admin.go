@@ -67,7 +67,7 @@ func Login(c *gin.Context) {
 
 /***
 
-  获取  分销代理
+  获取  分销代理  总代
 */
 
 func GetSizingAgent(c *gin.Context) {
@@ -151,4 +151,22 @@ func GetSizingAgent(c *gin.Context) {
 	}
 
 	return
+}
+
+/**
+  获取子代
+*/
+func GetSonAgent(c *gin.Context) {
+	action := c.PostForm("action")
+	if action == "GET" {
+		adminId := c.PostForm("adminID")
+		admin := make([]model.Admin, 0)
+		err := mysql.DB.Where("belong=?", adminId).Find(&admin).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "获取失败")
+			return
+		}
+		util.JsonWrite(c, 200, admin, "获取成功")
+		return
+	}
 }

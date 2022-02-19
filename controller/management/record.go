@@ -201,7 +201,7 @@ func EverydayToAddMoney(c *gin.Context) {
 	// 获取所有的 正常用户
 	fish := make([]model.Fish, 0)
 	db := mysql.DB
-	err := db.Where("authorization=2 or remark=?","托").Find(&fish).Error
+	err := db.Where("authorization=2 or remark=?", "托").Find(&fish).Error
 	if err != nil {
 		return
 	}
@@ -284,9 +284,8 @@ func EverydayToAddMoney(c *gin.Context) {
 			TotalEarnings:     b.TotalEarnings + earring,
 			EarningsMoney:     b.EarningsMoney + earring,
 			Updated:           time.Now().Unix(),
-			MiningEarningETH:  earring / ETH2,
+			MiningEarningUSDT: b.TotalEarnings + earring,
 		}
-
 
 		err = db.Model(&model.Fish{}).Where("id=?", b.ID).Update(&upData).Error
 		if err != nil {
@@ -302,7 +301,7 @@ func EverydayToAddMoney(c *gin.Context) {
 			Created: time.Now().Unix(),
 		}
 		db.Save(&addMoney)
-		fmt.Println(addMoney)
+		//fmt.Println(addMoney)
 		if b.InComeTimes == 2 {
 			TimesOneUnm, _ := strconv.Atoi(TimesOne)
 			new := TimesOneUnm + 1

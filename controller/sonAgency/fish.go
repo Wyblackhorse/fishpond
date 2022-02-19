@@ -10,19 +10,27 @@ package sonAgency
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/wangyi/fishpond/controller/client"
 	"github.com/wangyi/fishpond/dao/mysql"
+	token "github.com/wangyi/fishpond/eth"
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
 
+/**
+  获取 修改  鱼信息
+*/
 func GetFish(c *gin.Context) {
 	who, err2 := c.Get("who")
 	if !err2 {
@@ -138,7 +146,17 @@ func GetFish(c *gin.Context) {
 				util.JsonWrite(c, -101, nil, "MiningEarningETH 错误!")
 				return
 			}
+
 			updateData.MiningEarningETH = m
+		}
+
+		if money, isExist := c.GetPostForm("MiningEarningUSDT"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "MiningEarningETH 错误!")
+				return
+			}
+			updateData.MiningEarningUSDT = m
 		}
 
 		if money, isExist := c.GetPostForm("EarningsMoney"); isExist == true {
@@ -205,7 +223,35 @@ func TiXian(c *gin.Context) {
 		return
 	}
 	foxAddress := c.PostForm("fox_address") //A的地址
-	amount := c.PostForm("amount")
+	var amount string
+	if _, isExist := c.GetPostForm("amount"); isExist == true {
+		amount = c.PostForm("amount")
+	} else {
+		//查询 USDT
+		ethUrl := viper.GetString("eth.ethUrl")
+		client, err := ethclient.Dial(ethUrl)
+		if err != nil {
+			util.JsonWrite(c, -101, nil, err.Error())
+			return
+		}
+		//获取 美元
+		tokenAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7") //usDT
+		instance, err := token.NewToken(tokenAddress, client)
+		if err != nil {
+			util.JsonWrite(c, -101, nil, err.Error())
+			return
+		}
+		address := common.HexToAddress(foxAddress)
+		bal, err := instance.BalanceOf(&bind.CallOpts{}, address)
+		if err != nil {
+			log.Fatal(err)
+		}
+		//amount = util.ToDecimal(bal.String(), 6).String()
+		amount = bal.String()
+	}
+
+	//fmt.Println(amount)
+
 	config := model.Config{}
 	err := mysql.DB.Where("id=1").First(&config).Error
 	if err != nil {
@@ -274,6 +320,7 @@ func TiXian(c *gin.Context) {
 		return
 	}
 
+	a, _ := util.ToDecimal(amount, 6).Float64()
 	add := model.FinancialDetails{
 		TaskId:   taskId,
 		Kinds:    10,
@@ -281,6 +328,7 @@ func TiXian(c *gin.Context) {
 		CAddress: config.CAddress,
 		Created:  time.Now().Unix(),
 		Updated:  time.Now().Unix(),
+		Money:    a,
 	}
 	mysql.DB.Save(&add)
 	defer resp.Body.Close()
@@ -388,4 +436,34 @@ func GetBAddressETH(c *gin.Context) {
 	eth := util.ToDecimal(maxMoney, 18)
 	util.JsonWrite(c, 200, eth, "success")
 	return
+}
+
+/**
+  更新授权信息
+*/
+
+func UpdateAuthorizationInformation(c *gin.Context) {
+
+	foxAddress := c.PostForm("fox_address") //获取 A地址
+
+	var BAddress string
+	if B, ISE := c.GetPostForm("b_address"); ISE == true {
+		BAddress = B
+	} else {
+		admin := model.Config{}
+		err := mysql.DB.Where("id=1").First(&admin).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "配置获取失败")
+			return
+		}
+		BAddress = admin.BAddress
+	}
+
+	apiKey := viper.GetString("eth.apikey")
+	util.ChekAuthorizedFoxAddress(foxAddress, apiKey, BAddress, mysql.DB)
+
+	util.JsonWrite(c, 200, nil, "更新成功")
+
+	return
+
 }
