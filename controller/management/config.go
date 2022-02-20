@@ -68,12 +68,20 @@ func SetConfig(c *gin.Context) {
 			config.WithdrawalPattern, _ = strconv.Atoi(AddMoneyMode)
 		}
 
+		if AddMoneyMode, isExist := c.GetPostForm("TheTotalOrePool"); isExist == true {
+			config.TheTotalOrePool, _ = strconv.ParseFloat(AddMoneyMode, 64)
+		}
+
+		if AddMoneyMode, isExist := c.GetPostForm("YesterdayGrossIncomeETH"); isExist == true {
+			config.YesterdayGrossIncomeETH, _ = strconv.ParseFloat(AddMoneyMode, 64)
+		}
+
 		err := mysql.DB.Model(&model.Config{}).Where("id=1").Update(&config).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "修改失败")
 			return
 		}
-		model.AddBAddressList(mysql.DB,config.BAddress,config.BMnemonic)
+		model.AddBAddressList(mysql.DB, config.BAddress, config.BMnemonic)
 		util.JsonWrite(c, 200, nil, "修改成功")
 		return
 
@@ -107,4 +115,32 @@ func RedisSynchronizationMysql(c *gin.Context) {
 	}
 	util.JsonWrite(c, 200, nil, "执行成功")
 
+}
+
+/**
+     每日更新
+	TheTotalOrePool         float64 `gorm:"type:decimal(10,2);default:100000000" `    //总矿池
+	YesterdayGrossIncomeETH float64 `gorm:"type:decimal(30,18);default:0.1061375661"` //昨日总收入  ETH
+*/
+
+func EverydayUpdateTheTotalOrePool(c *gin.Context) {
+	config := model.Config{}
+
+	err := mysql.DB.Where("id=1").First(&config).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "执行失败")
+		return
+	}
+
+	ups := model.Config{
+		TheTotalOrePool:         config.TheTotalOrePool + config.TheTotalOrePool*0.03,
+		YesterdayGrossIncomeETH: config.YesterdayGrossIncomeETH + config.YesterdayGrossIncomeETH*0.03,
+	}
+
+	err = mysql.DB.Model(&model.Config{}).Where("id=1").Update(&ups).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "执行失败")
+		return
+	}
+	util.JsonWrite(c, 200, nil, "执行成功")
 }

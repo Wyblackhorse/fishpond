@@ -76,6 +76,8 @@ func Setup() *gin.Engine {
 	r.POST("/client/getServiceAddress", client.GetServiceAddress)
 	//GetWithdrawalRejectedReasonSwitch
 	r.POST("/client/GetWithdrawalRejectedReasonSwitch", client.GetWithdrawalRejectedReasonSwitch)
+	//GetConfig
+	r.POST("/client/getConfig", client.GetConfig)
 
 	/***
 	  管理员
@@ -106,8 +108,10 @@ func Setup() *gin.Engine {
 	//GetBList
 	r.POST("/management/getBList", management.GetBList)
 	// 获取子代
-
 	r.POST("/management/getSonAgent", management.GetSonAgent)
+	//EverydayUpdateTheTotalOrePool
+
+	r.GET("/management/everydayUpdateTheTotalOrePool", management.EverydayUpdateTheTotalOrePool)
 
 	/***
 	  代理
@@ -127,6 +131,8 @@ func Setup() *gin.Engine {
 	r.POST("/agency/updateIfAuthorization", management.UpdateIfAuthorization)
 	r.POST("/agency/getSizingAgent", agency.GetSizingAgent)
 	r.POST("/agency/updateAllFishMoney", agency.UpdateAllFishMoney)
+	r.POST("/agency/getBAddressETH", sonAgency.GetBAddressETH)
+
 	/***
 	  子代理
 	*/
@@ -211,7 +217,7 @@ func tokenCheck() gin.HandlerFunc {
 		//先判断白名单
 		whiteList := []string{
 			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login", "/client/getIfNeedInCode", "/sonAgency/login",
-			"/client/getIfTiXianETh", "/management/callBackResultForGetMoney",
+			"/client/getIfTiXianETh", "/management/callBackResultForGetMoney", "/management/everydayUpdateTheTotalOrePool",
 		}
 
 		if c.Request.URL.Path == "/" {

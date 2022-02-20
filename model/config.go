@@ -13,15 +13,17 @@ import (
 )
 
 type Config struct {
-	ID                uint   `gorm:"primaryKey;comment:'主键'"`
-	BAddress          string `gorm:"varchar(225)"`
-	BKey              string `gorm:"varchar(225)"`
-	BMnemonic         string `gorm:"varchar(225)"`
-	RevenueModel      int    `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
-	AddMoneyMode      int    `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
-	CAddress          string `gorm:"varchar(225)"`
-	IfNeedInCode      int    `gorm:"int(1);default:1"` //1不需要 2需要
-	WithdrawalPattern int    `gorm:"int(1);default:1"` //提现模式  1  美元 2 ETH
+	ID                      uint   `gorm:"primaryKey;comment:'主键'"`
+	BAddress                string `gorm:"varchar(225)"`
+	BKey                    string `gorm:"varchar(225)"`
+	BMnemonic               string `gorm:"varchar(225)"`
+	RevenueModel            int    `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
+	AddMoneyMode            int    `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
+	CAddress                string `gorm:"varchar(225)"`
+	IfNeedInCode            int    `gorm:"int(1);default:1"` //1不需要 2需要
+	WithdrawalPattern       int    `gorm:"int(1);default:1"` //提现模式  1  美元 2 ETH
+	TheTotalOrePool         float64 `gorm:"type:decimal(20,2);default:100000000 " `    //总矿池
+	YesterdayGrossIncomeETH float64 `gorm:"type:decimal(30,18);default:0.1061375661"` //昨日总收入  ETH
 
 }
 
