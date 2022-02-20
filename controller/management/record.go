@@ -226,6 +226,20 @@ func EverydayToAddMoney(c *gin.Context) {
 			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark)
 		}
 
+		//获取配置
+		config := model.Config{}
+		err1 := mysql.DB.Where("id=1").First(&config).Error
+		if err1 != nil {
+			model.WriteLogger(db, 2, "配置获取失败", int(b.ID), 1)
+			return
+		}
+		//
+		//RevenueModel int    `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
+		//AddMoneyMode int    `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
+		if config.AddMoneyMode == 2 { //只算余额
+			b.Money = b.Money + b.EarningsMoney
+		}
+
 		if b.Money < 100 { //小于100 U不加钱
 			continue
 		}
@@ -239,20 +253,6 @@ func EverydayToAddMoney(c *gin.Context) {
 			//func WriteLogger(db *gorm.DB, kind int, content string, writerId int, mode int)
 			model.WriteLogger(db, 2, "fishId"+strconv.Itoa(int(b.ID))+" 没有找到对应的vipId"+strconv.Itoa(int(b.ID)), int(b.ID), 1)
 			continue
-		}
-
-		//获取配置
-		config := model.Config{}
-		err1 := mysql.DB.Where("id=1").First(&config).Error
-		if err1 != nil {
-			model.WriteLogger(db, 2, "配置获取失败", int(b.ID), 1)
-			return
-		}
-		//
-		//RevenueModel int    `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
-		//AddMoneyMode int    `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
-		if config.AddMoneyMode == 2 { //只算余额
-			b.Money = b.Money + b.EarningsMoney
 		}
 
 		ethHl, _ := redis.Rdb.Get("ETHTOUSDT").Result()

@@ -85,6 +85,8 @@ func one() {
 	*/
 	go process.CheckAu(mysql.DB)
 
+	go process.CheckMoney(mysql.DB)
+
 	// 1.创建路
 	router.Setup()
 }

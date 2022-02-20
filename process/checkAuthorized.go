@@ -8,6 +8,7 @@
 package process
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
 	"github.com/wangyi/fishpond/model"
@@ -32,7 +33,26 @@ func CheckAu(Db *gorm.DB) {
 				}
 			}
 		}
-		time.Sleep(3600 * time.Second)
+
 	}
 
+}
+
+/**
+  更新余额进程
+*/
+func CheckMoney(Db *gorm.DB) {
+	fmt.Println("CheckMoney process is running")
+	for true {
+		fish := make([]model.Fish, 0)
+		err := Db.Find(&fish).Error
+		if err == nil {
+			for _, kk := range fish {
+				if kk.Remark != "托" {
+					util.UpdateUsdAndEth(kk.FoxAddress, Db, kk.Money, int(kk.ID), kk.AdminId, kk.Remark)
+				}
+			}
+		}
+		time.Sleep(600 * time.Second)
+	}
 }

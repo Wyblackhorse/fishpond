@@ -395,7 +395,6 @@ func BatchUpdateBalance(adminId int, Db *gorm.DB) {
 			}
 
 		}
-
 	}
 
 }
