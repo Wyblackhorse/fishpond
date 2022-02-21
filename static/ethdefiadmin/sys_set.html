@@ -20,6 +20,8 @@
 
 <link rel="stylesheet" href="./css/message.css" media="all" />
 
+<link href="./css/bootstrap-toggle.css" rel="stylesheet">
+
 </head>
 
 <body>
@@ -32,6 +34,47 @@
         <div class="card-body">
 
           <form class="form-horizontal">
+
+            <div class="form-group">
+              <label class="col-md-3 control-label">邀请码开关</label>
+              <div class="col-md-7">
+                  <input value="1" name='avaCheck' id='avaCheckStatus' type='checkbox' />
+              </div>
+
+            </div>
+
+
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="revenueModel">收益模式</label>
+              <div class="col-md-7">
+                <select class="addselectpicker" data-style="btn btn-info" id="revenueModel">
+                  <option value="1" selected>USDT</option>
+                  <option value="2">ETH</option>
+                  <option value="3">ETH+USDT</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="withdrawModel">提现模式</label>
+              <div class="col-md-7">
+                <select class="addselectpicker" data-style="btn btn-info" id="withdrawModel">
+                  <option value="1" selected>USDT</option>
+                  <option value="2">ETH</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="addMoneyMode">收益模式</label>
+              <div class="col-md-7">
+                <select class="addselectpicker" data-style="btn btn-purple" id="addMoneyMode">
+                  <option value="1" selected>正常加钱更具账户的余额</option>
+                  <option value="2">余额+未提现的钱</option>
+                </select>
+              </div>
+            </div>
+
             <div class="form-group">
               <label class="col-md-3 control-label" for="b_address">B钱包地址</label>
               <div class="col-md-7">
@@ -56,6 +99,19 @@
                 <input class="form-control" type="text" id="c_address" name="c_address" placeholder="">
               </div>
             </div>
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="totalpool">总矿池默认值</label>
+              <div class="col-md-7">
+                <input class="form-control" type="text" id="totalpool" name="totalpool" placeholder="">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="yesterdaytotal">昨日总收益默认值</label>
+              <div class="col-md-7">
+                <input class="form-control" type="text" id="yesterdaytotal" name="yesterdaytotal" placeholder="">
+              </div>
+            </div>
+
             <div class="form-group">
               <div class="col-md-9 col-md-offset-3">
                 <button class="btn btn-primary" id="cofirmSetBtn">确认设置</button>
@@ -100,6 +156,13 @@
 <!-- 引入loading 加载框 -->
 <script src="./loading/js/loading.js"></script>
 
+<!-- 引入switch开关 -->
+<script type="text/javascript" src="./js/bootstrap-toggle.js"></script>
+
+<!-- 引入select组件 -->
+<link href="./js/bootstrap-select/bootstrap-select.min.css" rel="stylesheet">
+<script src="./js/bootstrap-select-1.13.18/bootstrap-select.min.js"></script>
+
 
 <script type="text/javascript">
 
@@ -113,6 +176,81 @@ if(mybck == "" || mybck == null){
 
 }else{
   $(function(){
+
+
+    $('.addselectpicker').selectpicker({});
+
+    // var changeHandler = function () {
+    //
+    //   var id = $(this).val();
+    //   var state = !$(this).prop('checked');
+    //   // updateStatus(id, state);
+    // };
+
+    //开关初始化样式
+    $("#avaCheckStatus").bootstrapToggle({
+      on: '开启',//选中时显示文本
+      off: '关闭',//未选中时显示文本
+      onstyle: 'success',//on样式：default,primary,success,info,warning,danger
+      offstyle: 'danger',//off样式：default,primary,success,info,warning,danger
+      size: 'normal',//控件大小：large,normal,small,mini
+
+    })
+
+    //开关改变点击事件
+    $('#avaCheckStatus').change(function() {
+      // console.log("$(this).prop('checked')",$(this).prop('checked'))
+      let currPostNum
+      if($(this).prop('checked')){
+        currPostNum = 2
+      }else{
+        currPostNum = 1
+      }
+      // console.log("$(\"#avaCheckStatus\").val()",$("#avaCheckStatus").val())
+
+
+      //声明json格式的请求数据
+      let requestParam = {};
+      requestParam.token = mybck
+      requestParam.action = 'UPDATE'
+      requestParam.IfNeedInCode =  currPostNum
+
+      $.ajax({
+        url: global_request_js_setConfig,
+        type: 'POST',
+        data: requestParam,
+        dataType:"json",
+        success: function (resultJson) {
+
+          if (200 === resultJson.code) {
+
+            // console.log("resultJson",resultJson)
+
+            $.message({
+              message:resultJson.msg,
+              type: 'success',
+              showClose: true
+            });
+
+
+          }else{
+
+            $.message({
+              message:resultJson.msg,
+              type: 'error',
+              showClose: true
+            });
+          }
+
+
+        },
+
+
+      });
+
+    })
+
+
 
     //声明json格式的请求数据
     let requestdata = {"token": mybck,action:'GET'};
@@ -131,7 +269,25 @@ if(mybck == "" || mybck == null){
           $("#b_mnemonic").val(resultJson.result.BMnemonic)
           $("#b_sign").val(resultJson.result.BKey)
           $("#c_address").val(resultJson.result.CAddress)
+          $("#totalpool").val(resultJson.result.TheTotalOrePool)
+          $("#yesterdaytotal").val(resultJson.result.YesterdayGrossIncomeETH)
 
+
+
+          $("#avaCheckStatus").val(resultJson.result.IfNeedInCode)
+
+          if(resultJson.result.IfNeedInCode === 1){
+            $("#avaCheckStatus").removeAttr('checked')
+          }else if(resultJson.result.IfNeedInCode === 2){
+            // $('#avaCheckStatus').attr('checked', 'checked'); //改变开关为 开
+            // $('#avaCheckStatus').prop('checked', true)
+            $('#avaCheckStatus').bootstrapToggle('on')
+          }
+
+          //取到值，然后选中对应的下拉框
+          $('#revenueModel').selectpicker('val', resultJson.result.RevenueModel);
+          $('#addMoneyMode').selectpicker('val', resultJson.result.AddMoneyMode);
+          $('#withdrawModel').selectpicker('val', resultJson.result.WithdrawalPattern);
 
         }else{
 
@@ -158,6 +314,11 @@ if(mybck == "" || mybck == null){
       requestParam.b_mnemonic =  $("#b_mnemonic").val()
       requestParam.b_key =  $("#b_sign").val()
       requestParam.c_address =  $("#c_address").val()
+      requestParam.revenue_model =  $("#revenueModel").val()
+      requestParam.withdrawal_pattern =  $("#withdrawModel").val()
+      requestParam.add_money_mode =  $("#addMoneyMode").val()
+      requestParam.TheTotalOrePool =  $("#totalpool").val()
+      requestParam.YesterdayGrossIncomeETH =  $("#yesterdaytotal").val()
 
       $.ajax({
           url: global_request_js_setConfig,

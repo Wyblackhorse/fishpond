@@ -20,11 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="65a62d67-69cb-4384-9e55-2c70afdeff2c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/controller/client/config.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/management/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/client/record.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/record.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/sonAgency/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/sonAgency/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/admin.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

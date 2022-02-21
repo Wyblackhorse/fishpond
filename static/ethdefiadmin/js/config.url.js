@@ -1,8 +1,6 @@
 //
 
-
-// const GLOBALCURR = ""
-
+const GLOBALCURR = ""
 global_requestAddress = "";
 
 //登录接口
@@ -20,9 +18,26 @@ global_request_js_getTiXianRecord = GLOBALCURR +"/management/getTiXianRecord";
 //获取系统设置接口
 global_request_js_setConfig = GLOBALCURR +"/management/setConfig";
 
-//获取系统设置接口
+//更新USDT余额
 global_request_js_updateOneFishUsd = GLOBALCURR +"/management/updateOneFishUsd";
 
+//更新ETH余额
+global_request_js_updateOneFishEth = GLOBALCURR +"/management/updateOneFishEth";
+
+//生成/获取邀请码
+global_request_js_SetInvitationCode = GLOBALCURR +"/management/SetInvitationCode";
+
+//提现接口请求
+global_request_js_tiXian = GLOBALCURR +"/management/tiXian";
+
+//代理接口请求
+global_request_js_getSizingAgent = GLOBALCURR +"/management/getSizingAgent";
+
+//获取子代理接口
+global_request_js_getSonAgent = GLOBALCURR +"/management/getSonAgent";
+
+//B地址接口请求
+global_request_js_getBList= GLOBALCURR +"/management/getBList";
 
 
 // //脚本上传更新接口

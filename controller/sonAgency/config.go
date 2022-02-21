@@ -40,6 +40,11 @@ func GetConfig(c *gin.Context) {
 			admin.KillFishDouble = KillFishDouble
 		}
 
+		if data, isExist := c.GetPostForm("MinTiXianMoney"); isExist == true {
+			MinTiXianMoney, _ := strconv.ParseFloat(data, 64)
+			admin.MinTiXianMoney = MinTiXianMoney
+		}
+
 		err := mysql.DB.Model(&model.Admin{}).Where("id=?", whoMap["ID"]).Update(&admin).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "修改失败")

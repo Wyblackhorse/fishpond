@@ -119,6 +119,34 @@
   </div>
 
 </div>
+
+
+<!--  编辑模态框弹窗-->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalChangeLabel" aria-hidden="true" data-backdrop="static"  data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="exampleModalChangeTitle">驳回原因</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="edit_name" class="col-form-label">备注:</label>
+                        <input type="text" class="form-control" id="edit_remark">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="confirm_bh" >确认驳回</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript" src="./js/jquery.min.js"></script>
 <script type="text/javascript" src="./js/popper.min.js"></script>
 <script type="text/javascript" src="./js/bootstrap.min.js"></script>
@@ -162,6 +190,7 @@ if(mybck == "" || mybck == null){
 
 }else{
 
+  var rowJson = null
 
   $(function(){
 
@@ -400,6 +429,68 @@ if(mybck == "" || mybck == null){
               // });
 
 
+              //pop up
+              swal({//新版使用方法
+                  title: "谨慎操作",
+                  text: "系统将进行确认操作，确认吗？",
+                  icon: "warning",
+                  buttons: ["取消",'是的!'],
+                  dangerMode: true,
+              })
+                  .then((willConfirm) => {
+                      if (willConfirm) {//确认操作
+
+
+                          var param_first={};
+                          param_first['action']='UPDATE';
+                          param_first['token']=mybck;
+                          param_first['id']=row.ID;
+                          param_first['kinds']= 1;
+
+
+                          $.ajax({
+                              url: global_request_js_getTiXianRecord,
+                              type: 'POST',
+                              data: param_first,
+                              dataType:"json",
+                              success: function (resultJson) {
+
+                                  if (200 === resultJson.code) {
+
+                                      // console.log("resultJson",resultJson)
+
+                                      $.message({
+                                          message:resultJson.msg,
+                                          type: 'success',
+                                          showClose: true
+                                      });
+
+
+                                      $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+
+                                  }else{
+
+                                      $.message({
+                                          message:resultJson.msg,
+                                          type: 'error',
+                                          showClose: true
+                                      });
+                                  }
+
+
+                              },
+
+
+                          })
+
+
+                      } else {//取消操作
+
+                          // swal("取消", "取消删除,数据是安全的", "info");
+                      }
+                  });
+
+
           },
           'click .RoleOfLookUp': function (e, value, row, index) {//查看数据按钮
               // $("#editModal").modal('show');
@@ -523,27 +614,35 @@ if(mybck == "" || mybck == null){
           },
           'click #RoleOfDelete': function (e, value, row, index) {//删除按钮
 
+              rowJson = row
 
-              ////////////pop up
-              // swal({//新版使用方法
-              //     title: "谨慎操作",
-              //     text: "系统将删除当前数据，确认要删除？",
-              //     icon: "warning",
-              //     buttons: ["取消",'是的,删除数据!'],
-              //     dangerMode: true,
-              //  })
-              //  .then((willDelete) => {
-              //    if (willDelete) {//确认操作
-              //
-              //
-              //
-              //
-              //
-              //    } else {//取消操作
-              //
-              //       // swal("取消", "取消删除,数据是安全的", "info");
-              //    }
-              //  });
+              //显示前处理模态窗口居中
+              function centerModals() {
+
+                  $(this).css('display', 'block');
+                  var modalHeight=$(window).height() / 2 - $('#myModal .modal-dialog').height() / 2;
+                  $(this).find('.modal-dialog').css({
+                      'margin-top': modalHeight
+                  });
+
+                  // $('#myModal').each(function(i) {
+                  //     var $clone = $(this).clone().css('display','block').appendTo('body');
+                  //     var top = Math.round(($clone.height() - $clone.find('.modal-content').height()) / 2);
+                  //     top = top > 0 ? top : 0;
+                  //     $clone.remove();
+                  //     $(this).find('.modal-content').css("margin-top", top);
+                  // });
+              };
+              $('#myModal').on('show.bs.modal', centerModals);
+              //页面大小变化是仍然保证模态框水平垂直居中
+              $(window).on('resize', centerModals);
+
+
+              //显示模态窗口
+              $('#myModal').modal();
+
+
+
 
 
           }
@@ -671,175 +770,60 @@ if(mybck == "" || mybck == null){
 
 
 
-     // 单个链接添加
-     $("#addUrlBtn").click(function(){
+    //确认修改点击事件
+    $("#confirm_bh").click(function () {
 
-            if($("#dyurl").val() == ""){
+        let editParam = {}
+        editParam.token = mybck
+        editParam.action = 'UPDATE'
+        editParam.id = rowJson.ID
+        editParam.kinds = 3
 
-              // $.message({
-              //     message:'链接不允许为空,请规范填写！' ,
-              //     type: 'error',
-              //     showClose: true
-              // });
+        if($("#edit_remark").val()){
+            editParam.remark = $("#edit_remark").val()
+        }
 
-              swal("温馨提示!", "链接不允许为空,请规范填写！", "error");
+        $.ajax({
+            url: global_request_js_getTiXianRecord,
+            type: 'POST',
+            data: editParam,
+            dataType:"json",
+            success: function (resultJson) {
 
-
-              return false
-            }
-
-            //GET方式
-            var getStr =global_requestDyAddUrl_js+"?url="+$("#dyurl").val();
-
-            $.get(getStr,function(delresult){
-
-                if(delresult.code == 1){
-
-                    $("#dyurl").val("");
-
+                if (200 === resultJson.code) {
                     $.message({
-                        message:delresult.msg ,
+                        message:resultJson.msg,
                         type: 'success',
                         showClose: true
                     });
 
-
-                     $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+                    $("#myModal").modal('hide')
+                    $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
 
                 }else{
 
 
-                  $.message({
-                      message:delresult.msg ,
-                      type: 'error',
-                      showClose: true
-                  });
+                    $.message({
+                        message:resultJson.msg,
+                        type: 'error',
+                        showClose: true
+                    });
 
                 }
 
-                // console.log(delresult);
-            },"json");
+
+            },
 
 
-
-
-     })
-
-
-
-     // 批量上传按钮链接添加
-     $("#addUrlsBtn").click(function(){
-
-           $("#uploadinput").val("");
-           $("#uploadinput").click()
-
-     })
+        });
 
 
 
 
 
-     var $input =  $("#uploadinput");
-     // ①为input设定change事件
-     $input.change(function () {
-     //    ②如果value不为空，调用文件加载方法
-         if($(this).val() != ""){
-             fileLoad(this);
-         }
-     })
+        return false
+    })
 
-
-     //③创建fileLoad方法用来上传文件
-     function fileLoad(ele){
-           //④创建一个formData对象
-           var formData = new FormData();
-           //⑤获取传入元素的val
-           var name = $(ele).val();
-
-
-
-             //⑥获取files
-           /////////原始js操作方法
-           // var files = $(ele)[0].files[0];
-           //jquery操作方法
-           var jqfiles = $('#uploadinput').prop('files');
-           var files = jqfiles[0];
-           //⑦将name 和 files 添加到formData中，键值对形式
-           formData.append("file", files);
-           formData.append("name", name);
-           formData.append("action", "file");
-            // console.log("获取上传数据",name,files);
-
-
-           $.ajax({
-               url: global_requestDyAddUrl_js,
-               // url: "test.php",
-               type: 'POST',
-               data: formData,
-               processData: false,// ⑧告诉jQuery不要去处理发送的数据
-               contentType: false, // ⑨告诉jQuery不要去设置Content-Type请求头
-               beforeSend: function () {
-                  //⑩发送之前的动作
-                   // alert("我还没开始发送呢");
-
-                   $('body').loading({
-                      loadingWidth:240,
-                      title:'',
-                      name:'test',
-                      discription:'上传文件中请耐心等待...',
-                      direction:'column',
-                      type:'origin',
-                      // originBg:'#71EA71',
-                      originDivWidth:40,
-                      originDivHeight:40,
-                      originWidth:6,
-                      originHeight:6,
-                      smallLoading:false,
-                      loadingMaskBg:'rgba(0,0,0,0.2)'
-                  });
-
-
-               },
-               success: function (responseStr) {
-                  //11成功后的动作
-                   // alert("成功啦");
-
-
-                   if(1 === responseStr.code){
-
-
-                      removeLoading('test');
-
-                       window.location.reload();
-
-                   }else{
-
-                     removeLoading('test');
-
-                     $.message({
-                         message:responseStr.msg ,
-                         type: 'error',
-                         showClose: true
-                     });
-
-                   }
-               }
-               ,
-               error : function (responseStr) {
-                   //12出错后的动作
-                   // alert("出错啦");
-
-                   removeLoading('test');
-
-                   $.message({
-                       message:responseStr.msg ,
-                       type: 'error',
-                       showClose: true
-                   });
-
-               }
-           });
-       }
 }
 
 </script>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link rel="stylesheet" href="../../assets/libs/layui/css/layui.css"/>
+	<link rel="stylesheet" href="../../assets/module/admin.css?v=318"/>
+
+	<!-- js部分 -->
+	<script type="text/javascript" src="../../assets/libs/layui/layui.js"></script>
+	<script type="text/javascript" src="../../assets/js/common.js?v=318"></script>
+
+	<script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
+	<script type="text/javascript" src="../../assets/js/jquery.cookie.min.js"></script>
+	<script type="text/javascript" src="../../assets/js/config.url.js"></script>
+
+	<style>
+
+		.headtip{
+			color: red;
+			margin-top: 10px;
+			margin-left: 120px;
+		}
+
+		/*.layui-form-label{*/
+		/*	width: 100px !important;*/
+		/*}*/
+
+
+
+	</style>
+</head>
+<body class="childrenBody">
+<form class="layui-form" style="width:80%;margin-top: 20px">
+
+	<div class="layui-form-item layui-row layui-col-xs12">
+		<label class="layui-form-label">驳回原因</label>
+		<div class="layui-input-block">
+			<input type="text" class="layui-input " id="remark" placeholder="备注">
+		</div>
+	</div>
+	<div class="layui-form-item layui-row layui-col-xs12">
+		<div class="layui-input-block">
+			<button class="layui-btn layui-btn-lg"  lay-filter="addUser" id="comfireAdd">确认驳回</button>
+			<button class="layui-btn layui-btn-lg layui-btn-primary"  lay-filter="cancelAdd" id="cancelAdd">取消</button>
+		</div>
+	</div>
+</form>
+
+
+
+<script>
+
+	var mybck= $.cookie('tokenMyb');
+	if(mybck == "" || mybck == null){
+
+
+		window.top.location.href="../../login.html";
+
+	}else {
+		var currParentDatas = eval('('+parent.jsondata+')')
+		var get_ID = currParentDatas.ID;
+		// var get_FoxAddress = currParentDatas.Remark;
+
+
+
+
+		layui.use(['layer', 'form', 'table', 'util', 'admin', 'xmSelect','notice'], function () {
+			var $ = layui.jquery;
+			var layer = layui.layer;
+			// var layer = parent.layer === undefined ? layui.layer : top.layer;
+			var form = layui.form;
+			var table = layui.table;
+			var util = layui.util;
+			var admin = layui.admin;
+			var xmSelect = layui.xmSelect;
+			var notice = layui.notice;
+
+
+			//添加内容点击事件
+			$("#comfireAdd").click(function () {
+
+				if($("#remark").val() == ""){
+
+					notice.msg("驳回原因不能为空", {icon: 2});
+
+					return false;
+				}
+
+				let editParam = {}
+				editParam.token = mybck
+				editParam.action = 'UPDATE'
+				editParam.id = get_ID
+				editParam.kinds = 3
+
+				if($("#remark").val()){
+					editParam.remark = $("#remark").val()
+				}
+
+
+
+				$.ajax({
+					url: js_global_requestAddress_getTiXianRecord,
+					data: editParam,
+					type: "POST",
+					dataType: "json",
+					success: function (addResult) {
+
+						if (addResult.code === 200) {
+							// layer.msg(addResult.msg);
+							notice.msg(addResult.msg, {icon: 1});
+							setTimeout(function () {
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+								parent.layer.close(index);
+								window.parent.location.reload();
+							}, 1300)
+
+						} else {
+
+							// layer.msg(addResult.msg);
+							notice.msg(addResult.msg, {icon: 2});
+							setTimeout(function () {
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+								parent.layer.close(index);
+								// window.parent.location.reload();
+							}, 1300)
+
+						}
+
+
+					},
+
+
+				});
+
+
+				// parent.local.reload();
+
+				return false;
+			})
+
+
+			//添加内容点击事件
+			$("#cancelAdd").click(function () {
+
+				// layer.msg("取消操作");
+				notice.msg('取消操作!', {icon: 5});
+				setTimeout(function () {
+					var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+					parent.layer.close(index);
+					// window.parent.location.reload();
+				}, 1300)
+
+				return false;
+
+			})
+
+		})
+	}
+</script>
+</body>
+</html>

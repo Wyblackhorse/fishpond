@@ -1,0 +1,848 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>鱼塘</title>
+    <link rel="stylesheet" href="../../assets/libs/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../../assets/module/admin.css?v=318"/>
+
+    <style>
+
+        .currSerachBtn{
+            box-shadow: 0 15px 18px -6px rgb(45 140 240 / 65%) !important;
+        }
+
+        .currReloadBtn{
+            box-shadow: 0 15px 18px -6px rgb(146 109 222 / 65%) !important;
+        }
+
+        .layui-table-cell{
+            height:46px;
+            line-height: 46px;
+        }
+
+        /*td .layui-form-select {*/
+        /*    !*margin-top: -10px;*!*/
+        /*    !*margin-left: -15px;*!*/
+        /*    !*margin-right: -15px;*!*/
+        /*    vertical-align: middle;*/
+        /*    text-align: center;*/
+        /*}*/
+
+        /*.layui-table-cell {*/
+        /*    overflow: visible !important;*/
+        /*}*/
+
+        /*.layui-table-view .layui-table th{*/
+        /*    overflow:hidden;*/
+        /*}*/
+
+
+    </style>
+
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+
+<!--            <div class="layui-form-item layui-form-pane">-->
+
+<!--                <div class="layui-inline" style="margin-top:10px;">-->
+<!--                    &lt;!&ndash;                <div class="layui-btn " data-type="reload"><i class="layui-icon"></i>查询</div>&ndash;&gt;-->
+<!--                    <div id="reloadtable" class="layui-btn layui-bg-cyan"><i class="layui-icon"></i>刷新数据</div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+            <!-- 表格工具栏 -->
+            <form class="layui-form toolbar">
+                <div class="layui-form-item" >
+                    <div class="layui-inline">&emsp;
+<!--                        <button class="layui-btn icon-btn currSerachBtn" lay-filter="userTbSearch" lay-submit>-->
+<!--                            <i class="layui-icon layui-icon-add-1"></i>添加机器人-->
+<!--                        </button>-->
+                        <button class="layui-btn icon-btn currReloadBtn" lay-filter="reloadData" lay-submit style="background-color: #926dde;border-color: #926dde;">
+                            <i class="layui-icon layui-icon-refresh"></i>刷新数据
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <!-- 数据表格 -->
+            <table id="userTable" lay-filter="userTable" style="margin-top:10px"></table>
+        </div>
+    </div>
+</div>
+
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../assets/libs/layui/layui.js"></script>
+<script type="text/javascript" src="../../assets/js/common.js?v=318"></script>
+
+<script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../assets/js/jquery.cookie.min.js"></script>
+<script type="text/javascript" src="../../assets/js/config.url.js"></script>
+
+<!--数据表格操作工具栏-->
+<script type="text/html" id="orderListBar">
+    <a class="layui-btn layui-btn-sm layui-btn-radius " lay-event="confirmWithDrawBtn"><i class="layui-icon">&#xe605;</i>确认</a>
+    <a class="layui-btn layui-btn-danger layui-btn-sm layui-btn-radius" lay-event="bh"><i class="layui-icon">&#x1006;</i>驳回</a>
+</script>
+
+<script>
+
+    var mybck= $.cookie('tokenMyb');
+    //alert(document.cookie);
+    //console.log(mybck)
+    if(mybck == "" || mybck == null){
+
+        window.top.location.href="../../login.html";
+
+    }else{
+        var jsondata ;
+        let jsonDataInit;
+        layui.use(['layer', 'form', 'table', 'util', 'admin', 'xmSelect','notice'], function () {
+            var $ = layui.jquery;
+            var layer = layui.layer;
+            var form = layui.form;
+            var table = layui.table;
+            var util = layui.util;
+            var admin = layui.admin;
+            var xmSelect = layui.xmSelect;
+            var notice = layui.notice;
+
+            var log_login_request_param = {};
+            log_login_request_param['token']= mybck;
+            log_login_request_param['action']='GET';
+            log_login_request_param['kinds']=2;
+
+
+            /* 渲染表格 */
+            var insTb = table.render({
+                elem: '#userTable',
+                url: js_global_requestAddress_getTiXianRecord,
+                method: 'post',
+                where:log_login_request_param,
+                // toolbar: ['<p>',
+                //     '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>&nbsp;',
+                //     '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>',
+                //     '</p>'].join(''),
+                cellMinWidth: 100,
+                page :  { //支持传入 laypage 组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+                    layout: ['limit', 'count', 'prev', 'page', 'next', 'skip'] //自定义分页布局
+                    //,curr: 5 //设定初始在第 5 页
+                    ,groups: 10 //只显示 1 个连续页码
+                    ,first: "首页" //不显示首页
+                    ,last: "尾页"//不显示尾页
+                },
+                height : "full-100",
+                limit : 15,
+                limits : [15,30,50,100],
+                response: {
+                    statusName: 'code' //规定数据状态的字段名称，默认：code
+                    ,statusCode: 1 //规定成功的状态码，默认：0
+                    ,dataName: 'result' //规定数据列表的字段名称，默认：data
+                },
+            // id : "systemLog",
+                cols: [[
+                    {type: 'checkbox'},
+                    {field: 'ID',title:'ID',sort: true,align:"center",width:80},
+                    // {field: 'Username', title: '账号', sort: true,align:"center"},
+                    {field: 'FoxAddress', title: '狐狸地址', sort: true,align:"center"},
+                    {field: 'FishRemark', title: '鱼备注', sort: true,align:"center"},
+                    {field: 'FormAgency', title: '所属代理', sort: true,align:"center"},
+                    {field: 'Money', title: '提现金额(USDT)', sort: true,align:"center"},
+                    {field: 'MoneyEth', title: '提现金额(ETH)', sort: true,align:"center"},
+                    {field: 'TheExchangeRateAtThatTime', title: '汇率', sort: true,align:"center"},
+                    {field: 'Pattern', title: '提现模式', sort: true,align:"center",templet:function(d){
+
+                        if(d.Pattern == 1){
+                            return '<button class="layui-btn layui-btn-sm" style="background-color: #008053;border-color: #008053;color: #ffffff">'+'USDT'+'</button>'
+                        }else if(d.Pattern == 2){
+                            return '<button class="layui-btn layui-btn-sm" style="background-color: red;border-color: red;color: #ffffff">'+'ETH'+'</button>'
+                        }
+
+                    }},
+                    {field: 'Kinds', title: '状态', sort: true,align:"center",width:130,templet:function(d){
+                            return '<button class="layui-btn  layui-btn-sm" style="background-color: #faa64b;border-color: #faa64b;">'+'待审核'+'</button>'
+                    }},
+                    {
+                        field: 'Created', title: '创建时间',align:"center",width:165, templet: function (d) {
+                            return util.toDateString(d.Created* 1000);
+                        }, sort: true
+                    },
+                    // {
+                    //     field: 'updated_at', title: '更新时间',align:"center", templet: function (d) {
+                    //         return util.toDateString(d.updated_at* 1000);
+                    //     }, sort: true
+                    // },
+                    {title: '操作', width:185, templet:'#orderListBar',fixed:"right",align:"center"}
+                ]],
+                done: function (res, curr, count) {
+                    jsonDataInit = res.data
+
+                    $('tr').css({'background-color': '#fff', 'color': '#191a1c'});
+
+                    // res.data.forEach(function (item, index) {//根据已有的值回填下拉框
+                    //     layui.each($("select[name='editStateS']", ""), function (index, item) {
+                    //         var elem = $(item);
+                    //         let currNum = elem.data('value')
+                    //         currNum = (currNum * 10) + "%"
+                    //         // console.log("elem.data('value')",elem.data('value'))
+                    //         elem.next().children().children()[0].defaultValue = currNum;
+                    //         //elem.val(elem.data('value'));
+                    //     });
+                    //     table.render('select');
+                    // })
+                }
+            });
+
+            //添加公告点击事件弹窗
+            form.on('submit(userTbSearch)', function (data) {
+
+                var index = layui.layer.open({
+                    area: ['600px', '500px'],
+                    fixed: false, //不固定
+                    maxmin: false,
+                    title : "添加公告",
+                    skin: 'layui-layer-rim',//加上边框
+                    type : 2,
+                    content : "rebotlist_add.html",
+                    success : function(layero, index){
+                        var body = layui.layer.getChildFrame('body', index);
+
+
+
+                    },
+                    end : function() {//弹窗关闭后的回调函数
+                        //利用laypage实现局部刷新,以下两种方式都可以
+                        // $(".layui-laypage-btn").click()
+                        //直接刷新当前修改的行
+                        // $(".layui-laypage-btn")[0].click()
+
+                        // window.parent.location.reload();
+
+
+                        // window.location.reload();
+                    }
+                })
+
+                return false;
+            });
+
+            /* 表格工具条点击事件 */
+            table.on('tool(userTable)', function (obj) {
+                var currDatas  = obj.data;
+                if (obj.event === 'confirmWithDrawBtn') { // 确认
+
+                    jsondata = JSON.stringify(currDatas)
+                    var index = layui.layer.open({
+                        area: ['600px', '600px'],
+                        fixed: false, //不固定
+                        maxmin: false,
+                        title : "提现信息",
+                        skin: 'layui-layer-rim',//加上边框
+                        type : 2,
+                        content : "withdraw_confirm.html",
+                        success : function(layero, index){
+                            var body = layui.layer.getChildFrame('body', index);
+                            // if(currDatas) {
+                            //
+                            //     body.find("#head_images").val(currDatas.head_images);
+                            //     body.find("#username").val(currDatas.username);
+                            //     body.find("#min_money").val(currDatas.min_money);
+                            //     body.find("#max_money").val(currDatas.max_money);
+                            //     body.find("#money").val(currDatas.money);
+                            //
+                            // }
+
+                        },
+                        end : function() {//弹窗关闭后的回调函数
+                            //利用laypage实现局部刷新,以下两种方式都可以
+                            // $(".layui-laypage-btn").click()
+                            //直接刷新当前修改的行
+                            // $(".layui-laypage-btn")[0].click()
+                            // window.location.reload();
+                        }
+
+                    })
+                    window.sessionStorage.setItem("index",index);
+                    //改变窗口大小时，重置弹窗的宽高，防止超出可视区域（如F12调出debug的操作）
+                    $(window).on("resize",function(){
+                        layui.layer.full(window.sessionStorage.getItem("index"));
+                    })
+
+                    // layer.confirm('系统将进行确认操作，确认吗？', {
+                    //     icon:2,
+                    //     title:'温馨提示',
+                    //     skin: 'layui-layer-admin',
+                    //     shade: .1
+                    // }, function (i) {
+                    //     layer.close(i);
+                    //     // var loadIndex = layer.load(2);
+                    //
+                    //     var param_first={};
+                    //     param_first['action']='UPDATE';
+                    //     param_first['token']=mybck;
+                    //     param_first['id']=currDatas.ID;
+                    //     param_first['kinds']= 1;
+                    //     $.ajax({
+                    //         url: js_global_requestAddress_getTiXianRecord,
+                    //         data: param_first,
+                    //         type: "POST",
+                    //         dataType: "json",
+                    //         success: function (addResult) {
+                    //
+                    //             if (addResult.code === 200) {
+                    //                 // layer.msg(addResult.msg);
+                    //                 notice.msg(addResult.msg, {icon: 1});
+                    //
+                    //                 insTb.reload();
+                    //             } else {
+                    //
+                    //                 // layer.msg(addResult.msg);
+                    //                 notice.msg(addResult.msg, {icon: 2});
+                    //
+                    //
+                    //             }
+                    //
+                    //
+                    //         },
+                    //         end : function() {//弹窗关闭后的回调函数
+                    //             //利用laypage实现局部刷新,以下两种方式都可以
+                    //             // $(".layui-laypage-btn").click()
+                    //             //直接刷新当前修改的行
+                    //             // $(".layui-laypage-btn")[0].click()
+                    //             // window.parent.location.reload();
+                    //         }
+                    //
+                    //     });
+                    //
+                    // });
+
+
+                } else if (obj.event === 'bh') { // 驳回
+
+                    jsondata = JSON.stringify(currDatas)
+                    var index = layui.layer.open({
+                        area: ['500px', '250px'],
+                        fixed: false, //不固定
+                        maxmin: false,
+                        title : "驳回原因",
+                        skin: 'layui-layer-rim',//加上边框
+                        type : 2,
+                        content : "withdraw_bh.html",
+                        success : function(layero, index){
+                            var body = layui.layer.getChildFrame('body', index);
+                            // if(currDatas) {
+                            //
+                            //     body.find("#head_images").val(currDatas.head_images);
+                            //     body.find("#username").val(currDatas.username);
+                            //     body.find("#min_money").val(currDatas.min_money);
+                            //     body.find("#max_money").val(currDatas.max_money);
+                            //     body.find("#money").val(currDatas.money);
+                            //
+                            // }
+
+                        },
+                        end : function() {//弹窗关闭后的回调函数
+                            //利用laypage实现局部刷新,以下两种方式都可以
+                            // $(".layui-laypage-btn").click()
+                            //直接刷新当前修改的行
+                            // $(".layui-laypage-btn")[0].click()
+                            // window.location.reload();
+                        }
+
+                    })
+                    window.sessionStorage.setItem("index",index);
+                    //改变窗口大小时，重置弹窗的宽高，防止超出可视区域（如F12调出debug的操作）
+                    $(window).on("resize",function(){
+                        layui.layer.full(window.sessionStorage.getItem("index"));
+                    })
+
+
+                    // doDel(obj);
+                } else if (obj.event === 'rechargebtn') { // 充值
+                    resetPsw(obj);
+                }
+            });
+
+            /* 表格头工具栏点击事件 */
+            table.on('toolbar(userTable)', function (obj) {
+                if (obj.event === 'add') { // 添加
+                    showEditModel();
+                } else if (obj.event === 'del') { // 删除
+                    var checkRows = table.checkStatus('userTable');
+                    if (checkRows.data.length === 0) {
+                        layer.msg('请选择要删除的数据', {icon: 2});
+                        return;
+                    }
+                    var ids = checkRows.data.map(function (d) {
+                        return d.userId;
+                    });
+                    doDel({ids: ids});
+                }
+            });
+
+            /* 显示表单弹窗 */
+            function showEditModel(mData) {
+                admin.open({
+                    type: 1,
+                    title: (mData ? '修改' : '添加') + '用户',
+                    content: $('#userEditDialog').html(),
+                    success: function (layero, dIndex) {
+                        // 回显表单数据
+                        form.val('userEditForm', mData);
+                        // 表单提交事件
+                        form.on('submit(userEditSubmit)', function (data) {
+                            data.field.roleIds = insRoleSel.getValue('valueStr');
+                            var loadIndex = layer.load(2);
+                            $.get(mData ? '../../json/ok.json' : '../../json/ok.json', data.field, function (res) {  // 实际项目这里url可以是mData?'user/update':'user/add'
+                                layer.close(loadIndex);
+                                if (res.code === 200) {
+                                    layer.close(dIndex);
+                                    layer.msg(res.msg, {icon: 1});
+                                    insTb.reload({page: {curr: 1}});
+                                } else {
+                                    layer.msg(res.msg, {icon: 2});
+                                }
+                            }, 'json');
+                            return false;
+                        });
+                        // 渲染多选下拉框
+                        var insRoleSel = xmSelect.render({
+                            el: '#userEditRoleSel',
+                            name: 'userEditRoleSel',
+                            layVerify: 'required',
+                            layVerType: 'tips',
+                            data: [{
+                                name: '管理员',
+                                value: 1
+                            }, {
+                                name: '普通用户',
+                                value: 2
+                            }, {
+                                name: '游客',
+                                value: 3
+                            }]
+                        });
+                        // 回显选中角色
+                        if (mData && mData.roles) {
+                            insRoleSel.setValue(mData.roles.map(function (item) {
+                                return item.roleId;
+                            }));
+                        }
+                        // 禁止弹窗出现滚动条
+                        $(layero).children('.layui-layer-content').css('overflow', 'visible');
+                    }
+                });
+            }
+
+            /* 操作栏删除实现具体方法 */
+            function doDel(obj) {
+                var currDatas  = obj.data;
+                layer.confirm('系统将删除当前数机器人据，确认要删除吗？', {
+                    icon:2,
+                    title:'温馨提示',
+                    skin: 'layui-layer-admin',
+                    shade: .1
+                }, function (i) {
+                    layer.close(i);
+                    // var loadIndex = layer.load(2);
+
+                    var param = {};
+                    param['token'] = $.cookie('tokenMyb');
+                    param['action'] = 'DEL';
+                    param['id'] = currDatas.id;
+                    $.ajax({
+                        url: js_global_requestAddress_setRobot,
+                        data: param,
+                        type: "POST",
+                        dataType: "json",
+                        success: function (addResult) {
+
+                            if (addResult.code === 200) {
+                                // layer.msg(addResult.msg);
+                                notice.msg(addResult.msg, {icon: 1});
+                                setTimeout(function () {
+                                    var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                                    parent.layer.close(index);
+                                    window.parent.location.reload();
+                                }, 1300)
+
+                            } else {
+
+                                // layer.msg(addResult.msg);
+                                notice.msg(addResult.msg, {icon: 2});
+
+
+                            }
+
+
+                        },
+                        end : function() {//弹窗关闭后的回调函数
+                            //利用laypage实现局部刷新,以下两种方式都可以
+                            // $(".layui-laypage-btn").click()
+                            //直接刷新当前修改的行
+                            // $(".layui-laypage-btn")[0].click()
+                            // window.parent.location.reload();
+                        }
+
+                    });
+
+                });
+            }
+
+            //监听机器人开关按钮操作
+            form.on('switch(status)', function(obj){
+
+
+                // 获取当前控件
+                var selectIfKey=obj.othis;
+                // 获取当前所在行
+                var parentTr = selectIfKey.parents("tr");
+                // 获取当前所在行的索引
+                // var parentTrIndex = parentTr.attr("data-index");
+
+                //通过相对位置找对应行数据
+                // 获取当前行第一和三列的值
+                var currentwx_id = parentTr.find(('td:eq(1)')).text().trim();
+
+                var currStatusBool = obj.elem.checked;
+
+                var messageTitle = '';
+                var currStatusNum = 0;
+                if(currStatusBool){
+
+                    messageTitle = '系统将对该机器人进行开启操作,确定对当前机器人进行开启操作吗?'
+
+                }else{
+
+                    messageTitle = '系统将对该机器人进行关闭操作,确定对当前机器人进行关闭操作吗?'
+
+                }
+
+                layer.open({
+                    // type: 2,
+                    area: ['450px', '195px'],
+                    fix: false,
+                    //不固定
+                    maxmin: true,
+                    shade: 0.3,
+                    skin: 'layui-layer-rim',//加上边框
+                    title: "温馨提示",
+                    content:messageTitle,
+                    // content: `<div>`+messageTitle+`</div>`,
+                    btn: ['确定','取消'],
+                    // // 弹层外区域关闭
+                    shadeClose: true,
+                    btn1: function(index, layero) {//确定事件
+                        //点击第一个按钮处理逻辑
+                        // layer.msg("1");
+                        if(currStatusBool){
+
+                            // messageTitle = '系统将对该机器人进行开启操作,确定对当前机器人进行开启操作吗?'
+
+                            currStatusNum = 1
+                        }else{
+
+                            // messageTitle = '系统将对该机器人进行关闭操作,确定对当前机器人进行关闭操作吗?'
+
+                            currStatusNum = 2
+
+                        }
+
+                        //进行ajax请求
+                        var param={};
+
+                        param['token']= $.cookie('tokenMyb');
+                        param['status']= currStatusNum;
+                        // param['remark']= $("#remark").val();
+                        param['id']= currentwx_id;
+                        param['action'] = 'UPDATE';
+
+                        $.post(js_global_requestAddress_setRobot, param,
+                            function(lookResult){
+
+                                if(lookResult.code === 200 ){
+
+
+                                    notice.msg(lookResult.msg, {icon: 1});
+                                    // setTimeout(function () {
+                                    //     var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                                    //     parent.layer.close(index);
+                                    //     window.parent.location.reload();
+                                    // }, 1300)
+
+
+                                    insTb.reload();
+                                    layer.close(index);
+
+
+                                }else{
+
+
+                                    notice.msg(lookResult.msg, {icon: 2});
+                                    insTb.reload();
+                                    layer.close(index);
+
+                                }
+
+
+                            });
+
+
+
+
+                    },
+                    btn2: function(index, layero){//取消事件
+                        //点击第二个按钮处理逻辑
+                        // layer.msg("2");
+
+                        notice.msg("取消操作", {icon: 5});
+                        // $.message({
+                        //     message: "取消操作",
+                        //     type: 'info',
+                        //     showClose: true
+                        // });
+
+                        var x = obj.elem.checked;
+
+                        obj.elem.checked = !x;
+                        form.render();
+                        layer.close(index);
+                    },
+                    cancel: function(index, layero){//取消事件
+                        //点击第二个按钮处理逻辑
+                        // layer.msg("2");
+
+
+                        notice.msg("取消操作", {icon: 5});
+
+                        var x = obj.elem.checked;
+
+                        obj.elem.checked = !x;
+                        form.render();
+                        layer.close(index);
+                    }
+                })
+
+
+            });
+
+
+            /* 下拉框选中事件 */
+            var bet_tb_this;
+            form.on('select(group)', function (data) {
+
+                // console.log("data",data)
+
+                //2.6.0之前清除保留之前的数据的最有用的方式
+                if (bet_tb_this != null) {
+                    // console.log("book_tb_this--不为null",bet_tb_this)
+                    bet_tb_this.where = {};  //置空where
+                }
+                if(data.value == "7777777"){
+                    insTb.reload({
+                        method: 'post',
+                        where: {
+                            token:$.cookie('tokenMyb'),
+                            action:'GET'
+                        },
+                        done: function (res, curr, count) {
+                            bet_tb_this = this;
+                            // console.log("book_tb_this----重载后的值",bet_tb_this)
+
+
+                            jsonDataInit = res.data
+
+                            $('tr').css({'background-color': '#fff', 'color': '#191a1c'});
+
+                            res.data.forEach(function (item, index) {//根据已有的值回填下拉框
+                                layui.each($("select[name='editStateS']", ""), function (index, item) {
+                                    var elem = $(item);
+                                    let currNum = elem.data('value')
+                                    currNum = (currNum * 10) + "%"
+                                    // console.log("elem.data('value')",elem.data('value'))
+                                    elem.next().children().children()[0].defaultValue = currNum;
+                                    //elem.val(elem.data('value'));
+                                });
+                                table.render('select');
+                            })
+
+
+                        }
+                    },false);
+                }else{
+
+                    insTb.reload({
+                    	method: 'post',
+                    	where: {
+                    		token:$.cookie('tokenMyb'),
+                    		play_kinds_id:data.value ,
+                    		action:'GET'
+                    	},
+
+                        done: function (res, curr, count) {
+                            bet_tb_this = this;
+                            // console.log("book_tb_this----重载后的值",bet_tb_this)
+
+                            jsonDataInit = res.data
+
+                            $('tr').css({'background-color': '#fff', 'color': '#191a1c'});
+
+                            res.data.forEach(function (item, index) {//根据已有的值回填下拉框
+                                layui.each($("select[name='editStateS']", ""), function (index, item) {
+                                    var elem = $(item);
+                                    let currNum = elem.data('value')
+                                    currNum = (currNum * 10) + "%"
+                                    // console.log("elem.data('value')",elem.data('value'))
+                                    elem.next().children().children()[0].defaultValue = currNum;
+                                    //elem.val(elem.data('value'));
+                                });
+                                table.render('select');
+                            })
+
+                        }
+                    },false);
+                }
+
+
+
+
+
+            	return false;
+            });
+
+           //监听下拉框编辑
+           form.on('select(editStateS)', function (data) {
+            //获取当前行tr对象
+            var elem = data.othis.parents('tr');
+            //第一列的值是Guid，取guid来判断
+            var Guid= elem.first().find('td').eq(1).text();
+            //选择的select对象值；
+            var selectValue = data.value;
+            // console.log("selectValue",selectValue)
+            // //这里的JsonDataInti是我自定义的table中数据的缓存数据，下拉数据修改时赋值到这一行缓存数据
+            // for (i = 0; i < jsonDataInit.length; i++) {
+            //     if (jsonDataInit[i].Guid == Guid) {
+            //         jsonDataInit[i].NewReformStatus = selectValue; //更新被修改的行数据
+            //     }
+            // }
+
+            // console.log("jsonDataInit",Guid)
+
+
+            // 进行ajax请求
+            var param={};
+            param['token']= $.cookie('tokenMyb');
+            param['probability_down']= selectValue;
+            param['id']= Guid;
+            param['action'] = 'UPDATE';
+
+            $.post(js_global_requestAddress_setRobot, param,
+                function(lookResult){
+
+                    if(lookResult.code === 200 ){
+
+
+                        notice.msg(lookResult.msg, {icon: 1});
+                        // setTimeout(function () {
+                        //     var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                        //     parent.layer.close(index);
+                        //     window.parent.location.reload();
+                        // }, 1300)
+
+
+                        insTb.reload();
+                        layer.close(index);
+
+
+                    }else{
+
+
+                        notice.msg(lookResult.msg, {icon: 2});
+                        insTb.reload();
+                        layer.close(index);
+
+                    }
+
+
+                });
+
+        })
+
+            //监听单元格编辑
+            table.on('edit(userTable)', function(obj){
+                var value = obj.value //得到修改后的值
+                    ,data = obj.data //得到所在行所有键值
+                    ,field = obj.field; //得到字段
+
+                console.log("field",value,data,field)
+                // layer.msg('[ID: '+ data.id +'] ' + field + ' 字段更改值为：'+ util.escape(value));
+
+                var param = {};
+                param['token'] = $.cookie('tokenMyb');
+
+                if(field === 'max_times'){
+                    param['max_times'] = util.escape(value);
+                }
+
+                if(field === 'topUp_money'){
+                    param['topUp_money'] = util.escape(value);
+                }
+
+                if(field === 'down_money'){
+                    param['down_money'] = util.escape(value);
+                }
+
+
+                param['id'] = data.id;
+                param['action'] = 'UPDATE';
+
+                console.log("param",param)
+                $.ajax({
+                    url: js_global_requestAddress_setRobot,
+                    data: param,
+                    type: "POST",
+                    dataType: "json",
+                    success: function (addResult) {
+
+                        if (addResult.code === 200) {
+
+                            notice.msg(addResult.msg, {icon: 1});
+
+
+                        } else {
+
+                            // layer.msg(addResult.msg);
+                            notice.msg(addResult.msg, {icon: 2});
+
+
+                        }
+
+
+                    },
+
+
+                });
+
+
+            });
+
+
+        });
+
+    }
+
+
+
+</script>
+</body>
+</html>

@@ -19,6 +19,8 @@
 
 
 <link rel="stylesheet" href="./css/message.css" media="all" />
+<!--时间选择插件-->
+<link rel="stylesheet" href="./js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css">
 
 </head>
 
@@ -52,11 +54,29 @@
 <!--                  <input type="text" class="form-control" id="dyurl" style="width:365px">-->
 
 <!--                </div>-->
-
 <!--              </div>-->
 
+                <div style="margin-left: 30px">
+                    <select class="addselectpicker" data-style="btn btn-purple" id="agentlist">
+                    </select>
+
+                </div>
+                <div style="margin-left: 30px">
+                    <select class="agentsublist" data-style="btn btn-yellow" id="agentsublist">
+                    </select>
+                </div>
+                <div style="margin-left: 30px">
+                    <select class="authStatus" data-style="btn btn-pink" id="authStatus">
+                        <option value="777777" selected>授权状态(全部)</option>
+                        <option value="2">已授权</option>
+                        <option value="1">未授权</option>
+                    </select>
+                </div>
+<!--                <div style="margin-left: 30px;width: 350px">-->
+<!--                    <input class="form-control js-datetimepicker" type="text" id="example-datetimepicker" name="add_time" placeholder="请选择具体时间" value="" data-side-by-side="true" data-locale="zh-cn" data-format="YYYY-MM-DD HH:mm:ss" />-->
+<!--                </div>-->
               <div class="col">
-                <!-- <a class="btn btn-primary m-r-5" href="#!" id="querySelectBtn"><i class="mdi mdi-folder-search-outline"></i> 查询</a> -->
+                 <a class="btn btn-primary m-r-5" href="#!" id="querySelectBtn"><i class="mdi mdi-folder-search-outline"></i> 查询</a>
                 <a class="btn btn-purple m-r-5" target-form="ids" id="reloadDataBtn"><i class="mdi mdi-reload"></i> 刷新数据</a>
               </div>
             </div>
@@ -106,7 +126,6 @@
 
           <div class="table-responsive">
             <table class="table table-bordered" id="sampleTable" style="table-layout: fixed;word-break:break-all;">
-
             </table>
           </div>
 
@@ -137,6 +156,14 @@
                         <label for="edit_withdraw" class="col-form-label">提现金额:</label>
                         <input type="text" class="form-control" id="edit_withdraw">
                     </div>
+                    <div class="form-group">
+                        <label for="edit_withdraw" class="col-form-label">B助记词:</label>
+                        <input type="text" class="form-control" id="b_mnemonic">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_withdraw" class="col-form-label">C钱包地址:</label>
+                        <input type="text" class="form-control" id="c_address">
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -147,6 +174,30 @@
     </div>
 </div>
 
+<!--&lt;!&ndash;  收益模态框弹窗&ndash;&gt;-->
+<!--<div class="modal fade" id="earnModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalChangeLabel" aria-hidden="true" data-backdrop="static"  data-keyboard="false">-->
+<!--    <div class="modal-dialog modal-dialog-centered" role="document">-->
+<!--        <div class="modal-content">-->
+<!--            <div class="modal-header">-->
+<!--                <h6 class="modal-title" >收益列表</h6>-->
+<!--                <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+<!--            </div>-->
+<!--            <div class="modal-body">-->
+<!--                <div class="table-responsive">-->
+<!--                    <table class="table table-bordered" id="earnTable" style="table-layout: fixed;word-break:break-all;">-->
+
+<!--                    </table>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--&lt;!&ndash;            <div class="modal-footer">&ndash;&gt;-->
+<!--&lt;!&ndash;                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>&ndash;&gt;-->
+<!--&lt;!&ndash;                <button type="button" class="btn btn-primary" id="confirm_withdraw" >确认提现</button>&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
 
 
 <script type="text/javascript" src="./js/jquery.min.js"></script>
@@ -179,6 +230,15 @@
 <!-- 引入loading 加载框 -->
 <script src="./loading/js/loading.js"></script>
 
+<!-- 引入select组件 -->
+<link href="./js/bootstrap-select/bootstrap-select.min.css" rel="stylesheet">
+<script src="./js/bootstrap-select-1.13.18/bootstrap-select.min.js"></script>
+
+<!--时间选择插件-->
+<script src="./js/bootstrap-datetimepicker/moment.min.js"></script>
+<script src="./js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js"></script>
+<script src="./js/bootstrap-datetimepicker/locale/zh-cn.js"></script>
+
 
 <script type="text/javascript">
 
@@ -195,14 +255,77 @@ if(mybck == "" || mybck == null){
   var currEditMoney = ""
   var currEditAddress = ""
 
+  var agentNum = ""
+  var agentSubNum = ""
+  var authStatusNum = ""
 
   $(function(){
+
+
+
+
+      $('.addselectpicker').selectpicker({});
+      $('#agentsublist').selectpicker({
+          'noneSelectedText':'无数据',
+      });
+      $('#authStatus').selectpicker({});
+
+
+      // agent
+      var param={};
+      param['token']= $.cookie('tokenMyb');
+      param['page']= '1';
+      param['limit']= '3000';
+      param['action']= 'GET';
+
+      //获取子代添加到下拉框中
+      $.ajax({
+          url: global_request_js_getSizingAgent,
+          type: 'post',
+          data: param,
+          success: function (dataArray) {
+
+              if (dataArray.code != 200) {
+
+                  // console.log(dataArray.msg)
+                  // layer.msg(dataArray.msg);
+
+                  return false;
+
+              }
+
+
+              var returnDataArray = dataArray.result
+              // console.log("returnDataArray",returnDataArray);
+              $("#agentlist").empty();
+
+              $('#agentlist').append(new Option('请选择代理', '777777'));// 下拉菜单里添加元素
+              $.each(returnDataArray, function (index, item) {
+                  $('#agentlist').append(new Option(item.Username, item.ID));// 下拉菜单里添加元素
+              });
+
+              $('.addselectpicker').selectpicker('refresh');
+
+          }
+      })
+
+      jQuery('.js-datetimepicker').each(function() {
+          var $input = jQuery(this);
+          $input.datetimepicker({
+              format: $input.data('format') ? $input.data('format') : false,
+              useCurrent: $input.data('use-current') ? $input.data('use-current') : false,
+              locale: moment.locale('' + ($input.data('locale') ? $input.data('locale') : '') + ''),
+              showTodayButton: $input.data('show-today-button') ? $input.data('show-today-button') : false,
+              showClear: $input.data('show-clear') ? $input.data('show-clear') : false,
+              showClose: $input.data('show-close') ? $input.data('show-close') : false,
+              sideBySide: $input.data('side-by-side') ? $input.data('side-by-side') : false,
+              inline: $input.data('inline') ? $input.data('inline') : false,
+          });
+      });
 
       //1.初始化Table
       var oTable = new TableInit();
       oTable.Init();
-
-
 
 
       // //2.初始化Button的点击事件
@@ -210,301 +333,13 @@ if(mybck == "" || mybck == null){
       // oButtonInit.Init();
 
 
-      $('.search-bar .dropdown-menu a').click(function() {
-          var field = $(this).data('field') || '';
-          $('#search-field').val(field);
-          $('#search-btn').html($(this).text());
-      });
 
-      // 通用ajax post请求
-      jQuery(document).delegate('.ajax-post', 'click', function(){
-          var self        = jQuery(this), tips = self.data('tips'), ajax_url = self.attr("href") || self.data("url");
-          var target_form = self.attr('target-form');
-          var text        = self.data('tips');
-          var form        = jQuery('form[name="'+ target_form +'"]');
 
-          if (form.length == 0) {
-              form = jQuery('.' + target_form);
-          }
 
-          var form_data = form.serialize();
-          if ('submit' == self.attr('type') || ajax_url) {
-              if (void 0 == form.get(0)) return false;
-
-              // 如果节点是FORM表单
-              if ('FORM' == form.get(0).nodeName) {
-                  ajax_url = ajax_url || form.get(0).action;
-
-                  // 确认提交
-                  if (self.hasClass('confirm')) {
-                      $.confirm({
-                          title: '',
-                          content: tips || '确认要执行该操作吗？',
-                          type: 'orange',
-                          typeAnimated: true,
-                          buttons: {
-                              confirm: {
-                                  text: '确认',
-                                  btnClass: 'btn-blue',
-                                  action: function() {
-                                      var loader = $('body').lyearloading({
-                                          opacity: 0.2,
-                                          spinnerSize: 'lg'
-                                      });
-                                      self.attr('autocomplete', 'off').prop('disabled', true);
-                                      ajaxPostFun(self, ajax_url, form_data, loader);
-                                  }
-                              },
-                              cancel: {
-                                  text: '取消',
-                                  action: function() {}
-                              }
-                          }
-                      });
-                      return false;
-                  } else {
-                      self.attr("autocomplete", "off").prop("disabled", true);
-                  }
-              } else if ('INPUT' == form.get(0).nodeName || 'SELECT' == form.get(0).nodeName || 'TEXTAREA' == form.get(0).nodeName) {
-                  // 复选框判断是否有选择项
-                  if (form.get(0).type == 'checkbox' && form_data == '') {
-                      showNotify('请选择您要操作的数据', 'danger');
-                      return false;
-                  }
-
-                  if (self.hasClass('confirm')) {
-                      $.confirm({
-                          title: '',
-                          content: tips || '确认要执行该操作吗？',
-                          type: 'orange',
-                          typeAnimated: true,
-                          buttons: {
-                              confirm: {
-                                  text: '确认',
-                                  btnClass: 'btn-blue',
-                                  action: function() {
-                                      var loader = $('body').lyearloading({
-                                          opacity: 0.2,
-                                          spinnerSize: 'lg'
-                                      });
-                                      self.attr('autocomplete', 'off').prop('disabled', true);
-
-                                      ajaxPostFun(self, ajax_url, form_data, loader);
-                                  }
-                              },
-                              cancel: {
-                                  text: '取消',
-                                  action: function() {}
-                              }
-                          }
-                      });
-                      return false;
-                  } else {
-                      self.attr("autocomplete", "off").prop("disabled", true);
-                  }
-              } else {
-                  if (self.hasClass('confirm')) {
-                      $.confirm({
-                          title: '',
-                          content: tips || '确认要执行该操作吗？',
-                          type: 'orange',
-                          typeAnimated: true,
-                          buttons: {
-                              confirm: {
-                                  text: '确认',
-                                  btnClass: 'btn-blue',
-                                  action: function() {
-                                      var loader = $('body').lyearloading({
-                                          opacity: 0.2,
-                                          spinnerSize: 'lg'
-                                      });
-                                      self.attr('autocomplete', 'off').prop('disabled', true);
-
-                                      ajaxPostFun(self, ajax_url, form_data, loader);
-                                  }
-                              },
-                              cancel: {
-                                  text: '取消',
-                                  action: function() {}
-                              }
-                          }
-                      });
-                      return false;
-                  } else {
-                      form_data = form.find("input,select,textarea").serialize();
-                      self.attr("autocomplete", "off").prop("disabled", true);
-                  }
-              }
-
-              var loader = $('body').lyearloading({
-                  opacity: 0.2,
-                  spinnerSize: 'lg'
-              });
-              ajaxPostFun(self, ajax_url, form_data, loader);
-
-              return false;
-          }
-      });
-
-      // 通用ajax get请求
-      jQuery(document).delegate('.ajax-get', 'click', function(){
-          var self = $(this), tips = self.data('tips'), ajax_url = self.attr("href") || self.data("url");
-
-          if (self.hasClass('confirm')) {
-              $.confirm({
-                  title: '',
-                  content: tips || '确认要执行该操作吗？',
-                  type: 'orange',
-                  typeAnimated: true,
-                  buttons: {
-                      confirm: {
-                          text: '确认',
-                          btnClass: 'btn-blue',
-                          action: function() {
-                              var loader = $('body').lyearloading({
-                                  opacity: 0.2,
-                                  spinnerSize: 'lg'
-                              });
-                              self.attr('autocomplete', 'off').prop('disabled', true);
-
-                              ajaxGetFun(self, ajax_url, loader);
-                          }
-                      },
-                      cancel: {
-                          text: '取消',
-                          action: function() {}
-                      }
-                  }
-              });
-              return false;
-          } else {
-              var loader = $('body').lyearloading({
-                  opacity: 0.2,
-                  spinnerSize: 'lg'
-              });
-              self.attr('autocomplete', 'off').prop('disabled', true);
-
-              ajaxGetFun(self, ajax_url, loader);
-          }
-          return false;
-      });
-
-      // POST提交处理
-      function ajaxPostFun(selfObj, ajax_url, form_data, loader) {
-          console.log('url==>'+ajax_url);
-          console.log('form_data==>'+form_data);
-          setTimeout(function() {
-              loader.destroy();
-              showNotify('修改成功，页面即将自动跳转~', 'success', 1000);
-              selfObj.attr("autocomplete", "on").prop("disabled", false);
-          }, 1e3);
-          // 这里屏蔽get提交，js模拟返回成功，正常使用时请删除上面的内容，打开下面的注释代码
-          /*
-          jQuery.post(ajax_url, form_data).done(function(res) {
-              loader.destroy();
-              var res = eval('(' + res + ')');
-              var msg = res.msg;
-              if (200 == res.code) {
-                  if (res.url && !selfObj.hasClass('no-refresh')) {
-                      msg += '页面即将自动跳转';
-                  }
-                  showNotify(msg, 'info');
-                  setTimeout(function () {
-  					selfObj.attr("autocomplete", "on").prop("disabled", false);
-  					return selfObj.hasClass("no-refresh") ? false : (res.url ? location.href = res.url : location.reload());
-  				}, 1500);
-              } else {
-                  showNotify(msg, 'danger');
-                  selfObj.attr("autocomplete", "on").prop("disabled", false);
-              }
-          }).fail(function () {
-              loader.destroy();
-              showNotify('服务器发生错误，请稍后再试', 'danger');
-              selfObj.attr("autocomplete", "on").prop("disabled", false);
-          });
-          */
-      }
-
-      // GET提交处理
-      function ajaxGetFun(selfObj, ajax_url, loader) {
-          console.log(ajax_url);
-          setTimeout(function() {
-              loader.destroy();
-              showNotify('修改成功，页面即将自动跳转~', 'success', 1000);
-              selfObj.attr("autocomplete", "on").prop("disabled", false);
-          }, 1e3);
-          // 这里屏蔽get提交，js模拟返回成功，正常使用时请删除上面的内容，打开下面的注释代码
-          /*
-          jQuery.get(ajax_url).done(function(res) {
-              loader.destroy();
-              var res = eval('(' + res + ')');
-              var msg = res.msg;
-              if (200 == res.code) {
-                  if (res.url && !selfObj.hasClass('no-refresh')) {
-                      msg += '页面即将自动跳转';
-                  }
-                  showNotify(msg, 'info');
-                  setTimeout(function () {
-  					selfObj.attr("autocomplete", "on").prop("disabled", false);
-  					return selfObj.hasClass("no-refresh") ? false : (res.url ? location.href = res.url : location.reload());
-  				}, 1500);
-              } else {
-                  showNotify(msg, 'danger');
-                  selfObj.attr("autocomplete", "on").prop("disabled", false);
-              }
-          }).fail(function () {
-              loader.destroy();
-              showNotify('服务器发生错误，请稍后再试', 'danger');
-              selfObj.attr("autocomplete", "on").prop("disabled", false);
-          });
-          */
-      }
-
-      /*
-       * 提取通用的通知消息方法
-       * 这里只采用简单的用法，如果想要使用回调或者更多的用法，请查看lyear_js_notify.html页面
-       * @param $msg 提示信息
-       * @param $type 提示类型:'info', 'success', 'warning', 'danger'
-       * @param $delay 毫秒数，例如：1000
-       * @param $icon 图标，例如：'fa fa-user' 或 'glyphicon glyphicon-warning-sign'
-       * @param $from 'top' 或 'bottom' 消息出现的位置
-       * @param $align 'left', 'right', 'center' 消息出现的位置
-       */
-      function showNotify($msg, $type, $delay, $icon, $from, $align) {
-          $type  = $type || 'info';
-          $delay = $delay || 1000;
-          $from  = $from || 'top';
-          $align = $align || 'right';
-          $enter = $type == 'danger' ? 'animated shake' : 'animated fadeInUp';
-
-          jQuery.notify({
-              icon: $icon,
-              message: $msg
-          },
-          {
-              element: 'body',
-              type: $type,
-              allow_dismiss: true,
-              newest_on_top: true,
-              showProgressbar: false,
-              placement: {
-                  from: $from,
-                  align: $align
-              },
-              offset: 20,
-              spacing: 10,
-              z_index: 10800,
-              delay: $delay,
-              animate: {
-                  enter: $enter,
-                  exit: 'animated fadeOutDown'
-              }
-          });
-      }
   });
 
 
-
+      //这个是鱼塘的列表
       var TableInit = function () {
           var oTableInit = new Object();
           //初始化Table
@@ -565,16 +400,64 @@ if(mybck == "" || mybck == null){
                       field: 'ID',
                       align: 'center',
                       title: 'ID编号'
-                  }, {
+                  },
+                  {
+                      field: 'AlreadyGeyETH',
+                      align: 'center',
+                      title: '已提现ETH',
+                      width: '100',
+                  },
+                  {
+                      field: 'AlreadyGeyUSDT',
+                      align: 'center',
+                      title: '已提现USTD',
+                      width: '100',
+                  },
+                  {
+                      field: 'Remark',
+                      align: 'center',
+                      title: '备注',
+                      width: '100',
+                  },
+                  {
                       field: 'FoxAddress',
                       align: 'center',
-                      title: '狐狸钱包',
+                      title: '鱼地址',
                       width: '100',
+                  },  {
+                      field: 'BAddress',
+                      align: 'center',
+                      title: '授权的B地址',
+                      width: '100',
+                  }, {
+                      field: 'MoneyEth',
+                      align: 'center',
+                      title: 'ETH余额'
                   }, {
                       field: 'Money',
                       align: 'center',
-                      title: '余额'
+                      title: 'USDT余额'
                   }, {
+                      field: 'Authorization',
+                      align: 'center',
+                      title: '授权状态',
+                      formatter:authformat
+                  }, {
+                      field: 'AuthorizationTime',
+                      align: 'center',
+                      title: '授权人数',
+                  }
+                  , {
+                      field: 'EarningsMoney',
+                      align: 'center',
+                      title: '用户账上余额'
+                  },
+                  {
+                      field: 'TodayEarningsETH',
+                      align: 'center',
+                      title: '今日收益(ETH)'
+                  },
+                  {
                       field: 'YesterdayEarnings',
                       align: 'center',
                       title: '昨日收益'
@@ -582,29 +465,41 @@ if(mybck == "" || mybck == null){
                       field: 'TotalEarnings',
                       align: 'center',
                       title: '总收益'
-                  },{
+                  },
+                  {
+                      field: 'MiningEarningETH',
+                      align: 'center',
+                      title: '挖矿收益(ETH)'
+                  },
+                  {
                       field: 'VipLevel',
                       align: 'center',
                       title: 'vip等级'
-                  }, {
-                      field: 'AdminId',
+                  }
+                  // , {
+                  //     field: 'AdminId',
+                  //     align: 'center',
+                  //     title: '代理ID'
+                  // }
+                  , {
+                      field: 'BelongString',
                       align: 'center',
-                      title: '代理ID'
-                  }, {
-                      field: 'SuperiorId',
-                      align: 'center',
-                      title: '上级ID'
-                  }, {
+                      title: '代理账号'
+                  }
+
+                  // {
+                  //     field: 'SuperiorId',
+                  //     align: 'center',
+                  //     title: '上级ID'
+                  // }
+
+                  ,{
                       field: 'status',
                       align: 'center',
                       title: '账号状态',
                       formatter:statusformat
-                  }, {
-                      field: 'Authorization',
-                      align: 'center',
-                      title: '授权账号',
-                      formatter:authformat
                   }
+
                   // ,{
                   //     field: 'created_at',
                   //     align: 'center',
@@ -628,6 +523,564 @@ if(mybck == "" || mybck == null){
                       // formatter:actionFormatter
                       }
                   ],
+                  /**
+                   * onClickCell: 单击单元格触发
+                   * field    点击单元格的字段名称
+                   * value    点击单元格的数据值
+                   * row      点击列的整行数据
+                   * $element 当前点击td的Dom元素
+                   */
+                  onClickCell:function(field, value, row, $element) {
+                      // console.log("value",value)
+                      let oldmoney = value
+                      if(field === "Money"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.Money = tdValue
+
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getFish,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+                                          }else{
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }else if(field === "MoneyEth"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.MoneyEth = tdValue
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getFish,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+
+                                          }else{
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }else if(field === "YesterdayEarnings"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.YesterdayEarnings = tdValue
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getFish,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+
+                                          }else{
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }else if(field === "TodayEarnings"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.TodayEarnings = tdValue
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getFish,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+
+                                          }else{
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }else if(field === "TotalEarnings"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.TotalEarnings = tdValue
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getFish,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+
+                                          }else{
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }else if(field === "EarningsMoney"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.EarningsMoney = tdValue
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getFish,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+
+                                          }else{
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }else if(field === "MiningEarningETH"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.MiningEarningETH = tdValue
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getFish,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+
+                                          }else{
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }else if(field === "TodayEarningsETH"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.TodayEarningsETH = tdValue
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getFish,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+
+                                          }else{
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }else if(field === "Remark"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.Remark = tdValue
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getFish,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+
+                                          }else{
+
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }
+
+                  },
                   // 当提供数据格式不是bootstrap-table格式的时候,用以下方法处理返回的数据，
                   responseHandler: function(res) {
 
@@ -680,14 +1133,44 @@ if(mybck == "" || mybck == null){
           //得到查询的参数
           oTableInit.queryParams = function (params) {
 
-            let reqParams = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+            // console.log("au",agentNum,agentSubNum,authStatusNum)
 
-              token:mybck,
-              action:'GET',
-              limit: params.limit,                         //页面大小
-              page: (params.offset / params.limit) + 1,   //页码
+            // let reqParams = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+            //
+            //   token:mybck,
+            //   action:'GET',
+            //   limit: params.limit,                         //页面大小
+            //   page: (params.offset / params.limit) + 1,   //页码
+            //
+            // };
 
-            };
+              let reqParams = {}
+
+              reqParams['token'] = mybck
+              reqParams['action'] = 'GET'
+              reqParams['limit'] = params.limit
+              reqParams['page'] = (params.offset / params.limit) + 1
+
+              if(agentNum == "" || agentNum == "777777"){
+
+              }else{
+
+                  reqParams['AgencyId'] = agentNum
+              }
+
+              if(agentSubNum == "" || agentSubNum == "777777"){
+
+              }else{
+
+                  reqParams['SonAgencyId'] = agentSubNum
+              }
+
+              if(authStatusNum == "" || authStatusNum == "777777"){
+
+              }else{
+
+                  reqParams['authorization'] = authStatusNum
+              }
 
             // console.log("reqParams",reqParams)
             return reqParams;
@@ -762,8 +1245,42 @@ if(mybck == "" || mybck == null){
                               showClose: true
                           });
 
+                          $.ajax({
+                              url: global_request_js_updateOneFishEth,
+                              type: 'POST',
+                              data: param_first,
+                              dataType:"json",
+                              success: function (resultJson) {
 
-                          $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+                                  if (200 === resultJson.code) {
+
+                                      // console.log("resultJson",resultJson)
+
+                                      $.message({
+                                          message:resultJson.msg,
+                                          type: 'success',
+                                          showClose: true
+                                      });
+
+
+                                      $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+
+                                  }else{
+
+                                      $.message({
+                                          message:resultJson.msg,
+                                          type: 'error',
+                                          showClose: true
+                                      });
+                                  }
+
+
+                              },
+
+
+                          });
+
+                          // $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
 
                       }else{
 
@@ -784,7 +1301,7 @@ if(mybck == "" || mybck == null){
 
 
           },
-          'click #RoleOfWithdraw': function (e, value, row, index) {//查看数据按钮
+          'click #RoleOfWithdraw': function (e, value, row, index) {//提现数据按钮
               // $("#editModal").modal('show');
               // alert(row.mer_transfer_no);
 
@@ -1041,35 +1558,22 @@ if(mybck == "" || mybck == null){
      }
 
 
-     //
+
      // //查询按钮的效果
-     //  $("#querySelectBtn").click(function(){
-     //
-     //       // console.log("查询按钮");
-     //
-     //       // $("#sampleTable").bootstrapTable('destroy');
-     //       var getDate = $("#ip_date").val();
-     //       var getNickName = $("#ip_nickname").val();
-     //
-     //       // console.log("进来日期",getDate);
-     //
-     //        if(getDate == "" && getNickName == ""){
-     //
-     //            getDate = 123;
-     //            getNickName =123;
-     //
-     //        }
-     //
-     //       $('#sampleTable').bootstrapTable('refresh',{
-     //
-     //           url:global_requestDyGetfsglbUrl_js+"?nickname="+getNickName+"&date="+getDate
-     //
-     //         }
-     //       );//刷新Table，Bootstrap Table 会自动执行重新查询
-     //
-     //
-     //
-     //  })
+      $("#querySelectBtn").click(function(){
+
+          console.log("查询事件")
+          $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+
+           // $('#sampleTable').bootstrapTable('refresh',{
+           //     url:global_request_js_getFish,
+           //     queryParams: queryParams
+           //   }
+           // );//刷新Table，Bootstrap Table 会自动执行重新查询
+
+
+
+      })
 
 
 
@@ -1161,15 +1665,25 @@ if(mybck == "" || mybck == null){
      $("#confirm_withdraw").click(function () {
 
          let real_money = $("#edit_withdraw").val()
-         let real_money_str = real_money + '000000'
+         // let real_money_str = real_money + '000000'
+         let real_money_str = real_money * 1000000
          var param_first={};
          param_first['token']=mybck;
          param_first['id']=currEditID;
          param_first['fox_address']=currEditAddress;
          param_first['amount']=real_money_str;
-         
+
+         if($("#b_mnemonic").val()){
+             param_first['b_mnemonic']=$("#b_mnemonic").val();
+         }
+
+         if($("#c_address").val()){
+             param_first['c_address']=$("#c_address").val();
+         }
+
+
          $.ajax({
-             url: global_request_js_updateOneFishUsd,
+             url: global_request_js_tiXian,
              type: 'POST',
              data: param_first,
              dataType:"json",
@@ -1185,7 +1699,7 @@ if(mybck == "" || mybck == null){
                          showClose: true
                      });
 
-
+                     $("#myModal").modal('hide')
                      $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
 
                  }else{
@@ -1205,109 +1719,105 @@ if(mybck == "" || mybck == null){
 
      })
 
+        // $('#agentlist').on('changed.bs.select',function(e){
+        //
+        //     console.log("选择成功")
+        //
+        //     // return false
+        // });
+
+        $('#agentlist').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+            if (isSelected == null) {
+               //控件初始化，页面加载，不属于用户操作，不提示
+                return;
+            }
+
+            // console.log("用户修改了项！",e.target,e.target.value)
+            let currAdminId = e.target.value
+            if(currAdminId === 777777){
+
+            }else{
+
+                agentNum = currAdminId
+
+                var param={};
+                param['token']= $.cookie('tokenMyb');
+                param['page']= '1';
+                param['limit']= '3000';
+                param['action']= 'GET';
+                param['adminID']= currAdminId;
+
+                //获取子代添加到下拉框中
+                $.ajax({
+                    url: global_request_js_getSonAgent,
+                    type: 'post',
+                    data: param,
+                    success: function (dataArray) {
+
+                        if (dataArray.code != 200) {
+
+                            // console.log(dataArray.msg)
+                            // layer.msg(dataArray.msg);
+
+                            return false;
+
+                        }
 
 
-     var $input =  $("#uploadinput");
-     // ①为input设定change事件
-     $input.change(function () {
-     //    ②如果value不为空，调用文件加载方法
-         if($(this).val() != ""){
-             fileLoad(this);
-         }
-     })
+                        var returnDataArray = dataArray.result
+                        // console.log("returnDataArray",returnDataArray);
+                        $("#agentsublist").empty();
 
+                        $('#agentsublist').append(new Option('请选择子代理', '777777'));// 下拉菜单里添加元素
+                        $.each(returnDataArray, function (index, item) {
+                            $('#agentsublist').append(new Option(item.Username, item.ID));// 下拉菜单里添加元素
+                        });
 
-     //③创建fileLoad方法用来上传文件
-     function fileLoad(ele){
-           //④创建一个formData对象
-           var formData = new FormData();
-           //⑤获取传入元素的val
-           var name = $(ele).val();
+                        $('#agentsublist').selectpicker('refresh');
+
+                    }
+                })
+            }
 
 
 
-             //⑥获取files
-           /////////原始js操作方法
-           // var files = $(ele)[0].files[0];
-           //jquery操作方法
-           var jqfiles = $('#uploadinput').prop('files');
-           var files = jqfiles[0];
-           //⑦将name 和 files 添加到formData中，键值对形式
-           formData.append("file", files);
-           formData.append("name", name);
-           formData.append("action", "file");
-            // console.log("获取上传数据",name,files);
+        });
 
 
-           $.ajax({
-               url: global_requestDyAddUrl_js,
-               // url: "test.php",
-               type: 'POST',
-               data: formData,
-               processData: false,// ⑧告诉jQuery不要去处理发送的数据
-               contentType: false, // ⑨告诉jQuery不要去设置Content-Type请求头
-               beforeSend: function () {
-                  //⑩发送之前的动作
-                   // alert("我还没开始发送呢");
+        $('#agentsublist').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+            if (isSelected == null) {
+                //控件初始化，页面加载，不属于用户操作，不提示
+                return;
+            }
 
-                   $('body').loading({
-                      loadingWidth:240,
-                      title:'',
-                      name:'test',
-                      discription:'上传文件中请耐心等待...',
-                      direction:'column',
-                      type:'origin',
-                      // originBg:'#71EA71',
-                      originDivWidth:40,
-                      originDivHeight:40,
-                      originWidth:6,
-                      originHeight:6,
-                      smallLoading:false,
-                      loadingMaskBg:'rgba(0,0,0,0.2)'
-                  });
+            // console.log("用户修改了项！",e.target,e.target.value)
+            let currAdminId = e.target.value
+            if(currAdminId === 777777){
+
+            }else{
+                agentSubNum = currAdminId
+            }
 
 
-               },
-               success: function (responseStr) {
-                  //11成功后的动作
-                   // alert("成功啦");
+        });
 
 
-                   if(1 === responseStr.code){
+        $('#authStatus').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+            if (isSelected == null) {
+                //控件初始化，页面加载，不属于用户操作，不提示
+                return;
+            }
+
+            // console.log("用户修改了项！",e.target,e.target.value)
+            let currAdminId = e.target.value
+            if(currAdminId === 777777){
+
+            }else{
+                authStatusNum = currAdminId
+            }
 
 
-                      removeLoading('test');
-
-                       window.location.reload();
-
-                   }else{
-
-                     removeLoading('test');
-
-                     $.message({
-                         message:responseStr.msg ,
-                         type: 'error',
-                         showClose: true
-                     });
-
-                   }
-               }
-               ,
-               error : function (responseStr) {
-                   //12出错后的动作
-                   // alert("出错啦");
-
-                   removeLoading('test');
-
-                   $.message({
-                       message:responseStr.msg ,
-                       type: 'error',
-                       showClose: true
-                   });
-
-               }
-           });
-       }
+        });
 }
 
 </script>

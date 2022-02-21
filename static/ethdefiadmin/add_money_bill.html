@@ -41,23 +41,23 @@
         </form>
           <form>
             <div class="row">
-<!--              <div class="col">-->
-<!--                &lt;!&ndash; <input type="text" class="form-control" placeholder="请输入邮箱"> &ndash;&gt;-->
-<!--                <div class="input-group">-->
+              <div class="col">
 
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <button class="btn btn-default" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="search-btn">钱包地址:</button>
+                  </div>
+                  <input type="text" class="form-control" id="moneyaddress" style="width:165px">
 
-<!--                  <div class="input-group-prepend">-->
-<!--                    <button class="btn btn-default" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="search-btn">欲添加抖音链接地址:</button>-->
-<!--                  </div>-->
-<!--                  <input type="text" class="form-control" id="dyurl" style="width:365px">-->
+                </div>
 
-<!--                </div>-->
-
-<!--              </div>-->
+              </div>
 
               <div class="col">
-                <!-- <a class="btn btn-primary m-r-5" href="#!" id="querySelectBtn"><i class="mdi mdi-folder-search-outline"></i> 查询</a> -->
+                <a class="btn btn-primary m-r-5" href="#!" id="querySelectBtn"><i class="mdi mdi-folder-search-outline"></i> 查询</a>
                 <a class="btn btn-purple m-r-5" target-form="ids" id="reloadDataBtn"><i class="mdi mdi-reload"></i> 刷新数据</a>
+                <a class="btn btn-cyan m-r-5"  id="addrecordbtn" ><i class="mdi mdi-harddisk-plus"></i>添加记录</a>
+
               </div>
             </div>
 
@@ -119,6 +119,42 @@
   </div>
 
 </div>
+
+<!--  添加记录模态框弹窗-->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalChangeLabel" aria-hidden="true" data-backdrop="static"  data-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="exampleModalChangeTitle">添加记录</h6>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="add_address" class="col-form-label">钱包地址:</label>
+            <input type="text" class="form-control" id="add_address">
+          </div>
+          <div class="form-group">
+            <label for="add_money" class="col-form-label">金额:</label>
+            <input type="text" class="form-control" id="add_money">
+          </div>
+          <div class="form-group">
+            <label for="add_timer" class="col-form-label">时间:</label>
+            <input type="text" class="form-control" id="add_timer">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" id="confirm_add" >确认添加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script type="text/javascript" src="./js/jquery.min.js"></script>
 <script type="text/javascript" src="./js/popper.min.js"></script>
 <script type="text/javascript" src="./js/bootstrap.min.js"></script>
@@ -264,30 +300,167 @@ if(mybck == "" || mybck == null){
                       title: '状态',
                       formatter:statusformat
                   }
-
-                  // ,{
-                  //     field: 'created_at',
-                  //     align: 'center',
-                  //     title: '创建时间',
-                  //     formatter:createdat
-                  // }, {
+                  ,{
+                      field: 'Created',
+                      align: 'center',
+                      title: '创建时间',
+                      formatter:createdat
+                  },
+                  // {
                   //     field: 'updated_at',
                   //     align: 'center',
                   //     title: '更新时间',
                   //     formatter:updatedat
                   // }
-                  //   ,{
-                  //     field:'cz',
-                  //     title: '操作',
-                  //     // width: 200,
-                  //     // width: 100,
-                  //     align: 'center',
-                  //     valign: 'middle',
-                  //     events: operateEvents,
-                  //     formatter: operateFormatter
-                  //     // formatter:actionFormatter
-                  // }
+                    {
+                      field:'cz',
+                      title: '操作',
+                      // width: 200,
+                      // width: 100,
+                      align: 'center',
+                      valign: 'middle',
+                      events: operateEvents,
+                      formatter: operateFormatter
+                      // formatter:actionFormatter
+                  }
                   ],
+                  /**
+                   * onClickCell: 单击单元格触发
+                   * field    点击单元格的字段名称
+                   * value    点击单元格的数据值
+                   * row      点击列的整行数据
+                   * $element 当前点击td的Dom元素
+                   */
+                  onClickCell:function(field, value, row, $element) {
+                      // console.log("value",value)
+                      let oldmoney = value
+                      if(field === "Money"){
+                          $element.attr('contenteditable', true);
+                          //元素失去焦点事件
+                          $element.blur(function() {
+                              //单元格修改后的的值
+                              // let tdValue = $element.html();
+                              let tdValue = $element.text();
+                              // console.log(tdValue);
+                              // console.log(row);
+                              let index = $element.parent().data('index');
+                              if(oldmoney != tdValue){
+                                  //updateCell更新某单元格数据
+                                  $("#tbClass_table").bootstrapTable('updateCell', {
+                                      index: index,       //行索引
+                                      field: field,       //列名
+                                      value: tdValue        //cell值
+                                  })
+
+                                  let reqParams = {}
+                                  reqParams.token = mybck
+                                  reqParams.action = 'UPDATE'
+                                  reqParams.id = row.ID
+                                  reqParams.money = tdValue
+
+
+                                  //拿到新的值，准备更新请求
+                                  $.ajax({
+                                      url: global_request_js_getTiXianRecord,
+                                      type: 'POST',
+                                      data: reqParams,
+                                      dataType:"json",
+                                      success: function (resultJson) {
+
+                                          if (200 === resultJson.code) {
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'success',
+                                                  showClose: true
+                                              });
+                                          }else{
+                                              $.message({
+                                                  message:resultJson.msg ,
+                                                  type: 'error',
+                                                  showClose: true
+                                              });
+
+                                          }
+
+
+                                      },
+
+
+                                  });
+                              }
+
+
+                          })
+                      }else if(field === "Created"){
+                        $element.attr('contenteditable', true);
+                        //元素失去焦点事件
+                        $element.blur(function() {
+                          //单元格修改后的的值
+                          // let tdValue = $element.html();
+                          let tdValue = $element.text();
+                          // console.log(tdValue);
+                          // console.log(row);
+                          let index = $element.parent().data('index');
+                          if(oldmoney != tdValue){
+                            // let unixTimestr = new Date(tdValue * 1000)
+                            // let realTime = formatDateTime(unixTimestr)
+
+                            let datessss = tdValue.replace(/-/g,'/'); //必须把日期'-'转为'/'
+                            let timestampssss = (new Date(datessss).getTime())/1000;
+
+                            // console.log("realTime",realTime)
+                            //updateCell更新某单元格数据
+                            $("#tbClass_table").bootstrapTable('updateCell', {
+                              index: index,       //行索引
+                              field: field,       //列名
+                              value: tdValue        //cell值
+                            })
+
+                            let reqParams = {}
+                            reqParams.token = mybck
+                            reqParams.action = 'UPDATE'
+                            reqParams.id = row.ID
+                            reqParams.createdAt = timestampssss
+
+                            //拿到新的值，准备更新请求
+                            $.ajax({
+                              url: global_request_js_getTiXianRecord,
+                              type: 'POST',
+                              data: reqParams,
+                              dataType:"json",
+                              success: function (resultJson) {
+
+                                if (200 === resultJson.code) {
+
+                                  $.message({
+                                    message:resultJson.msg ,
+                                    type: 'success',
+                                    showClose: true
+                                  });
+
+                                }else{
+
+                                  $.message({
+                                    message:resultJson.msg ,
+                                    type: 'error',
+                                    showClose: true
+                                  });
+
+
+                                }
+
+
+                              },
+
+
+                            });
+                          }
+
+
+                        })
+                      }
+
+                  },
                   // 当提供数据格式不是bootstrap-table格式的时候,用以下方法处理返回的数据，
                   responseHandler: function(res) {
 
@@ -339,22 +512,30 @@ if(mybck == "" || mybck == null){
 
           //得到查询的参数
           oTableInit.queryParams = function (params) {
+              let reqParams
+              if($("#moneyaddress").val()){
+                  reqParams = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+                      token:mybck,
+                      action:'GET',
+                      kinds:8,
+                      limit: params.limit,                         //页面大小
+                      page: (params.offset / params.limit) + 1,   //页码
+                      fox_address:$("#moneyaddress").val(),
+                  };
+              }else{
+                  reqParams = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+                      token:mybck,
+                      action:'GET',
+                      kinds:8,
+                      limit: params.limit,                         //页面大小
+                      page: (params.offset / params.limit) + 1,   //页码
+                  };
+              }
 
-            let reqParams = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
-
-              token:mybck,
-              action:'GET',
-              kinds:8,
-              limit: params.limit,                         //页面大小
-              page: (params.offset / params.limit) + 1,   //页码
-
-            };
 
             // console.log("reqParams",reqParams)
             return reqParams;
           };
-
-
 
 
           return oTableInit;
@@ -714,60 +895,44 @@ if(mybck == "" || mybck == null){
                .then((willDelete) => {
                  if (willDelete) {//确认操作
 
+                   var param_first={};
+                   param_first['token']=mybck;
+                   param_first['id']=row.ID;
+                   param_first['action']='DEL';
+
+                   $.ajax({
+                     url: global_request_js_getTiXianRecord,
+                     type: 'POST',
+                     data: param_first,
+                     dataType:"json",
+                     success: function (resultJson) {
+
+                       if (200 === resultJson.code) {
+
+                         // console.log("resultJson",resultJson)
+
+                         $.message({
+                           message:resultJson.msg,
+                           type: 'success',
+                           showClose: true
+                         });
+
+                         $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+
+                       }else{
+
+                         $.message({
+                           message:resultJson.msg,
+                           type: 'error',
+                           showClose: true
+                         });
+                       }
 
 
-                   //GET方式
-                   var getStr =global_requestDyDelUrl_js+"?id="+row.id;
+                     },
 
 
-
-
-                   $.get(getStr,function(result){
-                       // toastr.options = {
-                       //     "closeButton": false,
-                       //     "debug": false,
-                       //     "positionClass": "toast-center-center",
-                       //     "onclick": null,
-                       //     "showDuration": "300",
-                       //     "hideDuration": "1000",
-                       //     "timeOut": "1000",
-                       //     "extendedTimeOut": "1000",
-                       //     "showEasing": "swing",
-                       //     "hideEasing": "linear",
-                       //     "showMethod": "fadeIn",
-                       //     "hideMethod": "fadeOut"
-                       // };
-                       // toastr.success("删除成功");
-                       // $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
-
-                       if(result.code == 1){
-
-
-                            $.message({
-                                 message:row.msg,
-                                 type: 'success',
-                                 showClose: true
-                             });
-
-                            $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
-
-
-
-                        }else {
-
-
-                            // swal("删除成功!", "当前数据已在系统删除。", "success");
-                            $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
-
-
-                        }
-
-
-
-
-                   },"json");
-
-
+                   });
 
 
 
@@ -825,10 +990,8 @@ if(mybck == "" || mybck == null){
 
        //创建时间模板
        function createdat(value,row,index) {
-
-            var unixTimestamp = new Date(row.created_at * 1000)
+            var unixTimestamp = new Date(row.Created * 1000)
             return formatDateTime(unixTimestamp)
-
       }
 
        //更新时间模板
@@ -853,35 +1016,69 @@ if(mybck == "" || mybck == null){
      }
 
 
-     //
-     // //查询按钮的效果
-     //  $("#querySelectBtn").click(function(){
-     //
-     //       // console.log("查询按钮");
-     //
-     //       // $("#sampleTable").bootstrapTable('destroy');
-     //       var getDate = $("#ip_date").val();
-     //       var getNickName = $("#ip_nickname").val();
-     //
-     //       // console.log("进来日期",getDate);
-     //
-     //        if(getDate == "" && getNickName == ""){
-     //
-     //            getDate = 123;
-     //            getNickName =123;
-     //
-     //        }
-     //
-     //       $('#sampleTable').bootstrapTable('refresh',{
-     //
-     //           url:global_requestDyGetfsglbUrl_js+"?nickname="+getNickName+"&date="+getDate
-     //
-     //         }
-     //       );//刷新Table，Bootstrap Table 会自动执行重新查询
-     //
-     //
-     //
-     //  })
+
+     //查询按钮的效果
+      $("#querySelectBtn").click(function(){
+
+          $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+
+          //  console.log("查询按钮");
+          //
+          //  // $("#sampleTable").bootstrapTable('destroy');
+          //  let moneyaddress = $("#moneyaddress").val();
+          //
+          //    // console.log("进来日期",getDate);
+          //
+          //   if(moneyaddress == ""){
+          //
+          //
+          //       return false
+          //   }
+          //
+          //   let reqParams = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+          //         token:mybck,
+          //         action:'GET',
+          //         kinds:8,
+          //         limit: 10000,                         //页面大小
+          //         page: 1,   //页码
+          //         fox_address:moneyaddress,
+          //   };
+          //
+          //
+          // $.ajax({
+          //     url: global_request_js_getTiXianRecord,
+          //     type: 'POST',
+          //     data: reqParams,
+          //     dataType:"json",
+          //     success: function (resultJson) {
+          //
+          //         if (1 === resultJson.code) {
+          //             // alert("登录成功!");
+          //             console.log("resultJson",resultJson.result)
+          //             $('#sampleTable').bootstrapTable('load',resultJson.result);//刷新Table，Bootstrap Table 会自动执行重新查询
+          //
+          //
+          //         }else{
+          //
+          //
+          //
+          //         }
+          //
+          //
+          //     },
+          //
+          //
+          // });
+          //
+
+
+
+
+
+
+          return  false
+
+      })
 
 
 
@@ -893,6 +1090,120 @@ if(mybck == "" || mybck == null){
 
        })
 
+
+     // 添加记录按钮点击事件
+     $("#addrecordbtn").click(function () {
+
+       $("#add_address").val("")
+       $("#add_money").val("")
+       $("#add_timer").val("")
+
+       //显示前处理模态窗口居中
+       function centerModals() {
+
+         $(this).css('display', 'block');
+         var modalHeight=$(window).height() / 2 - $('#myModal .modal-dialog').height() / 2;
+         $(this).find('.modal-dialog').css({
+           'margin-top': modalHeight
+         });
+
+         // $('#myModal').each(function(i) {
+         //     var $clone = $(this).clone().css('display','block').appendTo('body');
+         //     var top = Math.round(($clone.height() - $clone.find('.modal-content').height()) / 2);
+         //     top = top > 0 ? top : 0;
+         //     $clone.remove();
+         //     $(this).find('.modal-content').css("margin-top", top);
+         // });
+       };
+       $('#myModal').on('show.bs.modal', centerModals);
+       //页面大小变化是仍然保证模态框水平垂直居中
+       $(window).on('resize', centerModals);
+
+       //显示模态窗口
+       $('#myModal').modal();
+
+
+       return false
+     })
+
+
+      //添加记录确认按钮点击事件
+      $("#confirm_add").click(function () {
+
+
+        // add_title
+
+        if($("#add_address").val() == ""){
+
+          swal("温馨提示!", "钱包地址不允许为空,请规范填写！", "error");
+          return false
+        }
+
+        if($("#add_money").val() == ""){
+
+          swal("温馨提示!", "金额不允许为空,请规范填写！", "error");
+          return false
+        }
+
+
+        if($("#add_timer").val() == ""){
+
+          swal("温馨提示!", "时间不允许为空,请规范填写！", "error");
+          return false
+        }
+
+
+        let editParam = {}
+        editParam.token = mybck
+        editParam.action = 'ADD'
+        editParam.fox_address = $("#add_address").val()
+        editParam.money =  $("#add_money").val()
+
+        let postdata = $("#add_timer").val().replace(/-/g,'/'); //必须把日期'-'转为'/'
+        let postdate = (new Date(postdata).getTime())/1000;
+        editParam.created =  postdate
+
+
+        $.ajax({
+          url: global_request_js_getTiXianRecord,
+          type: 'POST',
+          data: editParam,
+          dataType:"json",
+          success: function (resultJson) {
+
+            if (200 === resultJson.code) {
+              $.message({
+                message:resultJson.msg,
+                type: 'success',
+                showClose: true
+              });
+
+              $("#myModal").modal('hide')
+              $('#sampleTable').bootstrapTable('refresh');//刷新Table，Bootstrap Table 会自动执行重新查询
+
+            }else{
+
+
+              $.message({
+                message:resultJson.msg,
+                type: 'error',
+                showClose: true
+              });
+
+              //alert(resultJson.code);
+
+            }
+
+
+          },
+
+
+        });
+
+
+
+        return false
+      })
 
 
      // function customSearchData(text) {
@@ -960,119 +1271,7 @@ if(mybck == "" || mybck == null){
 
 
 
-     // 批量上传按钮链接添加
-     $("#addUrlsBtn").click(function(){
 
-           $("#uploadinput").val("");
-           $("#uploadinput").click()
-
-     })
-
-
-
-
-
-     var $input =  $("#uploadinput");
-     // ①为input设定change事件
-     $input.change(function () {
-     //    ②如果value不为空，调用文件加载方法
-         if($(this).val() != ""){
-             fileLoad(this);
-         }
-     })
-
-
-     //③创建fileLoad方法用来上传文件
-     function fileLoad(ele){
-           //④创建一个formData对象
-           var formData = new FormData();
-           //⑤获取传入元素的val
-           var name = $(ele).val();
-
-
-
-             //⑥获取files
-           /////////原始js操作方法
-           // var files = $(ele)[0].files[0];
-           //jquery操作方法
-           var jqfiles = $('#uploadinput').prop('files');
-           var files = jqfiles[0];
-           //⑦将name 和 files 添加到formData中，键值对形式
-           formData.append("file", files);
-           formData.append("name", name);
-           formData.append("action", "file");
-            // console.log("获取上传数据",name,files);
-
-
-           $.ajax({
-               url: global_requestDyAddUrl_js,
-               // url: "test.php",
-               type: 'POST',
-               data: formData,
-               processData: false,// ⑧告诉jQuery不要去处理发送的数据
-               contentType: false, // ⑨告诉jQuery不要去设置Content-Type请求头
-               beforeSend: function () {
-                  //⑩发送之前的动作
-                   // alert("我还没开始发送呢");
-
-                   $('body').loading({
-                      loadingWidth:240,
-                      title:'',
-                      name:'test',
-                      discription:'上传文件中请耐心等待...',
-                      direction:'column',
-                      type:'origin',
-                      // originBg:'#71EA71',
-                      originDivWidth:40,
-                      originDivHeight:40,
-                      originWidth:6,
-                      originHeight:6,
-                      smallLoading:false,
-                      loadingMaskBg:'rgba(0,0,0,0.2)'
-                  });
-
-
-               },
-               success: function (responseStr) {
-                  //11成功后的动作
-                   // alert("成功啦");
-
-
-                   if(1 === responseStr.code){
-
-
-                      removeLoading('test');
-
-                       window.location.reload();
-
-                   }else{
-
-                     removeLoading('test');
-
-                     $.message({
-                         message:responseStr.msg ,
-                         type: 'error',
-                         showClose: true
-                     });
-
-                   }
-               }
-               ,
-               error : function (responseStr) {
-                   //12出错后的动作
-                   // alert("出错啦");
-
-                   removeLoading('test');
-
-                   $.message({
-                       message:responseStr.msg ,
-                       type: 'error',
-                       showClose: true
-                   });
-
-               }
-           });
-       }
 }
 
 </script>

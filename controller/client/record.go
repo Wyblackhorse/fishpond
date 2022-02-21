@@ -26,10 +26,12 @@ import (
 //  提现
 func TiXian(c *gin.Context) {
 
-	_, err1 := c.Get("who")
+	who, err1 := c.Get("who")
 	if !err1 {
 		return
 	}
+
+	WhoMap := who.(map[string]string)
 
 	var tx CheckFishTiXian
 	if err := c.ShouldBind(&tx); err != nil {
@@ -54,6 +56,17 @@ func TiXian(c *gin.Context) {
 
 	//开启事务
 	Money, _ := strconv.ParseFloat(c.PostForm("money"), 64) //提现
+	//判断 提现是否少于设置的值
+
+	//查询每一个代理设置的值
+	admin := model.Admin{}
+
+	err = mysql.DB.Where("id=?", WhoMap["AdminId"]).First(&admin).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
+		return
+	}
+
 	if Money > fish.EarningsMoney {
 		util.JsonWrite(c, -101, nil, "The balance is not enough")
 		return
@@ -77,9 +90,17 @@ func TiXian(c *gin.Context) {
 			detail.MoneyEth = EthNew
 			detail.Pattern = 2
 			detail.TheExchangeRateAtThatTime = HH
+			if admin.MinTiXianMoney > EthNew {
+				util.JsonWrite(c, -103, strconv.FormatFloat(admin.MinTiXianMoney, 'f', 8, 64), "Sorry, the minimum withdrawal amount is ")
+				return
+			}
+		} else {
+			if admin.MinTiXianMoney > Money {
+				util.JsonWrite(c, -103, strconv.FormatFloat(admin.MinTiXianMoney, 'f', 8, 64), "Sorry, the minimum withdrawal amount is ")
+				return
+			}
 		}
 	}
-
 	//updateFish := model.Fish{
 	//	WithdrawalFreezeAmount: fish.WithdrawalFreezeAmount + Money,
 	//	EarningsMoney:          fish.EarningsMoney - Money,
