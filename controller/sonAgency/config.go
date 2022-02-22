@@ -45,6 +45,11 @@ func GetConfig(c *gin.Context) {
 			admin.MinTiXianMoney = MinTiXianMoney
 		}
 
+		if data, isExist := c.GetPostForm("MinTiXianTime"); isExist == true {
+			MinTiXianMoney, _ := strconv.Atoi(data)
+			admin.MinTiXianTime = MinTiXianMoney
+		}
+
 		err := mysql.DB.Model(&model.Admin{}).Where("id=?", whoMap["ID"]).Update(&admin).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "修改失败")

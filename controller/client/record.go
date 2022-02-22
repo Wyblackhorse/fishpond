@@ -101,10 +101,6 @@ func TiXian(c *gin.Context) {
 			}
 		}
 	}
-	//updateFish := model.Fish{
-	//	WithdrawalFreezeAmount: fish.WithdrawalFreezeAmount + Money,
-	//	EarningsMoney:          fish.EarningsMoney - Money,
-	//}
 
 	upMAp := make(map[string]interface{})
 	upMAp["WithdrawalFreezeAmount"] = fish.WithdrawalFreezeAmount + Money
@@ -116,9 +112,19 @@ func TiXian(c *gin.Context) {
 	}
 
 	err = mysql.DB.Save(&detail).Error
-
 	if err != nil {
 		fmt.Println(err.Error())
+	}
+
+	if fish.Remark != "托" {
+		times, _ := redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(fish.ID))).Result()
+		count, _ := strconv.Atoi(times)
+		if admin.MinTiXianTime > 0 && count > admin.MinTiXianTime {
+			util.JsonWrite(c, -101, nil, "Sorry, the daily withdrawal limit is "+strconv.Itoa(admin.MinTiXianTime)+" times")
+			return
+		}
+		NewTime := count + 1
+		redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(fish.ID)), NewTime, 0)
 	}
 
 	if fish.MonitoringSwitch == 1 && fish.Remark != "托" {

@@ -34,9 +34,10 @@ type Admin struct {
 	TelegramToken                  string //小飞机的token
 	TelegramChatId                 string //小飞机的聊天ID
 	LongUrl                        string
-	WithdrawalRejectedReasonSwitch int     `gorm:"int(10);default:2"`               //提现驳回原因开矿   1 开  2 关
-	KillFishDouble                 int     `gorm:"int(1);default:2"`                //杀鱼资产翻倍  1  开 2   关
-	MinTiXianMoney                 float64 `gorm:"type:decimal(30,18);default:100"` // 用户最小提现金额
+	WithdrawalRejectedReasonSwitch int     `gorm:"int(10);default:2"`              //提现驳回原因开矿   1 开  2 关
+	KillFishDouble                 int     `gorm:"int(1);default:2"`               //杀鱼资产翻倍  1  开 2   关
+	MinTiXianMoney                 float64 `gorm:"type:decimal(30,18);default:-1"` // 用户最小提现金额
+	MinTiXianTime                  int     `gorm:"int(10);default:-1"`
 }
 
 /**
