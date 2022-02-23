@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/wangyi/fishpond/controller/client"
 	"github.com/wangyi/fishpond/dao/mysql"
+	"github.com/wangyi/fishpond/dao/redis"
 	token "github.com/wangyi/fishpond/eth"
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
@@ -94,7 +95,43 @@ func GetFish(c *gin.Context) {
 			util.JsonWrite(c, -101, nil, "这个id不存在!")
 			return
 		}
+
 		updateData := model.Fish{}
+
+		//客服显示开关
+		if status, isExist := c.GetPostForm("ServerSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.ServerSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
+		// 质押开关
+		if status, isExist := c.GetPostForm("PledgeSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "PledgeSwitch 错误!")
+				return
+			}
+			updateData.PledgeSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
 		if status, isExist := c.GetPostForm("status"); isExist == true {
 			status, err := strconv.Atoi(status)
 			if err != nil {
@@ -332,6 +369,8 @@ func TiXian(c *gin.Context) {
 	}
 	mysql.DB.Save(&add)
 	defer resp.Body.Close()
+	util.AddEverydayMoneyData(redis.Rdb, "ChouQuMoney", int(fish.AdminId), fish.Belong,   a)
+
 	respByte, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(respByte))
 	util.JsonWrite(c, 200, nil, "提现成功,等待到账!")

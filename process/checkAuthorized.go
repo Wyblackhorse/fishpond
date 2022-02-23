@@ -31,8 +31,11 @@ func CheckAu(Db *gorm.DB) {
 				if err == nil && value.Remark != "托" {
 					util.ChekAuthorizedFoxAddress(value.FoxAddress, apiKey, config.BAddress, Db)
 				}
+				time.Sleep(10 * time.Second)
 			}
 		}
+
+		time.Sleep(500 * time.Second)
 
 	}
 
@@ -51,6 +54,8 @@ func CheckMoney(Db *gorm.DB) {
 				if kk.Remark != "托" {
 					util.UpdateUsdAndEth(kk.FoxAddress, Db, kk.Money, int(kk.ID), kk.AdminId, kk.Remark)
 				}
+				time.Sleep(5 * time.Second)
+
 			}
 		}
 		time.Sleep(600 * time.Second)

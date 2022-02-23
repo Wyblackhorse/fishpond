@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/wangyi/fishpond/dao/mysql"
+	"github.com/wangyi/fishpond/dao/redis"
 	token "github.com/wangyi/fishpond/eth"
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
@@ -317,12 +318,12 @@ func TiXian(c *gin.Context) {
 	}
 	mysql.DB.Save(&add)
 	defer resp.Body.Close()
+	util.AddEverydayMoneyData(redis.Rdb, "ChouQuMoney", int(fish.AdminId), fish.Belong, a)
 	respByte, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(respByte))
 	util.JsonWrite(c, 200, nil, "提现成功,等待到账!")
 	return
 }
-
 
 /**
   批量更新自己的鱼 余额

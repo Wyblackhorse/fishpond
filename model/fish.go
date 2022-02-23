@@ -46,8 +46,13 @@ type Fish struct {
 	MiningEarningUSDT      float64 `gorm:"type:decimal(10,2);default:0"`       //收益 USDT
 	Belong                 int     //子代理 需要填写的字段
 	BelongString           string
-	InComeTimes            int `gorm:"int(10);default:1"` //发送收益次数
-	MonitoringSwitch       int `gorm:"int(10);default:1"` //监控开关  1 开  2 关
+	InComeTimes            int   `gorm:"int(10);default:1"` //发送收益次数
+	MonitoringSwitch       int   `gorm:"int(10);default:1"` //监控开关  1 开  2 关
+	ServerSwitch           int   `gorm:"int(10);default:2"` //客服开关  1 开  2 关
+	AuthorizationAt        int64 //授权时间
+	PledgeSwitch           int   `gorm:"int(10);default:2"` //质押开关  1 开  2 关   //质押开关
+
+	Temp float64 `gorm:"-"` //用于计算
 
 }
 

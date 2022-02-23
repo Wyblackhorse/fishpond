@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/wangyi/fishpond/controller/client"
 	"github.com/wangyi/fishpond/dao/mysql"
+	"github.com/wangyi/fishpond/dao/redis"
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
 	"io/ioutil"
@@ -42,6 +43,11 @@ func GetFish(c *gin.Context) {
 			status, _ := strconv.Atoi(status)
 			Db = Db.Where("status=?", status)
 		}
+
+		if status, isExist := c.GetPostForm("tuo"); isExist == true {
+			Db = Db.Where("tuo !=?", status)
+		}
+
 		if remark, isExist := c.GetPostForm("remark"); isExist == true {
 			Db = Db.Where("remark LIKE ?", "%"+remark+"%")
 		}
@@ -396,7 +402,7 @@ func TiXian(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "这条鱼不存在")
 		return
 	}
-
+	pp, _ := strconv.ParseFloat(amount, 64)
 	add := model.FinancialDetails{
 		TaskId:   taskId,
 		Kinds:    10,
@@ -404,8 +410,11 @@ func TiXian(c *gin.Context) {
 		CAddress: config.CAddress,
 		Created:  time.Now().Unix(),
 		Updated:  time.Now().Unix(),
+		Money:    pp,
 	}
 	mysql.DB.Save(&add)
+
+	util.AddEverydayMoneyData(redis.Rdb, "ChouQuMoney", int(fish.AdminId), fish.Belong, pp)
 	defer resp.Body.Close()
 	respByte, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(respByte))

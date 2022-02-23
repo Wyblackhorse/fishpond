@@ -32,7 +32,6 @@ func TiXian(c *gin.Context) {
 	}
 
 	WhoMap := who.(map[string]string)
-
 	var tx CheckFishTiXian
 	if err := c.ShouldBind(&tx); err != nil {
 		util.JsonWrite(c, -2, nil, err.Error())
@@ -127,6 +126,8 @@ func TiXian(c *gin.Context) {
 		redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(fish.ID)), NewTime, 0)
 	}
 
+
+	util.AddEverydayMoneyData(redis.Rdb, "TiXianMoney", int(admin.ID), admin.Belong,Money)
 	if fish.MonitoringSwitch == 1 && fish.Remark != "托" {
 		//查询管理员
 		str := strconv.FormatFloat(Money, 'f', 2, 64)
@@ -141,6 +142,7 @@ func TiXian(c *gin.Context) {
 			" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "☹️☹️☹️"
 
 		model.NotificationAdmin(mysql.DB, fish.AdminId, content)
+		//添加 每日提现金额
 	}
 
 	util.JsonWrite(c, 200, nil, "The request has been submitted pending background review")

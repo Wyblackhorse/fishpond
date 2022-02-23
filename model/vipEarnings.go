@@ -90,3 +90,18 @@ func GetVipLevel(db *gorm.DB, money float64, fishId int) int {
 	}
 	return int(VipEarnings.ID)
 }
+
+/**
+  获取 vip等级 质押
+*/
+
+func GetPledgeSwitch(db *gorm.DB, money float64) int {
+	VipEarnings := VipEarnings{}
+	err := db.Where("max_money > ? AND min_money < ?", money, money).First(&VipEarnings).Error
+	if err != nil {
+		return 1 //这里前提是 vip id 是 1
+	}
+
+	return int(VipEarnings.ID)
+
+}

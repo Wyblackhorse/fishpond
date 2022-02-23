@@ -139,7 +139,6 @@ func GetTiXianRecord(c *gin.Context) {
 			return
 		}
 
-
 		if uint(fish.Belong) != whoMap["ID"] {
 			util.JsonWrite(c, -101, nil, "审核失败,没有查找到账单!!")
 			return
@@ -164,6 +163,25 @@ func GetTiXianRecord(c *gin.Context) {
 			updateFish := model.Fish{
 				WithdrawalFreezeAmount: fish.WithdrawalFreezeAmount - cords.Money,
 				EarningsMoney:          fish.EarningsMoney + cords.Money,
+			}
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&updateFish).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "审核失败,用户收益回滚失败")
+				return
+			}
+		} else {
+			fish := model.Fish{}
+			err := mysql.DB.Where("id=?", cords.FishId).First(&fish).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "审核失败,没有查找到用户")
+				return
+			}
+			updateFish := model.Fish{}
+			if cords.Pattern == 2 {
+				updateFish.AlreadyGeyETH = fish.AlreadyGeyETH + cords.MoneyEth
+				updateFish.AlreadyGeyUSDT = fish.AlreadyGeyUSDT + cords.Money
+			} else {
+				updateFish.AlreadyGeyUSDT = fish.AlreadyGeyUSDT + cords.Money
 			}
 			err = mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&updateFish).Error
 			if err != nil {
