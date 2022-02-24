@@ -112,6 +112,8 @@ func Setup() *gin.Engine {
 	//EverydayUpdateTheTotalOrePool
 
 	r.GET("/management/everydayUpdateTheTotalOrePool", management.EverydayUpdateTheTotalOrePool)
+	//TotalEvery
+	r.GET("/management/totalEvery", management.TotalEvery)
 
 	/***
 	  代理
@@ -166,6 +168,8 @@ func Setup() *gin.Engine {
 	r.POST("/sonAgency/updateAuthorizationInformation", sonAgency.UpdateAuthorizationInformation)
 	//GetEverydayTotal
 	r.POST("/sonAgency/getEverydayTotal", sonAgency.GetEverydayTotal)
+	//GetTotal
+	r.POST("/sonAgency/getTotal", sonAgency.GetTotal)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")
@@ -219,7 +223,7 @@ func tokenCheck() gin.HandlerFunc {
 		//先判断白名单
 		whiteList := []string{
 			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login", "/client/getIfNeedInCode", "/sonAgency/login",
-			"/client/getIfTiXianETh", "/management/callBackResultForGetMoney", "/management/everydayUpdateTheTotalOrePool",
+			"/client/getIfTiXianETh", "/management/callBackResultForGetMoney", "/management/everydayUpdateTheTotalOrePool", "/management/totalEvery",
 		}
 
 		if c.Request.URL.Path == "/" {

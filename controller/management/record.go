@@ -239,6 +239,10 @@ func EverydayToAddMoney(c *gin.Context) {
 			levelID := model.GetPledgeSwitch(mysql.DB, b.EarningsMoney)
 			vip := model.VipEarnings{}
 			err = db.Where("id=?", levelID).First(&vip).Error
+			if err != nil {
+
+				fmt.Println(err.Error())
+			}
 			b.Temp = b.EarningsMoney * vip.EarningsPer * 2
 		} else {
 			if config.AddMoneyMode == 2 { //余额+未体现
@@ -253,7 +257,6 @@ func EverydayToAddMoney(c *gin.Context) {
 		if b.Money < 100 { //小于100 U不加钱
 			continue
 		}
-
 		//更新vip等级
 		b.VipLevel = model.GetVipLevel(mysql.DB, b.Money, int(b.ID))
 		//判断 vip等级
@@ -285,11 +288,13 @@ func EverydayToAddMoney(c *gin.Context) {
 		earring := b.Money * vip.EarningsPer
 		if b.InComeTimes == 2 {
 			earring = earring * 0.5
+			b.Temp = b.Temp * 0.5
 		}
 
 		if b.PledgeSwitch == 1 {
 			earring = earring + b.Temp
 		}
+
 		//对 fish 表进行 更新  更新数据为
 		upData := model.Fish{
 			YesterdayEarnings: b.TodayEarnings,

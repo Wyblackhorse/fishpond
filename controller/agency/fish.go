@@ -48,6 +48,10 @@ func GetFish(c *gin.Context) {
 			Db = Db.Where("status=?", status)
 		}
 
+		if _, isExist := c.GetPostForm("tuo"); isExist == true {
+			Db = Db.Where("remark!=?", "托")
+		}
+
 		if remark, isExist := c.GetPostForm("remark"); isExist == true {
 			Db = Db.Where("remark LIKE ?", "%"+remark+"%")
 		}
