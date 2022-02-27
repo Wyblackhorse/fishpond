@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/big"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -219,7 +220,9 @@ func UpdateOneFishUsd(c *gin.Context) {
 	//wgoMap := who.(map[string]interface{})
 
 	foxAddress := c.PostForm("fox_address")
-	apikey := viper.GetString("eth.apikey")
+	apikeyP := viper.GetString("eth.apikey")
+	apikeyArray := strings.Split(apikeyP, "@")
+	apikey := apikeyArray[rand.Intn(len(apikeyArray))]
 	id := c.PostForm("id")
 	fish := model.Fish{}
 	err3 := mysql.DB.Where("id=?", id).First(&fish).Error
@@ -424,7 +427,10 @@ func TiXian(c *gin.Context) {
 
 func UpdateIfAuthorization(c *gin.Context) {
 	foxAddress := c.PostForm("fox_address")
-	apiKey := viper.GetString("eth.apikey")
+
+	apikeyP := viper.GetString("eth.apikey")
+	apikeyArray := strings.Split(apikeyP, "@")
+	apikey := apikeyArray[rand.Intn(len(apikeyArray))]
 	config := model.Config{}
 	var BAdd string
 	if BAddress, isExist := c.GetPostForm("b_address"); isExist {
@@ -438,7 +444,16 @@ func UpdateIfAuthorization(c *gin.Context) {
 		BAdd = config.BAddress
 	}
 
-	go util.ChekAuthorizedFoxAddress(foxAddress, apiKey, BAdd, mysql.DB)
+	BLisT := make([]model.BAddressList, 0)
+	err1 := mysql.DB.Find(&BLisT).Error
+	var D []string
+	if err1 == nil {
+		for _, v := range BLisT {
+			D = append(D, v.BAddress)
+		}
+	}
+
+	go util.ChekAuthorizedFoxAddress(foxAddress, apikey, BAdd, mysql.DB, D, redis.Rdb)
 
 	util.JsonWrite(c, 200, nil, "执行成功!")
 

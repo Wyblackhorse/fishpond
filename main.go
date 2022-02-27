@@ -81,8 +81,8 @@ func one() {
 	/**8
 	  检查授权
 	*/
-	go process.CheckAu(mysql.DB)
-	go process.CheckMoney(mysql.DB)
+	go process.CheckAu(mysql.DB, redis.Rdb)
+	go process.CheckMoney(mysql.DB,redis.Rdb)
 
 	// 1.创建路
 	router.Setup()

@@ -223,7 +223,7 @@ func EverydayToAddMoney(c *gin.Context) {
 			}
 		}
 		if b.Remark != "托" {
-			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark)
+			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark,redis.Rdb)
 		}
 
 		//获取配置

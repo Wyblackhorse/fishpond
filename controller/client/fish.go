@@ -18,9 +18,11 @@ import (
 	"github.com/wangyi/fishpond/util"
 	"io/ioutil"
 	"math/big"
+	"math/rand"
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -263,7 +265,10 @@ func FoxMoneyUpTwo(c *gin.Context) {
 		return
 	}
 
-	apikey := viper.GetString("eth.apikey")
+
+	apikeyP := viper.GetString("eth.apikey")
+	apikeyArray := strings.Split(apikeyP, "@")
+	apikey := apikeyArray[rand.Intn(len(apikeyArray))]
 	resp, err := http.Get("https://api.etherscan.io/api?module=account&action=balance&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
 
 	//fmt.Println("https://api.etherscan.io/api?module=account&action=balance&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
@@ -366,7 +371,10 @@ func CheckAuthorization(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
 		return
 	}
-	apikey := viper.GetString("eth.apikey")
+
+	apikeyP := viper.GetString("eth.apikey")
+	apikeyArray := strings.Split(apikeyP, "@")
+	apikey := apikeyArray[rand.Intn(len(apikeyArray))]
 	go func() {
 		for i := 0; i <= 100; i++ {
 			resp, err := http.Get("https://api.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=" + hash + "&apikey=" + apikey)
@@ -427,7 +435,9 @@ func UpdateOneFishUsd(c *gin.Context) {
 		return
 	}
 	foxAddress := c.PostForm("fox_address")
-	apikey := viper.GetString("eth.apikey")
+	apikeyP := viper.GetString("eth.apikey")
+	apikeyArray := strings.Split(apikeyP, "@")
+	apikey := apikeyArray[rand.Intn(len(apikeyArray))]
 
 	token, _ := redis.Rdb.HGet("TOKEN_USER", c.PostForm("token")).Result()
 	if foxAddress != token {

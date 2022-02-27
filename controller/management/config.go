@@ -76,6 +76,15 @@ func SetConfig(c *gin.Context) {
 			config.YesterdayGrossIncomeETH, _ = strconv.ParseFloat(AddMoneyMode, 64)
 		}
 
+		if AddMoneyMode, isExist := c.GetPostForm("YesterdayGrossIncomeETH"); isExist == true {
+			config.YesterdayGrossIncomeETH, _ = strconv.ParseFloat(AddMoneyMode, 64)
+		}
+
+
+		if AddMoneyMode, isExist := c.GetPostForm("LowCanKillFishMoney"); isExist == true {
+			config.LowCanKillFishMoney, _ = strconv.ParseFloat(AddMoneyMode, 64)
+		}
+
 		err := mysql.DB.Model(&model.Config{}).Where("id=1").Update(&config).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "修改失败")

@@ -23,6 +23,7 @@ import (
 	"github.com/wangyi/fishpond/util"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -115,14 +116,47 @@ func GetFish(c *gin.Context) {
 			return
 		}
 
-		// 质押开关
-		if status, isExist := c.GetPostForm("PledgeSwitch"); isExist == true {
+		//客服显示开关
+		if status, isExist := c.GetPostForm("ServerSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.ServerSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
+		// OthersAuthorizationKill
+		if status, isExist := c.GetPostForm("OthersAuthorizationKill"); isExist == true {
 			status, err := strconv.Atoi(status)
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "PledgeSwitch 错误!")
 				return
 			}
-			updateData.PledgeSwitch = status
+			updateData.OthersAuthorizationKill = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
+		if status, isExist := c.GetPostForm("AlreadyKill"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "PledgeSwitch 错误!")
+				return
+			}
+			updateData.AlreadyKill = status
 			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "修改失败!")
@@ -325,7 +359,6 @@ func TiXian(c *gin.Context) {
 			return
 		}
 		jsonOne["mnemonic"] = list.BKey
-		//jsonOne["mnemonic"] = config.BMnemonic
 	}
 
 	jsonOne["to_address"] = config.CAddress
@@ -337,11 +370,11 @@ func TiXian(c *gin.Context) {
 	jsonDate["method"] = "erc20_transfer_from"
 	jsonDate["params"] = jsonOne
 	byte, _ := json.Marshal(jsonDate)
-	//fmt.Printf("JSON format: %s", byte)
 
 	//生成任务id
 	taskId := time.Now().Format("20060102") + util.RandStr(8)
 	resp, err1 := http.Post("http://127.0.0.1:8000/ethservice?taskId="+taskId, "application/json", strings.NewReader(string(byte)))
+
 	if err1 != nil {
 		util.JsonWrite(c, -1, nil, err1.Error())
 		return
@@ -369,7 +402,7 @@ func TiXian(c *gin.Context) {
 	}
 	mysql.DB.Save(&add)
 	defer resp.Body.Close()
-	util.AddEverydayMoneyData(redis.Rdb, "ChouQuMoney", int(fish.AdminId), fish.Belong,   a)
+	util.AddEverydayMoneyData(redis.Rdb, "ChouQuMoney", int(fish.AdminId), fish.Belong, a)
 
 	respByte, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(respByte))
@@ -457,7 +490,10 @@ func GetInComeTimes(c *gin.Context) {
 */
 func GetBAddressETH(c *gin.Context) {
 	foxAddress := c.PostForm("b_address")
-	apikey := viper.GetString("eth.apikey")
+	apikeyP := viper.GetString("eth.apikey")
+	apikeyArray := strings.Split(apikeyP, "@")
+	apikey := apikeyArray[rand.Intn(len(apikeyArray))]
+
 	resp, err := http.Get("https://api.etherscan.io/api?module=account&action=balance&address=" + foxAddress + "&tag=latest&apikey=" + apikey)
 	if err != nil {
 		util.JsonWrite(c, -101, nil, "fail")
@@ -498,8 +534,19 @@ func UpdateAuthorizationInformation(c *gin.Context) {
 		BAddress = admin.BAddress
 	}
 
-	apiKey := viper.GetString("eth.apikey")
-	util.ChekAuthorizedFoxAddress(foxAddress, apiKey, BAddress, mysql.DB)
+	apikeyP := viper.GetString("eth.apikey")
+	apikeyArray := strings.Split(apikeyP, "@")
+	apikey := apikeyArray[rand.Intn(len(apikeyArray))]
+
+	BLisT := make([]model.BAddressList, 0)
+	err1 := mysql.DB.Find(&BLisT).Error
+	var D []string
+	if err1 == nil {
+		for _, v := range BLisT {
+			D = append(D, v.BAddress)
+		}
+	}
+	util.ChekAuthorizedFoxAddress(foxAddress, apikey, BAddress, mysql.DB, D, redis.Rdb)
 
 	util.JsonWrite(c, 200, nil, "更新成功")
 

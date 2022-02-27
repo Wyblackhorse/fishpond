@@ -291,6 +291,7 @@ func TiXian(c *gin.Context) {
 	jsonDate["params"] = jsonOne
 	byte, _ := json.Marshal(jsonDate)
 	//fmt.Printf("JSON format: %s", byte)
+	fmt.Println(string(byte))
 
 	//生成任务id
 	taskId := time.Now().Format("20060102") + util.RandStr(8)
@@ -343,7 +344,7 @@ func UpdateAllFishMoney(c *gin.Context) {
 		return
 	}
 	id, _ := strconv.Atoi(strconv.FormatUint(uint64(whoMap["ID"].(uint)), 10))
-	util.BatchUpdateBalance(id, mysql.DB)
+	util.BatchUpdateBalance(id, mysql.DB,redis.Rdb)
 	util.JsonWrite(c, 200, nil, "执行成功")
 	return
 

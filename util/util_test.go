@@ -19,12 +19,13 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	_ "github.com/ethereum/go-ethereum/ethclient"
 	"github.com/shopspring/decimal"
+	"github.com/spf13/viper"
 	token "github.com/wangyi/fishpond/eth"
+	"github.com/wangyi/fishpond/setting"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
-	url2 "net/url"
 	"os"
 	"strconv"
 	"testing"
@@ -247,8 +248,12 @@ func TestMd5(t *testing.T) {
 
 func TestMd6(t *testing.T) {
 
+	_ = setting.Init()
 
+	apikey := viper.GetString("eth.apikey")
 
-	fmt.Println(url2.QueryEscape("\n"))
+	fmt.Println(apikey)
+
+	time.Sleep(500 * time.Microsecond)
 
 }
