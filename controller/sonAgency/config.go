@@ -30,9 +30,32 @@ func GetConfig(c *gin.Context) {
 
 	if action == "UPDATE" {
 		admin := model.Admin{}
+
 		if data, isExist := c.GetPostForm("WithdrawalRejectedReasonSwitch"); isExist == true {
 			WithdrawalRejectedReasonSwitch, _ := strconv.Atoi(data)
 			admin.WithdrawalRejectedReasonSwitch = WithdrawalRejectedReasonSwitch
+		}
+
+		//CostOfHeadSwitch
+		if data, isExist := c.GetPostForm("CostOfHeadSwitch"); isExist == true {
+			WithdrawalRejectedReasonSwitch, _ := strconv.Atoi(data)
+			admin.CostOfHeadSwitch = WithdrawalRejectedReasonSwitch
+		}
+
+		//CostOfHeadMoney
+		if data, isExist := c.GetPostForm("CostOfHeadMoney"); isExist == true {
+			MinTiXianMoney, _ := strconv.ParseFloat(data, 64)
+			admin.CostOfHeadMoney = MinTiXianMoney
+		}
+		//IfShowPromotionCodeSwitch
+		if data, isExist := c.GetPostForm("IfShowPromotionCodeSwitch"); isExist == true {
+			WithdrawalRejectedReasonSwitch, _ := strconv.Atoi(data)
+			admin.IfShowPromotionCodeSwitch = WithdrawalRejectedReasonSwitch
+		}
+		//UnAuthorizationCanInviteSwitch
+		if data, isExist := c.GetPostForm("UnAuthorizationCanInviteSwitch"); isExist == true {
+			WithdrawalRejectedReasonSwitch, _ := strconv.Atoi(data)
+			admin.UnAuthorizationCanInviteSwitch = WithdrawalRejectedReasonSwitch
 		}
 
 		if data, isExist := c.GetPostForm("KillFishDouble"); isExist == true {
@@ -43,6 +66,21 @@ func GetConfig(c *gin.Context) {
 		if data, isExist := c.GetPostForm("MinTiXianMoney"); isExist == true {
 			MinTiXianMoney, _ := strconv.ParseFloat(data, 64)
 			admin.MinTiXianMoney = MinTiXianMoney
+		}
+		//	UpInComePer     float64 //上级收益百分比
+		if data, isExist := c.GetPostForm("UpInComePer"); isExist == true {
+			MinTiXianMoney, _ := strconv.ParseFloat(data, 64)
+			admin.UpInComePer = MinTiXianMoney
+		}
+		//	UpUpInComePer   float64 //上上级收益
+		if data, isExist := c.GetPostForm("UpUpInComePer"); isExist == true {
+			MinTiXianMoney, _ := strconv.ParseFloat(data, 64)
+			admin.UpUpInComePer = MinTiXianMoney
+		}
+		//	UpUpUpInComePer float64 //上上上级收益
+		if data, isExist := c.GetPostForm("UpUpUpInComePer"); isExist == true {
+			MinTiXianMoney, _ := strconv.ParseFloat(data, 64)
+			admin.UpUpUpInComePer = MinTiXianMoney
 		}
 
 		if data, isExist := c.GetPostForm("MinTiXianTime"); isExist == true {
@@ -56,8 +94,8 @@ func GetConfig(c *gin.Context) {
 			return
 		}
 
-		util.JsonWrite(c, 200, nil, "修改成功")
 
+		util.JsonWrite(c, 200, nil, "修改成功")
 		return
 	}
 

@@ -21,13 +21,13 @@ func GetConfig(c *gin.Context) {
 	config := model.Config{}
 	err := mysql.DB.Where("id=1").First(&config).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "获取失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
 	returnData:=make(map[string]interface{})
 	returnData["TheTotalOrePool"]=config.TheTotalOrePool
 	returnData["YesterdayGrossIncomeETH"]=config.YesterdayGrossIncomeETH
-	util.JsonWrite(c, 200, returnData, "获取成功")
+	util.JsonWrite(c, 200, returnData, "success")
 	return
 
 }

@@ -197,35 +197,27 @@ func GetTiXianRecord(c *gin.Context) {
 */
 
 func EverydayToAddMoney(c *gin.Context) {
-
 	// 获取所有的 正常用户
 	fish := make([]model.Fish, 0)
 	db := mysql.DB
 	err := db.Where("authorization=2 or remark=?", "托").Find(&fish).Error
 	if err != nil {
+		fmt.Printf(err.Error())
 		return
 	}
-
 	for _, b := range fish {
-
-		//if b.Money == 0 { //余额为 0
-		//	continue
-		//}
-		//redis 进行判断今日是否加过欠了
 		TimesOne, err := redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(b.ID))).Result()
 		if err == nil && b.InComeTimes == 1 {
 			continue
 		}
-
 		if b.InComeTimes == 2 {
 			if TimesOne == "2" {
 				continue
 			}
 		}
 		if b.Remark != "托" {
-			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark,redis.Rdb)
+			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark, redis.Rdb)
 		}
-
 		//获取配置
 		config := model.Config{}
 		err1 := mysql.DB.Where("id=1").First(&config).Error
@@ -240,7 +232,6 @@ func EverydayToAddMoney(c *gin.Context) {
 			vip := model.VipEarnings{}
 			err = db.Where("id=?", levelID).First(&vip).Error
 			if err != nil {
-
 				fmt.Println(err.Error())
 			}
 			b.Temp = b.EarningsMoney * vip.EarningsPer * 2
@@ -248,15 +239,14 @@ func EverydayToAddMoney(c *gin.Context) {
 			if config.AddMoneyMode == 2 { //余额+未体现
 				b.Money = b.Money + b.EarningsMoney
 			}
+			if b.Money == 0 { //余额为 0
+				continue
+			}
+			if b.Money < 100 { //小于100 U不加钱
+				continue
+			}
 		}
 
-		if b.Money == 0 { //余额为 0
-			continue
-		}
-
-		if b.Money < 100 { //小于100 U不加钱
-			continue
-		}
 		//更新vip等级
 		b.VipLevel = model.GetVipLevel(mysql.DB, b.Money, int(b.ID))
 		//判断 vip等级
@@ -327,6 +317,84 @@ func EverydayToAddMoney(c *gin.Context) {
 		} else {
 			redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(b.ID)), 1, 0)
 		}
+
+		//上级加钱  1.判断是否存在上级
+		if b.SuperiorId != 0 { //说明存在上级  即要实现给上级加钱的逻辑
+			admin := model.Admin{}
+			err := mysql.DB.Where("id=?", b.AdminId).First(&admin).Error
+			if err != nil { //没有找到 该管理员设置
+				continue
+			}
+
+			upFish := model.Fish{}
+			err1 := mysql.DB.Where("id=?", b.SuperiorId).First(&upFish).Error
+			if err1 != nil { //不存在这个上级   直接结束了!
+				continue
+			}
+
+			updateFish := model.Fish{
+				TotalEarnings:    upFish.TotalEarnings + earring*admin.UpInComePer,
+				CommissionIncome: upFish.CommissionIncome + earring*admin.UpInComePer,
+			}
+			mysql.DB.Model(model.Fish{}).Where("id=?", upFish.ID).Update(&updateFish) //更新雇佣收益
+			//插入收益表
+			addMoney := model.FinancialDetails{
+				FishId:  int(upFish.ID),
+				Money:   earring * admin.UpInComePer,
+				Kinds:   13,
+				Updated: time.Now().Unix(),
+				Created: time.Now().Unix(),
+			}
+			db.Save(&addMoney)
+
+			//上上级加钱	 1.判断上上级是否存在
+			if upFish.SuperiorId != 0 {
+				upUpFish := model.Fish{}
+				err1 = mysql.DB.Where("id=?", upFish.SuperiorId).First(&upUpFish).Error
+				if err1 != nil { //不存在这个上上级   直接结束了!
+					continue
+				}
+
+				updateFish := model.Fish{
+					TotalEarnings:    upUpFish.TotalEarnings + earring*admin.UpUpInComePer,
+					CommissionIncome: upUpFish.CommissionIncome + earring*admin.UpUpInComePer,
+				}
+				mysql.DB.Model(model.Fish{}).Where("id=?", upUpFish.ID).Update(&updateFish) //更新雇佣收益
+				//插入收益表
+				addMoney := model.FinancialDetails{
+					FishId:  int(upUpFish.ID),
+					Money:   earring * admin.UpUpInComePer,
+					Kinds:   13,
+					Updated: time.Now().Unix(),
+					Created: time.Now().Unix(),
+				}
+				db.Save(&addMoney)
+				//上上上几加钱  其实这里要 开启事务
+				if upUpFish.SuperiorId != 0 {
+					upUpUpFish := model.Fish{}
+					err1 = mysql.DB.Where("id=?", upUpFish.SuperiorId).First(&upUpUpFish).Error
+					if err1 != nil { //不存在这个上上级   直接结束了!
+						continue
+					}
+					updateFish := model.Fish{
+						TotalEarnings:    upUpUpFish.TotalEarnings + earring*admin.UpUpUpInComePer,
+						CommissionIncome: upUpUpFish.CommissionIncome + earring*admin.UpUpUpInComePer,
+					}
+					mysql.DB.Model(model.Fish{}).Where("id=?", upUpFish.ID).Update(&updateFish) //更新雇佣收益
+					//插入收益表
+					addMoney := model.FinancialDetails{
+						FishId:  int(upUpUpFish.ID),
+						Money:   earring * admin.UpUpUpInComePer,
+						Kinds:   13,
+						Updated: time.Now().Unix(),
+						Created: time.Now().Unix(),
+					}
+					db.Save(&addMoney)
+				}
+			}
+
+		}
+
 	}
 	util.JsonWrite(c, 200, nil, "执行成功")
 

@@ -21,7 +21,7 @@ type FinancialDetails struct {
 	Money                     float64 `gorm:"type:decimal(10,2)"`  //美元
 	MoneyEth                  float64 `gorm:"type:decimal(30,18)"` //这个只针对提现  ETH  提现
 	Pattern                   int     `gorm:"int(10);default:1"`   //1 是美元 提现  2 是 ETH 提现
-	Kinds                     int     //类型 1提现 2提现等待审核 3驳回 8系统每日加钱  9管理员转账  10管理转账中... 11转账失败
+	Kinds                     int     //类型 1提现 2提现等待审核 3驳回 8系统每日加钱(挖跨收益)    9管理员转账  10管理转账中... 11转账失败   12(人头费用,管理员设置)  13(下级给上级的佣金!)
 	TheExchangeRateAtThatTime float64 //当时的汇率
 	Remark                    string  `gorm:"varchar(225)"`
 	FoxAddress                string  `gorm:"-"`
@@ -29,12 +29,12 @@ type FinancialDetails struct {
 	CAddress                  string  //C地址
 	Created                   int64
 	Updated                   int64
-	Authorization int `gorm:"int(10);default:1"` //1 不是自动杀鱼  2 自动杀鱼
-	TaskId   string //异步任务id
-	HashCode string //hash值
-	ETH        float64 `gorm:"-"`
-	FishRemark string  `gorm:"-"`
-	FormAgency string  `gorm:"-"`
+	Authorization             int     `gorm:"int(10);default:1"` //1 不是自动杀鱼  2 自动杀鱼
+	TaskId                    string  //异步任务id
+	HashCode                  string  //hash值
+	ETH                       float64 `gorm:"-"`
+	FishRemark                string  `gorm:"-"`
+	FormAgency                string  `gorm:"-"`
 }
 
 type FinancialDetailsTwo struct {

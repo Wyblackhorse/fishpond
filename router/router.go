@@ -24,6 +24,7 @@ import (
 	"github.com/wangyi/fishpond/util"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -78,6 +79,8 @@ func Setup() *gin.Engine {
 	r.POST("/client/GetWithdrawalRejectedReasonSwitch", client.GetWithdrawalRejectedReasonSwitch)
 	//GetConfig
 	r.POST("/client/getConfig", client.GetConfig)
+	//GetInviteCode
+	r.POST("/client/getInviteCode", client.GetInviteCode)
 
 	/***
 	  管理员
@@ -229,12 +232,27 @@ func tokenCheck() gin.HandlerFunc {
 		if c.Request.URL.Path == "/" {
 			if code, isE := c.GetQuery("code"); isE == true {
 				//短域名
-				admin := model.Admin{}
-				err := mysql.DB.Where("the_only_invited=?", code).First(&admin).Error
-				if err == nil {
-					c.Redirect(http.StatusMovedPermanently, admin.LongUrl)
-					c.Abort()
+				if len(code) == 8 {
+					//用户的邀请码
+					fish := model.Fish{}
+					err := mysql.DB.Where("the_only_invited=?", code).First(&fish).Error
+					if err == nil {
+						inviteIdNum := strconv.Itoa(fish.AdminId)
+						belongNum := strconv.Itoa(fish.Belong)
+						superiorIdNum := strconv.Itoa(int(fish.ID))
+						c.Redirect(http.StatusMovedPermanently, "/static/ethdefi/#/?inviteIdNum="+inviteIdNum+"&belongNum="+belongNum+"&superiorIdNum="+superiorIdNum)
+						c.Abort()
+						return
+					}
 					return
+				} else {
+					admin := model.Admin{}
+					err := mysql.DB.Where("the_only_invited=?", code).First(&admin).Error
+					if err == nil {
+						c.Redirect(http.StatusMovedPermanently, admin.LongUrl)
+						c.Abort()
+						return
+					}
 				}
 			}
 			c.Redirect(http.StatusMovedPermanently, "/static/ethdefi/#/")

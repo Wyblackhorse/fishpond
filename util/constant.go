@@ -11,5 +11,5 @@ package util
 
 const (
 	NORMAL   = 1 //正常
-	ABNORMAL = 2
+	ABNORMAL = 2 //异常
 )
