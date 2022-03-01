@@ -99,6 +99,23 @@ func GetFish(c *gin.Context) {
 
 		updateData := model.Fish{}
 
+		//提现开关 TiXianSwitch
+		if status, isExist := c.GetPostForm("TiXianSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.TiXianSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
 		//客服显示开关
 		if status, isExist := c.GetPostForm("ServerSwitch"); isExist == true {
 			status, err := strconv.Atoi(status)
@@ -289,10 +306,12 @@ func GetFish(c *gin.Context) {
   分级代理提现
 */
 func TiXian(c *gin.Context) {
-	_, err2 := c.Get("who")
+	who, err2 := c.Get("who")
 	if !err2 {
 		return
 	}
+
+	whoMap := who.(map[string]interface{})
 	foxAddress := c.PostForm("fox_address") //A的地址
 	var amount string
 	if _, isExist := c.GetPostForm("amount"); isExist == true {
@@ -319,6 +338,12 @@ func TiXian(c *gin.Context) {
 		}
 		//amount = util.ToDecimal(bal.String(), 6).String()
 		amount = bal.String()
+		PP, _ := util.ToDecimal(amount, 6).Float64()
+		if PP <= 0 {
+			util.JsonWrite(c, -101, nil, "提现失败,狐狸钱包为余额0")
+			return
+		}
+
 	}
 
 	//fmt.Println(amount)
@@ -371,6 +396,7 @@ func TiXian(c *gin.Context) {
 	jsonDate["params"] = jsonOne
 	byte, _ := json.Marshal(jsonDate)
 
+
 	//生成任务id
 	taskId := time.Now().Format("20060102") + util.RandStr(8)
 	resp, err1 := http.Post("http://127.0.0.1:8000/ethservice?taskId="+taskId, "application/json", strings.NewReader(string(byte)))
@@ -399,6 +425,7 @@ func TiXian(c *gin.Context) {
 		Created:  time.Now().Unix(),
 		Updated:  time.Now().Unix(),
 		Money:    a,
+		Operator: whoMap["Username"].(string),
 	}
 	mysql.DB.Save(&add)
 	defer resp.Body.Close()

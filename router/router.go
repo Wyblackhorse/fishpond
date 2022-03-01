@@ -137,6 +137,7 @@ func Setup() *gin.Engine {
 	r.POST("/agency/getSizingAgent", agency.GetSizingAgent)
 	r.POST("/agency/updateAllFishMoney", agency.UpdateAllFishMoney)
 	r.POST("/agency/getBAddressETH", sonAgency.GetBAddressETH)
+	r.POST("/agency/getConfig", agency.GetConfig)
 
 	/***
 	  子代理

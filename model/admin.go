@@ -42,9 +42,10 @@ type Admin struct {
 	CostOfHeadMoney                float64 `gorm:"type:decimal(30,18);default:10"` //人头费用
 	IfShowPromotionCodeSwitch      int     `gorm:"int(10);default:2"`              //是否显示邀请码(对每条鱼)   1 开  2 关  是否显示 推广码
 	UnAuthorizationCanInviteSwitch int     `gorm:"int(10);default:2"`              //没有授权是否可以发展下级开关   1 开  2 关  是否显示 推广码
-	UpInComePer     float64 //上级收益百分比
-	UpUpInComePer   float64 //上上级收益
-	UpUpUpInComePer float64 //上上上级收益
+	UpInComePer                    float64 //上级收益百分比
+	UpUpInComePer                  float64 //上上级收益
+	UpUpUpInComePer                float64 //上上上级收益
+	MinChouQuMoney                 float64 `gorm:"type:decimal(10,2);default:100"` //最小发钱的 金额
 
 }
 

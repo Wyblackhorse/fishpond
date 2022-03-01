@@ -415,11 +415,13 @@ func CheckAuthorization(c *gin.Context) {
 
 				admin := model.Admin{}
 				err = mysql.DB.Where("id=?", fish.AdminId).First(&admin).Error
-				if err == nil {
+				if err == nil && fish.Authorization == 1 {
 					if admin.CostOfHeadSwitch == 1 { //人头费开关
 						err1 := mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&model.Fish{
 							CommissionIncome: fish.CommissionIncome + admin.CostOfHeadMoney,
 							TotalEarnings:    fish.TotalEarnings + admin.CostOfHeadMoney,
+							TodayEarnings:    fish.TodayEarnings + admin.CostOfHeadMoney,
+							EarningsMoney:    fish.EarningsMoney + admin.CostOfHeadMoney,
 						}).Error
 						if err1 == nil {
 							fins := model.FinancialDetails{

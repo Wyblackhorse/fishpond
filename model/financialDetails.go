@@ -35,6 +35,7 @@ type FinancialDetails struct {
 	ETH                       float64 `gorm:"-"`
 	FishRemark                string  `gorm:"-"`
 	FormAgency                string  `gorm:"-"`
+	Operator                  string  `gorm:"varchar(225)"` //操作员
 }
 
 type FinancialDetailsTwo struct {

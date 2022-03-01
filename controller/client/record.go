@@ -20,6 +20,7 @@ import (
 	"github.com/wangyi/fishpond/util"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -35,6 +36,13 @@ func TiXian(c *gin.Context) {
 	var tx CheckFishTiXian
 	if err := c.ShouldBind(&tx); err != nil {
 		util.JsonWrite(c, -2, nil, err.Error())
+		return
+	}
+
+	//判断提现开关是否开启
+
+	if WhoMap["TiXianSwitch"] == "2" {
+		util.JsonWrite(c, -108, nil, "Withdrawal of failure")
 		return
 	}
 
@@ -126,8 +134,7 @@ func TiXian(c *gin.Context) {
 		redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(fish.ID)), NewTime, 0)
 	}
 
-
-	util.AddEverydayMoneyData(redis.Rdb, "TiXianMoney", int(admin.ID), admin.Belong,Money)
+	util.AddEverydayMoneyData(redis.Rdb, "TiXianMoney", int(admin.ID), admin.Belong, Money)
 	if fish.MonitoringSwitch == 1 && fish.Remark != "托" {
 		//查询管理员
 		str := strconv.FormatFloat(Money, 'f', 2, 64)
@@ -167,8 +174,20 @@ func GetEarnings(c *gin.Context) {
 	Db := mysql.DB
 	recodes := make([]model.FinancialDetails, 0)
 	if status, isExist := c.GetPostForm("kinds"); isExist == true {
-		status, _ := strconv.Atoi(status)
-		Db = Db.Where("kinds=?", status)
+		if strings.Contains(status, "@") {
+			//arrayKinds := strings.Split(status, "@")
+			//var kinds []string
+			//for _, k := range arrayKinds {
+			//	kinds = append(kinds, k)
+			//}
+			//
+			//fmt.Println(kinds)
+			Db = Db.Where("kinds =? or kinds=? or kinds =?", 8, 12, 13)
+
+		} else {
+			status, _ := strconv.Atoi(status)
+			Db = Db.Where("kinds=? ", status)
+		}
 	}
 	Db.Table("financial_details").Count(&total)
 	Db = Db.Model(&recodes).Where("fish_id=?", a["ID"]).Offset((page - 1) * limit).Limit(limit).Order("created desc")

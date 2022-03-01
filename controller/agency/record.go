@@ -57,6 +57,10 @@ func GetTiXianRecord(c *gin.Context) {
 			Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id IN (?)", BString)
 		}
 
+		if _, isExist := c.GetPostForm("tuo"); isExist == true {
+			Db = Db.Where("fish.remark!=?", "托")
+		}
+
 		if foxAddress, isExist := c.GetPostForm("fox_address"); isExist == true {
 			//通过狐狸地址查 id
 			fish := model.Fish{}

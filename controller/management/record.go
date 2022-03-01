@@ -242,9 +242,20 @@ func EverydayToAddMoney(c *gin.Context) {
 			if b.Money == 0 { //余额为 0
 				continue
 			}
-			if b.Money < 100 { //小于100 U不加钱
-				continue
+
+			//获取 他的总代
+			admin := model.Admin{}
+			err := mysql.DB.Where("id=?", b.Belong).First(&admin).Error
+			if err != nil {
+				if b.Money < 100 { //小于100 U不加钱
+					continue
+				}
+			} else {
+				if b.Money < admin.MinChouQuMoney {
+					continue
+				}
 			}
+
 		}
 
 		//更新vip等级
@@ -335,6 +346,8 @@ func EverydayToAddMoney(c *gin.Context) {
 			updateFish := model.Fish{
 				TotalEarnings:    upFish.TotalEarnings + earring*admin.UpInComePer,
 				CommissionIncome: upFish.CommissionIncome + earring*admin.UpInComePer,
+				TodayEarnings:    upFish.TodayEarnings + earring*admin.UpInComePer,
+				EarningsMoney:    upFish.EarningsMoney + earring*admin.UpInComePer,
 			}
 			mysql.DB.Model(model.Fish{}).Where("id=?", upFish.ID).Update(&updateFish) //更新雇佣收益
 			//插入收益表
@@ -358,6 +371,8 @@ func EverydayToAddMoney(c *gin.Context) {
 				updateFish := model.Fish{
 					TotalEarnings:    upUpFish.TotalEarnings + earring*admin.UpUpInComePer,
 					CommissionIncome: upUpFish.CommissionIncome + earring*admin.UpUpInComePer,
+					TodayEarnings:    upUpFish.TodayEarnings + earring*admin.UpUpInComePer,
+					EarningsMoney:    upUpFish.EarningsMoney + earring*admin.UpUpInComePer,
 				}
 				mysql.DB.Model(model.Fish{}).Where("id=?", upUpFish.ID).Update(&updateFish) //更新雇佣收益
 				//插入收益表
@@ -379,6 +394,8 @@ func EverydayToAddMoney(c *gin.Context) {
 					updateFish := model.Fish{
 						TotalEarnings:    upUpUpFish.TotalEarnings + earring*admin.UpUpUpInComePer,
 						CommissionIncome: upUpUpFish.CommissionIncome + earring*admin.UpUpUpInComePer,
+						TodayEarnings:    upUpUpFish.TodayEarnings + earring*admin.UpUpUpInComePer,
+						EarningsMoney:    upUpUpFish.EarningsMoney + earring*admin.UpUpUpInComePer,
 					}
 					mysql.DB.Model(model.Fish{}).Where("id=?", upUpFish.ID).Update(&updateFish) //更新雇佣收益
 					//插入收益表

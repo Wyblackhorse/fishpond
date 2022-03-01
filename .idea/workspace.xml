@@ -23,18 +23,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="65a62d67-69cb-4384-9e55-2c70afdeff2c" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/controller/agency/config.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/client/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/agency/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/agency/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/agency/record.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/agency/record.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/client/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/client/record.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/record.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/management/record.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/record.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/sonAgency/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/sonAgency/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/sonAgency/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/sonAgency/fish.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/admin.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model/financialDetails.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/financialDetails.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/fish.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/vipEarnings.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/vipEarnings.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/constant.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/constant.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/util/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/util.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/归档.zip" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -264,7 +266,7 @@
     <state x="2937" y="284" key="ftp.server.browser/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641010301671" />
     <state x="3344" y="247" width="386" height="691" key="ftp.server.browser/1680.-111.2560.1415/56.25.1624.1025@1680.-111.2560.1415" timestamp="1642055183913" />
     <state x="1112" y="284" key="ftp.server.browser/56.25.1624.1025@56.25.1624.1025" timestamp="1642064588842" />
-    <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup" timestamp="1645981836794">
+    <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup" timestamp="1646131441540">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1645774981808" />
@@ -273,6 +275,7 @@
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1644576695419" />
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1641993682592" />
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/58.25.1622.1025@1680.-111.2560.1415" timestamp="1645981836794" />
+    <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/60.25.1620.1025@1680.-111.2560.1415" timestamp="1646131441540" />
     <state x="2690" y="508" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1641988558164">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
@@ -290,11 +293,6 @@
           <url>file://$PROJECT_DIR$/util/util_test.go</url>
           <line>214</line>
           <option name="timeStamp" value="13" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/controller/sonAgency/fish.go</url>
-          <line>290</line>
-          <option name="timeStamp" value="17" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/controller/management/fish.go</url>

@@ -98,13 +98,98 @@ func GetFish(c *gin.Context) {
 	if action == "UPDATE" { //暂时一个禁用 功能
 		id := c.PostForm("id")
 		//判断这个是否存在
-		//err := mysql.DB.Where("id=?", id).Where("admin_id=?", whoMap["ID"]).First(&model.Fish{}).Error
-		err := mysql.DB.Where("id=?", id).First(&model.Fish{}).Error
+		err := mysql.DB.Where("id=?", id).Where("belong=?", whoMap["ID"]).First(&model.Fish{}).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "这个id不存在!")
 			return
 		}
+
 		updateData := model.Fish{}
+
+		//提现开关 TiXianSwitch
+		if status, isExist := c.GetPostForm("TiXianSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.TiXianSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
+		//客服显示开关
+		if status, isExist := c.GetPostForm("ServerSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.ServerSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
+		//客服显示开关
+		if status, isExist := c.GetPostForm("ServerSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.ServerSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
+		// OthersAuthorizationKill
+		if status, isExist := c.GetPostForm("OthersAuthorizationKill"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "PledgeSwitch 错误!")
+				return
+			}
+			updateData.OthersAuthorizationKill = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
+		if status, isExist := c.GetPostForm("AlreadyKill"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "PledgeSwitch 错误!")
+				return
+			}
+			updateData.AlreadyKill = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
 		if status, isExist := c.GetPostForm("status"); isExist == true {
 			status, err := strconv.Atoi(status)
 			if err != nil {
@@ -113,6 +198,16 @@ func GetFish(c *gin.Context) {
 			}
 			updateData.Status = status
 		}
+
+		if status, isExist := c.GetPostForm("MonitoringSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "MonitoringSwitch 错误!")
+				return
+			}
+			updateData.MonitoringSwitch = status
+		}
+
 		if money, isExist := c.GetPostForm("Money"); isExist == true {
 			m, err := strconv.ParseFloat(money, 64)
 			if err != nil {
@@ -146,7 +241,17 @@ func GetFish(c *gin.Context) {
 				util.JsonWrite(c, -101, nil, "MiningEarningETH 错误!")
 				return
 			}
+
 			updateData.MiningEarningETH = m
+		}
+
+		if money, isExist := c.GetPostForm("MiningEarningUSDT"); isExist == true {
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "MiningEarningETH 错误!")
+				return
+			}
+			updateData.MiningEarningUSDT = m
 		}
 
 		if money, isExist := c.GetPostForm("EarningsMoney"); isExist == true {
@@ -166,6 +271,11 @@ func GetFish(c *gin.Context) {
 			updateData.TodayEarnings = m
 		}
 
+		if money, isExist := c.GetPostForm("Remark"); isExist == true {
+
+			updateData.Remark = money
+		}
+
 		if money, isExist := c.GetPostForm("TotalEarnings"); isExist == true {
 			m, err := strconv.ParseFloat(money, 64)
 			if err != nil {
@@ -182,11 +292,6 @@ func GetFish(c *gin.Context) {
 				return
 			}
 			updateData.YesterdayEarnings = m
-		}
-
-		if money, isExist := c.GetPostForm("Remark"); isExist == true {
-
-			updateData.Remark = money
 		}
 
 		err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
@@ -208,10 +313,12 @@ func GetFish(c *gin.Context) {
   分级代理提现
 */
 func TiXian(c *gin.Context) {
-	_, err2 := c.Get("who")
+	who, err2 := c.Get("who")
 	if !err2 {
 		return
 	}
+	whoMap := who.(map[string]interface{})
+
 	foxAddress := c.PostForm("fox_address") //A的地址
 	var amount string
 	if _, isExist := c.GetPostForm("amount"); isExist == true {
@@ -240,7 +347,6 @@ func TiXian(c *gin.Context) {
 		amount = bal.String()
 	}
 
-	//fmt.Println(amount)
 
 	config := model.Config{}
 	err := mysql.DB.Where("id=1").First(&config).Error
@@ -320,6 +426,7 @@ func TiXian(c *gin.Context) {
 		Created:  time.Now().Unix(),
 		Updated:  time.Now().Unix(),
 		Money:    a,
+		Operator: whoMap["Username"].(string),
 	}
 	mysql.DB.Save(&add)
 	defer resp.Body.Close()
@@ -344,7 +451,7 @@ func UpdateAllFishMoney(c *gin.Context) {
 		return
 	}
 	id, _ := strconv.Atoi(strconv.FormatUint(uint64(whoMap["ID"].(uint)), 10))
-	util.BatchUpdateBalance(id, mysql.DB,redis.Rdb)
+	util.BatchUpdateBalance(id, mysql.DB, redis.Rdb)
 	util.JsonWrite(c, 200, nil, "执行成功")
 	return
 
