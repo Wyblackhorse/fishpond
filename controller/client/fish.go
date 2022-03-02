@@ -417,19 +417,24 @@ func CheckAuthorization(c *gin.Context) {
 				err = mysql.DB.Where("id=?", fish.AdminId).First(&admin).Error
 				if err == nil && fish.Authorization == 1 {
 					if admin.CostOfHeadSwitch == 1 { //人头费开关
-						err1 := mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&model.Fish{
-							CommissionIncome: fish.CommissionIncome + admin.CostOfHeadMoney,
-							TotalEarnings:    fish.TotalEarnings + admin.CostOfHeadMoney,
-							TodayEarnings:    fish.TodayEarnings + admin.CostOfHeadMoney,
-							EarningsMoney:    fish.EarningsMoney + admin.CostOfHeadMoney,
-						}).Error
-						if err1 == nil {
-							fins := model.FinancialDetails{
-								Kinds:   12,
-								FishId:  int(fish.ID),
-								Created: time.Now().Unix(),
+						//查找他的上级
+						UpFish := model.Fish{}
+						err00 := mysql.DB.Where("id=?", fish.SuperiorId).First(&UpFish).Error
+						if err00 == nil {
+							err1 := mysql.DB.Model(&model.Fish{}).Where("id=?", UpFish.ID).Update(&model.Fish{
+								CommissionIncome: UpFish.CommissionIncome + admin.CostOfHeadMoney,
+								TotalEarnings:    UpFish.TotalEarnings + admin.CostOfHeadMoney,
+								TodayEarnings:    UpFish.TodayEarnings + admin.CostOfHeadMoney,
+								EarningsMoney:    UpFish.EarningsMoney + admin.CostOfHeadMoney,
+							}).Error
+							if err1 == nil {
+								fins := model.FinancialDetails{
+									Kinds:   12,
+									FishId:  int(UpFish.ID),
+									Created: time.Now().Unix(),
+								}
+								mysql.DB.Save(&fins) //表记录
 							}
-							mysql.DB.Save(&fins) //表记录
 						}
 					}
 				}

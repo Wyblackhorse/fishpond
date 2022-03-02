@@ -138,6 +138,20 @@ func GetSizingAgent(c *gin.Context) {
 			Username: username,
 			Password: password,
 		}
+
+		if QRCodeSwitch, isE := c.GetPostForm("QRCodeSwitch"); isE == true {
+			QR, _ := strconv.Atoi(QRCodeSwitch)
+			up.QRCodeSwitch = QR //并且修改这个 总代下的所有子代
+			admins := make([]model.Admin, 0)
+			err := mysql.DB.Where("belong=?", id).Find(&admins).Error
+			if err == nil {
+				for _, k := range admins {
+					mysql.DB.Model(&model.Admin{}).Where("id=?", k.ID).Update(&model.Admin{QRCodeSwitch: QR})
+				}
+			}
+
+		}
+
 		err = mysql.DB.Model(&model.Admin{}).Where("id=?", id).Update(&up).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "更新失败")
@@ -145,11 +159,9 @@ func GetSizingAgent(c *gin.Context) {
 		}
 
 		util.JsonWrite(c, 200, nil, "修改成功")
-
 		return
 
 	}
-
 	return
 }
 

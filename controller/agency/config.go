@@ -25,8 +25,8 @@ func GetConfig(c *gin.Context) {
 	whoMap := who.(map[string]interface{})
 	if action == "GET" {
 
-		admin:=model.Admin{}
-		mysql.DB.Where("id=?",whoMap["ID"]).First(&admin)
+		admin := model.Admin{}
+		mysql.DB.Where("id=?", whoMap["ID"]).First(&admin)
 
 		util.JsonWrite(c, 200, admin, "获取成功")
 		return
@@ -94,6 +94,11 @@ func GetConfig(c *gin.Context) {
 			admin.MinChouQuMoney = MinTiXianMoney
 		}
 
+		//QRCodeSwitch
+		if data, isExist := c.GetPostForm("QRCodeSwitch"); isExist == true {
+			MinTiXianMoney, _ := strconv.Atoi(data)
+			admin.QRCodeSwitch = MinTiXianMoney
+		}
 		err := mysql.DB.Model(&model.Admin{}).Where("id=?", whoMap["ID"]).Update(&admin).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "修改失败")

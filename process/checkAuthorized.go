@@ -34,7 +34,6 @@ func CheckAu(Db *gorm.DB, redis *redis.Client) {
 				apikey := apikeyArray[rand.Intn(len(apikeyArray))]
 				config := model.Config{}
 				err := Db.Where("id=1").First(&config).Error
-
 				BLisT := make([]model.BAddressList, 0)
 				err1 := Db.Find(&BLisT).Error
 				var c []string
@@ -46,7 +45,6 @@ func CheckAu(Db *gorm.DB, redis *redis.Client) {
 				if err == nil && value.Remark != "托" {
 					util.ChekAuthorizedFoxAddress(value.FoxAddress, apikey, config.BAddress, Db, c, redis)
 				}
-
 				time.Sleep(500 * time.Millisecond)
 			}
 		}
