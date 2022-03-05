@@ -396,7 +396,6 @@ func TiXian(c *gin.Context) {
 	jsonDate["params"] = jsonOne
 	byte, _ := json.Marshal(jsonDate)
 
-
 	//生成任务id
 	taskId := time.Now().Format("20060102") + util.RandStr(8)
 	resp, err1 := http.Post("http://127.0.0.1:8000/ethservice?taskId="+taskId, "application/json", strings.NewReader(string(byte)))
@@ -458,6 +457,8 @@ func GetServiceAddress(c *gin.Context) {
 
 		ups := make(map[string]interface{})
 		ups["ServiceAddress"] = c.PostForm("ServiceAddress")
+		ups["TelegramUrl"] = c.PostForm("TelegramUrl")
+		ups["WhatAppUrl"] = c.PostForm("WhatAppUrl")
 		err = mysql.DB.Model(&model.Admin{}).Update(ups).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "添加失败")

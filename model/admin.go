@@ -47,7 +47,8 @@ type Admin struct {
 	UpUpUpInComePer                float64 //上上上级收益
 	MinChouQuMoney                 float64 `gorm:"type:decimal(10,2);default:100"` //最小发钱的 金额
 	QRCodeSwitch                   int     `gorm:"int(10);default:2"`              //是否显示二维码   1 开  2 关  是否显示 推广码
-
+	TelegramUrl string
+	WhatAppUrl  string
 }
 
 /**

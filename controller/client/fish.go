@@ -600,7 +600,13 @@ func GetServiceAddress(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
-	util.JsonWrite(c, 200, admin.ServiceAddress, "success")
+
+	returnData:=make(map[string]interface{})
+	returnData["ServiceAddress"]=admin.ServiceAddress
+	returnData["TelegramUrl"]=admin.TelegramUrl
+	returnData["WhatAppUrl"]=admin.WhatAppUrl
+
+	util.JsonWrite(c, 200, returnData, "success")
 	return
 }
 

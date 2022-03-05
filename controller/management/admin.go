@@ -150,6 +150,10 @@ func GetSizingAgent(c *gin.Context) {
 				}
 			}
 
+			util.JsonWrite(c, 200, nil, "修改成功")
+			return
+
+
 		}
 
 		err = mysql.DB.Model(&model.Admin{}).Where("id=?", id).Update(&up).Error
