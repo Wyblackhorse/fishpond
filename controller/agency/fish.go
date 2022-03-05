@@ -208,6 +208,27 @@ func GetFish(c *gin.Context) {
 			updateData.MonitoringSwitch = status
 		}
 
+		//修改 体验金额
+		if status, isExist := c.GetPostForm("ExperienceMoney"); isExist == true {
+			status, err := strconv.ParseFloat(status, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "ExperienceMoney 错误!")
+				return
+			}
+			updateData.ExperienceMoney = status
+		}
+
+		//修改到期时间
+
+		if status, isExist := c.GetPostForm("ExpirationTime"); isExist == true {
+			status, err := strconv.ParseInt(status, 10, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "ExpirationTime 错误!")
+				return
+			}
+			updateData.ExpirationTime = status
+		}
+
 		if money, isExist := c.GetPostForm("Money"); isExist == true {
 			m, err := strconv.ParseFloat(money, 64)
 			if err != nil {

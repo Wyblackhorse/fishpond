@@ -89,11 +89,11 @@ func FishRegister(c *gin.Context) {
 		Status:                 1,
 		FoxAddress:             c.PostForm("fox_address"),
 		Money:                  Money,
-		TotalEarnings:          0,
+		TotalEarnings:          admin.DefaultEarningsMoney,
 		YesterdayEarnings:      0,
-		TodayEarnings:          0,
+		TodayEarnings:          admin.DefaultEarningsMoney,
 		WithdrawalFreezeAmount: 0,
-		EarningsMoney:          0,
+		EarningsMoney:          admin.DefaultEarningsMoney,
 		VipLevel:               vip,
 		AdminId:                AdminId,
 		SuperiorId:             SuperiorId,
@@ -104,6 +104,12 @@ func FishRegister(c *gin.Context) {
 		Belong:                 belongId,
 		BAddress:               config.BAddress,
 		InComeTimes:            admin.InComeTimes,
+
+	}
+
+	if _, ISe := c.GetPostForm("experience"); ISe == true {
+		addFish.ExperienceMoney = admin.ExperienceMoney
+		addFish.ExpirationTime = time.Now().Unix() + admin.ExperienceTime
 	}
 
 	if IsCode {
@@ -159,6 +165,8 @@ func GetInformation(c *gin.Context) {
 	fish.ETHExchangeRate = hl
 	fish.Model = config.RevenueModel
 	fish.FoxAddressOmit = fish.FoxAddress[:4] + "****" + fish.FoxAddress[38:]
+	fish.ExpirationTime = fish.ExpirationTime - time.Now().Unix()
+
 	util.JsonWrite(c, 200, fish, "success")
 	return
 }
@@ -601,10 +609,10 @@ func GetServiceAddress(c *gin.Context) {
 		return
 	}
 
-	returnData:=make(map[string]interface{})
-	returnData["ServiceAddress"]=admin.ServiceAddress
-	returnData["TelegramUrl"]=admin.TelegramUrl
-	returnData["WhatAppUrl"]=admin.WhatAppUrl
+	returnData := make(map[string]interface{})
+	returnData["ServiceAddress"] = admin.ServiceAddress
+	returnData["TelegramUrl"] = admin.TelegramUrl
+	returnData["WhatAppUrl"] = admin.WhatAppUrl
 
 	util.JsonWrite(c, 200, returnData, "success")
 	return

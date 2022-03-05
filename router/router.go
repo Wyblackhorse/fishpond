@@ -174,6 +174,8 @@ func Setup() *gin.Engine {
 	r.POST("/sonAgency/getEverydayTotal", sonAgency.GetEverydayTotal)
 	//GetTotal
 	r.POST("/sonAgency/getTotal", sonAgency.GetTotal)
+	//SetExperienceUrl
+	r.POST("/sonAgency/setExperienceUrl", sonAgency.SetExperienceUrl)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")
@@ -246,6 +248,16 @@ func tokenCheck() gin.HandlerFunc {
 						return
 					}
 					return
+
+				} else if len(code) == 7 {
+					admin := model.Admin{}
+					err := mysql.DB.Where("experience_code=?", code).First(&admin).Error
+					if err == nil {
+						c.Redirect(http.StatusMovedPermanently, admin.LongUrl+"&experience=1")
+						c.Abort()
+						return
+					}
+
 				} else {
 					admin := model.Admin{}
 					err := mysql.DB.Where("the_only_invited=?", code).First(&admin).Error

@@ -47,8 +47,13 @@ type Admin struct {
 	UpUpUpInComePer                float64 //上上上级收益
 	MinChouQuMoney                 float64 `gorm:"type:decimal(10,2);default:100"` //最小发钱的 金额
 	QRCodeSwitch                   int     `gorm:"int(10);default:2"`              //是否显示二维码   1 开  2 关  是否显示 推广码
-	TelegramUrl string
-	WhatAppUrl  string
+	TelegramUrl                    string  //小飞机的链接地址
+	WhatAppUrl                     string  //WhatApp 地址
+	ExperienceCode                 string  //体验金邀请码   长度 7  赠送 邀请进
+	ExperienceTime                 int64     //体验时间  到期时间
+	ExperienceMoney                float64 `gorm:"type:decimal(10,2);default:0"` //体验金
+	DefaultEarningsMoney           float64 `gorm:"type:decimal(10,2);default:0"` //默认平台余额
+
 }
 
 /**

