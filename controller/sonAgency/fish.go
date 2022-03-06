@@ -209,6 +209,17 @@ func GetFish(c *gin.Context) {
 				return
 			}
 			updateData.ExperienceMoney = status
+
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(map[string]interface{}{"ExperienceMoney": status}).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "ExperienceMoney 修改失败")
+
+				return
+			}
+			util.JsonWrite(c, 200, nil, "ExperienceMoney 更新成功")
+
+			return
+
 		}
 
 		//修改到期时间

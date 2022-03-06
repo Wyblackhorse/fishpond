@@ -161,6 +161,14 @@ func SetExperienceUrl(c *gin.Context) {
 		if generate, isE := c.GetPostForm("DefaultEarningsMoney"); isE == true {
 			times, _ := strconv.ParseFloat(generate, 64)
 			ups.DefaultEarningsMoney = times
+			err := mysql.DB.Model(&model.Admin{}).Where("id=?", MapWho["ID"]).Update(map[string]interface{}{"DefaultEarningsMoney":times}).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败")
+
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功")
+			return
 		}
 
 		//ExperienceMoney
