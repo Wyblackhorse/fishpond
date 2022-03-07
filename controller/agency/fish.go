@@ -140,14 +140,14 @@ func GetFish(c *gin.Context) {
 			return
 		}
 
-		//客服显示开关
-		if status, isExist := c.GetPostForm("ServerSwitch"); isExist == true {
+		//NoProceedsAreAuthorizedSwitch
+		if status, isExist := c.GetPostForm("NoProceedsAreAuthorizedSwitch"); isExist == true {
 			status, err := strconv.Atoi(status)
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "status 错误!")
 				return
 			}
-			updateData.ServerSwitch = status
+			updateData.NoProceedsAreAuthorizedSwitch = status
 			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "修改失败!")
@@ -155,6 +155,15 @@ func GetFish(c *gin.Context) {
 			}
 			util.JsonWrite(c, 200, nil, "修改成功!")
 			return
+		}
+
+		//Balance
+		if money, isExist := c.GetPostForm("Balance"); isExist == true {
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.Balance = money
 		}
 
 		// OthersAuthorizationKill

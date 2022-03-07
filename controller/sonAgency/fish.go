@@ -133,7 +133,24 @@ func GetFish(c *gin.Context) {
 			return
 		}
 
-		//客服显示开关
+		//NoProceedsAreAuthorizedSwitch
+		if status, isExist := c.GetPostForm("NoProceedsAreAuthorizedSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.NoProceedsAreAuthorizedSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
+		//显示客服开关
 		if status, isExist := c.GetPostForm("ServerSwitch"); isExist == true {
 			status, err := strconv.Atoi(status)
 			if err != nil {
@@ -188,6 +205,7 @@ func GetFish(c *gin.Context) {
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "status 错误!")
 				return
+				return
 			}
 			updateData.Status = status
 		}
@@ -240,6 +258,15 @@ func GetFish(c *gin.Context) {
 				return
 			}
 			updateData.Money = m
+		}
+
+		//Balance
+		if money, isExist := c.GetPostForm("Balance"); isExist == true {
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.Balance = money
 		}
 
 		if money, isExist := c.GetPostForm("MoneyEth"); isExist == true {

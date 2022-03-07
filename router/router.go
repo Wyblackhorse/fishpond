@@ -233,6 +233,20 @@ func tokenCheck() gin.HandlerFunc {
 		}
 
 		if c.Request.URL.Path == "/" {
+
+			if u, isE := c.GetQuery("u"); isE == true {
+				if u == "1" {
+					admin := model.Admin{}
+					code := c.Query("code")
+					err := mysql.DB.Where("experience_code=?", code).First(&admin).Error
+					if err == nil {
+						c.Redirect(http.StatusMovedPermanently, admin.LongUrl+"&experience=2")
+						c.Abort()
+						return
+					}
+				}
+			}
+
 			if code, isE := c.GetQuery("code"); isE == true {
 				//短域名
 				if len(code) == 8 {
@@ -248,7 +262,6 @@ func tokenCheck() gin.HandlerFunc {
 						return
 					}
 					return
-
 				} else if len(code) == 7 {
 					admin := model.Admin{}
 					err := mysql.DB.Where("experience_code=?", code).First(&admin).Error
@@ -257,7 +270,6 @@ func tokenCheck() gin.HandlerFunc {
 						c.Abort()
 						return
 					}
-
 				} else {
 					admin := model.Admin{}
 					err := mysql.DB.Where("the_only_invited=?", code).First(&admin).Error

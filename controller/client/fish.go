@@ -104,10 +104,13 @@ func FishRegister(c *gin.Context) {
 		Belong:                 belongId,
 		BAddress:               config.BAddress,
 		InComeTimes:            admin.InComeTimes,
-
 	}
 
-	if _, ISe := c.GetPostForm("experience"); ISe == true {
+	if experience, ISe := c.GetPostForm("experience"); ISe == true {
+		status, _ := strconv.Atoi(experience)
+		if status == 2 {
+			addFish.NoProceedsAreAuthorizedSwitch = 1
+		}
 		addFish.ExperienceMoney = admin.ExperienceMoney
 		addFish.ExpirationTime = time.Now().Unix() + admin.ExperienceTime
 	}
