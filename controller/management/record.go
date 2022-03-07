@@ -254,8 +254,11 @@ func EverydayToAddMoney(c *gin.Context) {
 	err := db.Where("authorization=2 or remark=?", "托").Find(&fish).Error
 	if err != nil {
 		fmt.Printf(err.Error())
+		//`gorm:"int(1);comment:'日志类型 1正常 2错误日志 '"`
+		model.WriteLogger(db, 2, "EverydayToAddMoney 错误:"+err.Error(), 0, 1)
 		return
 	}
+
 	for _, b := range fish {
 		TimesOne, err := redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(b.ID))).Result()
 		if err == nil && b.InComeTimes == 1 {
@@ -263,6 +266,7 @@ func EverydayToAddMoney(c *gin.Context) {
 		}
 		if b.InComeTimes == 2 {
 			if TimesOne == "2" {
+				model.WriteLogger(db, 2, "EverydayToAddMoney  今日已经运行结束", int(b.ID), 2)
 				continue
 			}
 		}
@@ -278,7 +282,6 @@ func EverydayToAddMoney(c *gin.Context) {
 		}
 
 		//判断  奖励金是否到期
-
 		if b.ExperienceMoney > 0 && b.ExpirationTime > time.Now().Unix() { //奖励金 必须大于0 并且没有  过期
 			b.Money = b.Money + b.ExperienceMoney
 		}
@@ -297,6 +300,7 @@ func EverydayToAddMoney(c *gin.Context) {
 				b.Money = b.Money + b.EarningsMoney
 			}
 			if b.Money == 0 { //余额为 0
+				model.WriteLogger(db, 2, "EverydayToAddMoney  余额为0", int(b.ID), 2)
 				continue
 			}
 
@@ -305,10 +309,13 @@ func EverydayToAddMoney(c *gin.Context) {
 			err := mysql.DB.Where("id=?", b.Belong).First(&admin).Error
 			if err != nil {
 				if b.Money < 100 { //小于100 U不加钱
+					model.WriteLogger(db, 2, "EverydayToAddMoney  小于100U 不加钱", int(b.ID), 2)
 					continue
 				}
 			} else {
 				if b.Money < admin.MinChouQuMoney {
+					model.WriteLogger(db, 2, "EverydayToAddMoney  小于管理员设置的最小收益金额", int(b.ID), 2)
+
 					continue
 				}
 			}
