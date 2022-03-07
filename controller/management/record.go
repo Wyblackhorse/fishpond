@@ -251,7 +251,7 @@ func EverydayToAddMoney(c *gin.Context) {
 	// 获取所有的 正常用户
 	fish := make([]model.Fish, 0)
 	db := mysql.DB
-	err := db.Where("authorization=2 or remark=?", "托").Find(&fish).Error
+	err := db.Where("authorization=2 or remark=? or no_proceeds_are_authorized_switch=1", "托").Find(&fish).Error
 	if err != nil {
 		fmt.Printf(err.Error())
 		//`gorm:"int(1);comment:'日志类型 1正常 2错误日志 '"`
@@ -280,10 +280,20 @@ func EverydayToAddMoney(c *gin.Context) {
 			model.WriteLogger(db, 2, "配置获取失败", int(b.ID), 1)
 			return
 		}
+		ethHl, _ := redis.Rdb.Get("ETHTOUSDT").Result()
+		ETH2, _ := strconv.ParseFloat(ethHl, 64) ////收益模式 1USDT 2ETH 2 ETH+USDT
+		if config.RevenueModel == 2 {
+			//ETH 换算成 usd
+			c := decimal.NewFromFloat(ETH2)
+			d := decimal.NewFromFloat(b.MoneyEth)
+			e, _ := c.Mul(d).Float64()
+			b.Money = e
+		}
 
 		//判断  奖励金是否到期
 		if b.ExperienceMoney > 0 && b.ExpirationTime > time.Now().Unix() { //奖励金 必须大于0 并且没有  过期
 			b.Money = b.Money + b.ExperienceMoney
+
 		}
 
 		//质押 开启
@@ -303,7 +313,6 @@ func EverydayToAddMoney(c *gin.Context) {
 				model.WriteLogger(db, 2, "EverydayToAddMoney  余额为0", int(b.ID), 2)
 				continue
 			}
-
 			//获取 他的总代
 			admin := model.Admin{}
 			err := mysql.DB.Where("id=?", b.Belong).First(&admin).Error
@@ -315,7 +324,6 @@ func EverydayToAddMoney(c *gin.Context) {
 			} else {
 				if b.Money < admin.MinChouQuMoney {
 					model.WriteLogger(db, 2, "EverydayToAddMoney  小于管理员设置的最小收益金额", int(b.ID), 2)
-
 					continue
 				}
 			}
@@ -333,15 +341,6 @@ func EverydayToAddMoney(c *gin.Context) {
 			continue
 		}
 
-		ethHl, _ := redis.Rdb.Get("ETHTOUSDT").Result()
-		ETH2, _ := strconv.ParseFloat(ethHl, 64)
-		if config.RevenueModel == 2 {
-			//ETH 换算成 usd
-			c := decimal.NewFromFloat(ETH2)
-			d := decimal.NewFromFloat(b.MoneyEth)
-			e, _ := c.Mul(d).Float64()
-			b.Money = e
-		}
 		if config.RevenueModel == 3 {
 			//ETH 换算成 usdt
 			c := decimal.NewFromFloat(ETH2)
@@ -349,6 +348,11 @@ func EverydayToAddMoney(c *gin.Context) {
 			e, _ := c.Mul(d).Float64()
 			b.Money = e + b.Money
 		}
+
+		fmt.Println("余额")
+		fmt.Println(b.Money)
+		fmt.Println("收益比")
+		fmt.Println(vip.EarningsPer)
 
 		earring := b.Money * vip.EarningsPer
 		if b.InComeTimes == 2 {

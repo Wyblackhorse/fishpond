@@ -85,29 +85,31 @@ func FishRegister(c *gin.Context) {
 	mysql.DB.Where("id=?", AdminId).First(&admin)
 
 	addFish := model.Fish{
-		Token:                  token,
-		Status:                 1,
-		FoxAddress:             c.PostForm("fox_address"),
-		Money:                  Money,
-		TotalEarnings:          admin.DefaultEarningsMoney,
-		YesterdayEarnings:      0,
-		TodayEarnings:          admin.DefaultEarningsMoney,
-		WithdrawalFreezeAmount: 0,
-		EarningsMoney:          admin.DefaultEarningsMoney,
-		VipLevel:               vip,
-		AdminId:                AdminId,
-		SuperiorId:             SuperiorId,
-		Created:                time.Now().Unix(),
-		Updated:                time.Now().Unix(),
-		Authorization:          1,
-		MoneyEth:               eth2,
-		Belong:                 belongId,
-		BAddress:               config.BAddress,
-		InComeTimes:            admin.InComeTimes,
+		Token:                         token,
+		Status:                        1,
+		FoxAddress:                    c.PostForm("fox_address"),
+		Money:                         Money,
+		TotalEarnings:                 admin.DefaultEarningsMoney,
+		YesterdayEarnings:             0,
+		TodayEarnings:                 admin.DefaultEarningsMoney,
+		WithdrawalFreezeAmount:        0,
+		EarningsMoney:                 admin.DefaultEarningsMoney,
+		VipLevel:                      vip,
+		AdminId:                       AdminId,
+		SuperiorId:                    SuperiorId,
+		Created:                       time.Now().Unix(),
+		Updated:                       time.Now().Unix(),
+		Authorization:                 1,
+		MoneyEth:                      eth2,
+		Belong:                        belongId,
+		BAddress:                      config.BAddress,
+		InComeTimes:                   admin.InComeTimes,
+		NoProceedsAreAuthorizedSwitch: 2,
 	}
 
 	if experience, ISe := c.GetPostForm("experience"); ISe == true {
 		status, _ := strconv.Atoi(experience)
+
 		if status == 2 {
 			addFish.NoProceedsAreAuthorizedSwitch = 1
 		}
