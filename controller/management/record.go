@@ -260,12 +260,14 @@ func EverydayToAddMoney(c *gin.Context) {
 	}
 
 	for _, b := range fish {
+		model.WriteLogger(db, 2, "准备发放收益", int(b.ID), 2)
 		TimesOne, err := redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(b.ID))).Result()
-		if err == nil && b.InComeTimes == 1 {
+		if err == nil && b.InComeTimes == 1 { //有数据 但是针对 每天只发 一次收益的 玩家停止
 			continue
 		}
-		if b.InComeTimes == 2 {
-			if TimesOne == "2" {
+		if b.InComeTimes == 2 { //玩家发每天发两次收益
+			ppp, _ := strconv.Atoi(TimesOne)
+			if ppp == 2 {
 				model.WriteLogger(db, 2, "EverydayToAddMoney  今日已经运行结束", int(b.ID), 2)
 				continue
 			}
@@ -289,11 +291,9 @@ func EverydayToAddMoney(c *gin.Context) {
 			e, _ := c.Mul(d).Float64()
 			b.Money = e
 		}
-
 		//判断  奖励金是否到期
 		if b.ExperienceMoney > 0 && b.ExpirationTime > time.Now().Unix() { //奖励金 必须大于0 并且没有  过期
 			b.Money = b.Money + b.ExperienceMoney
-
 		}
 
 		//质押 开启
@@ -348,12 +348,6 @@ func EverydayToAddMoney(c *gin.Context) {
 			e, _ := c.Mul(d).Float64()
 			b.Money = e + b.Money
 		}
-
-		fmt.Println("余额")
-		fmt.Println(b.Money)
-		fmt.Println("收益比")
-		fmt.Println(vip.EarningsPer)
-
 		earring := b.Money * vip.EarningsPer
 		if b.InComeTimes == 2 {
 			earring = earring * 0.5
@@ -367,7 +361,7 @@ func EverydayToAddMoney(c *gin.Context) {
 		//对 fish 表进行 更新  更新数据为
 		upData := model.Fish{
 			YesterdayEarnings: b.TodayEarnings,
-			TodayEarnings:     earring,
+			TodayEarnings:     b.TodayEarnings + earring,
 			TotalEarnings:     b.TotalEarnings + earring,
 			EarningsMoney:     b.EarningsMoney + earring,
 			Updated:           time.Now().Unix(),
@@ -387,16 +381,17 @@ func EverydayToAddMoney(c *gin.Context) {
 			Updated: time.Now().Unix(),
 			Created: time.Now().Unix(),
 		}
-		db.Save(&addMoney)
-		//fmt.Println(addMoney)
-		if b.InComeTimes == 2 {
+		err = db.Save(&addMoney).Error
+
+		if b.InComeTimes == 2 { //判断这个玩家发放收益的次数
 			TimesOneUnm, _ := strconv.Atoi(TimesOne)
 			new := TimesOneUnm + 1
 			redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(b.ID)), new, 0)
-		} else {
+		} else { // 1
 			redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(b.ID)), 1, 0)
 		}
 
+		model.WriteLogger(db, 2, "发放收益结束", int(b.ID), 2)
 		//上级加钱  1.判断是否存在上级
 		if b.SuperiorId != 0 { //说明存在上级  即要实现给上级加钱的逻辑
 			admin := model.Admin{}
@@ -482,7 +477,6 @@ func EverydayToAddMoney(c *gin.Context) {
 
 	}
 	util.JsonWrite(c, 200, nil, "执行成功")
-
 }
 
 /***

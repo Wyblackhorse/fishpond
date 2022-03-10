@@ -19,7 +19,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	_ "github.com/ethereum/go-ethereum/ethclient"
 	"github.com/shopspring/decimal"
+	"github.com/wangyi/fishpond/dao/redis"
 	token "github.com/wangyi/fishpond/eth"
+	"github.com/wangyi/fishpond/setting"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -245,13 +247,23 @@ func TestMd5(t *testing.T) {
 }
 
 func TestMd6(t *testing.T) {
+	//加载配置
+	if err := setting.Init(); err != nil {
+		fmt.Println("配置文件初始化事变", err)
+		return
+	}
+	if err := redis.Init(); err != nil {
+		fmt.Println("redis文件初始化失败：", err)
+		return
+	}
+	defer redis.Close()
+	TimesOne, err := redis.Rdb.Get("wangyi").Result()
 
 
-
-	str:="123456778"
-
-	fmt.Println(str[:9])
+	fmt.Println("值:" , TimesOne)
+	fmt.Println("错误", err)
 
 
-
+//值:
+//	错误 redis: nil
 }
