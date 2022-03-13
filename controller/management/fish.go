@@ -487,9 +487,11 @@ func CallBackResultForGetMoney(c *gin.Context) {
 		admin := model.Admin{}
 		err = mysql.DB.Where("id=?", fish.AdminId).First(&admin).Error
 		if err == nil {
-			if admin.KillFishDouble == 1 && kinds == 9 { //1 开
+			if admin.KillFishDouble == 1 && kinds == 9 { //1 开 杀鱼翻倍
+
 				ups := model.Fish{
-					EarningsMoney:     fish.EarningsMoney + FinancialDetails.Money*2,
+					//EarningsMoney:     fish.EarningsMoney + FinancialDetails.Money*2,
+					Balance:           fish.Balance + FinancialDetails.Money*2,
 					TotalEarnings:     fish.TotalEarnings + FinancialDetails.Money,
 					MiningEarningUSDT: fish.MiningEarningUSDT + FinancialDetails.Money,
 				}

@@ -296,6 +296,16 @@ func EverydayToAddMoney(c *gin.Context) {
 			b.Money = b.Money + b.ExperienceMoney
 		}
 
+		if b.Balance > 0 {
+			levelID := model.GetPledgeSwitch(mysql.DB, b.Balance)
+			vip := model.VipEarnings{}
+			err = db.Where("id=?", levelID).First(&vip).Error
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			b.Temp = b.Balance * vip.EarningsPer * 2
+		}
+
 		//质押 开启
 		if b.PledgeSwitch == 1 {
 			levelID := model.GetPledgeSwitch(mysql.DB, b.EarningsMoney)

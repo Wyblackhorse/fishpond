@@ -259,11 +259,17 @@ func TestMd6(t *testing.T) {
 	defer redis.Close()
 	TimesOne, err := redis.Rdb.Get("wangyi").Result()
 
-
-	fmt.Println("值:" , TimesOne)
+	fmt.Println("值:", TimesOne)
 	fmt.Println("错误", err)
 
+	//值:
+	//	错误 redis: nil
+}
 
-//值:
-//	错误 redis: nil
+func TestMd7(t *testing.T) {
+
+
+
+
+
 }

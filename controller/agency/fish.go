@@ -163,7 +163,12 @@ func GetFish(c *gin.Context) {
 				util.JsonWrite(c, -101, nil, "status 错误!")
 				return
 			}
-			updateData.Balance = money
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.Balance = m
 		}
 
 		// OthersAuthorizationKill

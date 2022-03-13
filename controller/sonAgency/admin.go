@@ -154,14 +154,20 @@ func SetExperienceUrl(c *gin.Context) {
 		ups := model.Admin{}
 		if generate, isE := c.GetPostForm("ExperienceTime"); isE == true {
 			times, _ := strconv.ParseInt(generate, 10, 64)
-			ups.ExperienceTime = times
+			err := mysql.DB.Model(&model.Admin{}).Where("id=?", MapWho["ID"]).Update(map[string]interface{}{"ExperienceTime": times}).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败")
+
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功")
+			return
 		}
 
 		//DefaultEarningsMoney
 		if generate, isE := c.GetPostForm("DefaultEarningsMoney"); isE == true {
 			times, _ := strconv.ParseFloat(generate, 64)
-			ups.DefaultEarningsMoney = times
-			err := mysql.DB.Model(&model.Admin{}).Where("id=?", MapWho["ID"]).Update(map[string]interface{}{"DefaultEarningsMoney":times}).Error
+			err := mysql.DB.Model(&model.Admin{}).Where("id=?", MapWho["ID"]).Update(map[string]interface{}{"DefaultEarningsMoney": times}).Error
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "修改失败")
 
@@ -174,7 +180,14 @@ func SetExperienceUrl(c *gin.Context) {
 		//ExperienceMoney
 		if generate, isE := c.GetPostForm("ExperienceMoney"); isE == true {
 			times, _ := strconv.ParseFloat(generate, 64)
-			ups.ExperienceMoney = times
+			err := mysql.DB.Model(&model.Admin{}).Where("id=?", MapWho["ID"]).Update(map[string]interface{}{"ExperienceMoney": times}).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败")
+
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功")
+			return
 		}
 
 		err := mysql.DB.Model(&model.Admin{}).Where("id=?", MapWho["ID"]).Update(&ups).Error

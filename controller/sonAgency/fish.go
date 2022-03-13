@@ -266,7 +266,12 @@ func GetFish(c *gin.Context) {
 				util.JsonWrite(c, -101, nil, "status 错误!")
 				return
 			}
-			updateData.Balance = money
+			m, err := strconv.ParseFloat(money, 64)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.Balance = m
 		}
 
 		if money, isExist := c.GetPostForm("MoneyEth"); isExist == true {
@@ -518,7 +523,7 @@ func GetServiceAddress(c *gin.Context) {
 		ups["ServiceAddress"] = c.PostForm("ServiceAddress")
 		ups["TelegramUrl"] = c.PostForm("TelegramUrl")
 		ups["WhatAppUrl"] = c.PostForm("WhatAppUrl")
-		err = mysql.DB.Model(&model.Admin{}).Update(ups).Error
+		err = mysql.DB.Model(&model.Admin{}).Where("id=?", WhoMap["ID"]).Update(ups).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "添加失败")
 			return

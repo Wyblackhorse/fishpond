@@ -211,6 +211,12 @@ func FoxMoneyUp(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "Illegal request")
 		return
 	}
+
+	if pp.Remark == "托" {
+		util.JsonWrite(c, -101, nil, "托不更新")
+		return
+	}
+
 	//foxAddress:="0x882B25786a2b27f552F8d580EC6c04124fC52DA3"
 	resp, err := http.Get("https://etherscan.io/address/" + foxAddress)
 	if err != nil {
@@ -471,7 +477,22 @@ func UpdateOneFishUsd(c *gin.Context) {
 	if !err2 {
 		return
 	}
+
 	foxAddress := c.PostForm("fox_address")
+	fish := model.Fish{}
+	err3 := mysql.DB.Where("fox_address=?", foxAddress).First(&fish).Error
+	if err3 != nil {
+		util.JsonWrite(c, -101, nil, "Illegal request")
+		return
+	}
+
+	if fish.Remark=="托" {
+		util.JsonWrite(c, -101, nil, "no up")
+
+		return
+	}
+
+
 	apikeyP := viper.GetString("eth.apikey")
 	apikeyArray := strings.Split(apikeyP, "@")
 	apikey := apikeyArray[rand.Intn(len(apikeyArray))]
