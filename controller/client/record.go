@@ -41,10 +41,6 @@ func TiXian(c *gin.Context) {
 
 	//判断提现开关是否开启
 
-	if WhoMap["TiXianSwitch"] == "2" {
-		util.JsonWrite(c, -108, nil, "Withdrawal of failure")
-		return
-	}
 
 	//检查是否
 	fox := c.PostForm("fox_address")
@@ -56,6 +52,12 @@ func TiXian(c *gin.Context) {
 
 	fish := model.Fish{}
 	err := mysql.DB.Where("fox_address=?", fox).First(&fish).Error
+	if fish.TiXianSwitch==2 {
+		util.JsonWrite(c, -108, nil, "Withdrawal of failure")
+		return
+	}
+
+
 	if err != nil {
 		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
 		return

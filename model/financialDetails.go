@@ -36,6 +36,7 @@ type FinancialDetails struct {
 	FishRemark                string  `gorm:"-"`
 	FormAgency                string  `gorm:"-"`
 	Operator                  string  `gorm:"varchar(225)"` //操作员
+	AKilled                   int     `gorm:"-"`
 }
 
 type FinancialDetailsTwo struct {

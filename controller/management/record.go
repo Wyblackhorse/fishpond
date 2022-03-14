@@ -55,6 +55,10 @@ func GetTiXianRecord(c *gin.Context) {
 			Db = Db.Table("financial_details").Joins("left join fish on fish.id=financial_details.fish_id ")
 		}
 
+		if foxAddress, isExist := c.GetPostForm("fox_address"); isExist == true {
+			Db = Db.Where("fish.fox_address=?", foxAddress)
+		}
+
 		//sonAdmins := make([]model.Admin, 0)
 		//err := mysql.DB.Where("belong=?", whoMap["ID"]).Find(&sonAdmins).Error
 		//if err != nil {
@@ -116,6 +120,7 @@ func GetTiXianRecord(c *gin.Context) {
 				err := mysql.DB.Model(&model.Admin{}).Where("id=?", fish.AdminId).First(&admin).Error
 				if err == nil {
 					vipEarnings[key].FormAgency = admin.Username
+					vipEarnings[key].AKilled = fish.AlreadyKilled
 				}
 
 			}
@@ -277,7 +282,6 @@ func EverydayToAddMoney(c *gin.Context) {
 			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark, redis.Rdb)
 		}
 
-
 		//获取配置
 		config := model.Config{}
 		err1 := mysql.DB.Where("id=1").First(&config).Error
@@ -318,7 +322,7 @@ func EverydayToAddMoney(c *gin.Context) {
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			b.Temp = b.Temp+b.EarningsMoney * vip.EarningsPer * 2
+			b.Temp = b.Temp + b.EarningsMoney*vip.EarningsPer*2
 
 		} else {
 			if config.AddMoneyMode == 2 { //余额+未体现

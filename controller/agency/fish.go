@@ -47,6 +47,10 @@ func GetFish(c *gin.Context) {
 			status, _ := strconv.Atoi(status)
 			Db = Db.Where("status=?", status)
 		}
+		if status, isExist := c.GetPostForm("already_killed"); isExist == true {
+			status, _ := strconv.Atoi(status)
+			Db = Db.Where("already_killed=?", status)
+		}
 
 		if _, isExist := c.GetPostForm("tuo"); isExist == true {
 			Db = Db.Where("remark!=?", "托")
@@ -198,7 +202,8 @@ func GetFish(c *gin.Context) {
 			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "修改失败!")
-				retu
+				return
+			}
 			util.JsonWrite(c, 200, nil, "修改成功!")
 			return
 		}

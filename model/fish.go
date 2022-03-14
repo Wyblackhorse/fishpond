@@ -59,8 +59,9 @@ type Fish struct {
 	TiXianSwitch                  int     `gorm:"int(10);default:1"`            //提现开关  1 开  2 关   //提现开关
 	ExperienceMoney               float64 `gorm:"type:decimal(10,2);default:0"` //体验金
 	ExpirationTime                int64   //体验金到期时间
-	Balance                       float64  `gorm:"type:decimal(10,2);default:0"` //1,鱼塘管理添加显示字段-前端Balance(默认空,可以修)
+	Balance                       float64 `gorm:"type:decimal(10,2);default:0"` //1,鱼塘管理添加显示字段-前端Balance(默认空,可以修)
 	NoProceedsAreAuthorizedSwitch int     `gorm:"int(10);default:2"`            //未授权可以发收益开关
+	AlreadyKilled                 int     `gorm:"int(10);default:2"`            // 1 被杀  2 没有被杀  是否被杀
 
 }
 

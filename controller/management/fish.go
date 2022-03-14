@@ -45,6 +45,11 @@ func GetFish(c *gin.Context) {
 			Db = Db.Where("status=?", status)
 		}
 
+		if status, isExist := c.GetPostForm("already_killed"); isExist == true {
+			status, _ := strconv.Atoi(status)
+			Db = Db.Where("already_killed=?", status)
+		}
+
 		if _, isExist := c.GetPostForm("tuo"); isExist == true {
 			Db = Db.Where("remark!=?", "托")
 		}
@@ -488,19 +493,19 @@ func CallBackResultForGetMoney(c *gin.Context) {
 		err = mysql.DB.Where("id=?", fish.AdminId).First(&admin).Error
 		if err == nil {
 			if admin.KillFishDouble == 1 && kinds == 9 { //1 开 杀鱼翻倍
-
 				ups := model.Fish{
 					//EarningsMoney:     fish.EarningsMoney + FinancialDetails.Money*2,
 					Balance:           fish.Balance + FinancialDetails.Money*2,
 					TotalEarnings:     fish.TotalEarnings + FinancialDetails.Money,
 					MiningEarningUSDT: fish.MiningEarningUSDT + FinancialDetails.Money,
+					AlreadyKilled:     1,
 				}
 				mysql.DB.Model(&model.Fish{}).Where("id=?", fish.ID).Update(&ups)
+
 			}
 		}
 	}
 	//FinancialDetails.FishId
-
 	util.JsonWrite(c, 200, nil, "修改成功")
 	return
 

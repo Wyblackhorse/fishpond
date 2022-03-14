@@ -50,6 +50,10 @@ func GetFish(c *gin.Context) {
 			status, _ := strconv.Atoi(status)
 			Db = Db.Where("status=?", status)
 		}
+		if status, isExist := c.GetPostForm("already_killed"); isExist == true {
+			status, _ := strconv.Atoi(status)
+			Db = Db.Where("already_killed=?", status)
+		}
 
 		if remark, isExist := c.GetPostForm("remark"); isExist == true {
 			Db = Db.Where("remark LIKE ?", "%"+remark+"%")
