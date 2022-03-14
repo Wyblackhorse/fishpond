@@ -183,6 +183,22 @@ func GetFish(c *gin.Context) {
 			util.JsonWrite(c, 200, nil, "修改成功!")
 			return
 		}
+		//质押开关
+		if status, isExist := c.GetPostForm("PledgeSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "PledgeSwitch 错误!")
+				return
+			}
+			updateData.PledgeSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
 
 		if status, isExist := c.GetPostForm("AlreadyKill"); isExist == true {
 			status, err := strconv.Atoi(status)

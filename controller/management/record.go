@@ -261,6 +261,7 @@ func EverydayToAddMoney(c *gin.Context) {
 
 	for _, b := range fish {
 		model.WriteLogger(db, 2, "准备发放收益", int(b.ID), 2)
+
 		TimesOne, err := redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(b.ID))).Result()
 		if err == nil && b.InComeTimes == 1 { //有数据 但是针对 每天只发 一次收益的 玩家停止
 			continue
@@ -275,6 +276,8 @@ func EverydayToAddMoney(c *gin.Context) {
 		if b.Remark != "托" {
 			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark, redis.Rdb)
 		}
+
+
 		//获取配置
 		config := model.Config{}
 		err1 := mysql.DB.Where("id=1").First(&config).Error
@@ -304,6 +307,7 @@ func EverydayToAddMoney(c *gin.Context) {
 				fmt.Println(err.Error())
 			}
 			b.Temp = b.Balance * vip.EarningsPer * 2
+
 		}
 
 		//质押 开启
@@ -314,7 +318,8 @@ func EverydayToAddMoney(c *gin.Context) {
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			b.Temp = b.EarningsMoney * vip.EarningsPer * 2
+			b.Temp = b.Temp+b.EarningsMoney * vip.EarningsPer * 2
+
 		} else {
 			if config.AddMoneyMode == 2 { //余额+未体现
 				b.Money = b.Money + b.EarningsMoney
@@ -364,9 +369,7 @@ func EverydayToAddMoney(c *gin.Context) {
 			b.Temp = b.Temp * 0.5
 		}
 
-		if b.PledgeSwitch == 1 {
-			earring = earring + b.Temp
-		}
+		earring = earring + b.Temp
 
 		//对 fish 表进行 更新  更新数据为
 		upData := model.Fish{
