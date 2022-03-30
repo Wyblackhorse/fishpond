@@ -268,8 +268,43 @@ func TestMd6(t *testing.T) {
 
 func TestMd7(t *testing.T) {
 
+	//client := &http.Client{}
 
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 
+	req, err := http.NewRequest("GET", "https://vm.tiktok.com/ZTdaASodv/", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("Upgrade-Insecure-Requests", "1")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3")
+	req.Header.Set("Sec-Fetch-Site", "none")
+	req.Header.Set("Sec-Fetch-Mode", "navigate")
+	req.Header.Set("Accept-Encoding", " deflate")
+	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
+	req.Header.Set("Cookie", "_abck=E15852EC43400E94D4E6A819965A3837~-1~YAAQPXpAF7/skbp/AQAAUXeAvwf92w1UrG6snWz6NWLuxtXAV0fLvqvrDud6oTHjdlALfjDwnW8NHxg6yCzdY67ZrJu79Uo0szpaj0FfftTSwc2fF+IWFMDz4gt0Eibgxu1tvTlTEHorkCvT0Xh+ZWswfF3vTvD/k6J/Qr5nrwGyJItY7aJiqWMUiRqX5u6EyeAMa73nA7NjDxM6Qh26t6v0qNSRfjmA457mXe0UM7oPXDkZp/AKiizVn5mSNkzlRnF0ZwnUjtH52NqI8Gl6vwR+4dh6+Gt2Kq7pUTWT8Zgg47VGjpvmAxx85rB6g+B9loeFnBa6m84EakzYMNbqxFhX4l8XdVcylKUnXjSI4nBvbaILuxtxQrlc3SA=~-1~-1~-1; tt_csrf_token=liqtGb4xS9vlqd4hEpcv_D3F; ttwid=1%7CI670qGhRthRfIqfPMwc4EAMPcyrG8fWtC56qFM9zo5M%7C1648188063%7C4af3f8e7d933f6dd88df35d4f2be4d01909172485cd5f52d0d5ac7c3d1fd15dd; msToken=XKMJboQgejPXcmjO5W8kRDoYK9_7P_BFU5eEEQuuO8-jOYftkZoYeTE9TDofD0EVupMTK1gOXdVmfKVF2Lep6Nf3KxPUd_xuCIJkqUvWCzG2G63ujysty1XdYQCeB3NwGkexjwtZNTYX")
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
 
+}
 
+func testMD8(t *testing.T) {
+
+	//money := 100
+	//b := 10000
+	//fmt.Println(math.Abs(money - b))
 }

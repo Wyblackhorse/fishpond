@@ -66,9 +66,9 @@ func CheckMoney(Db *gorm.DB, redis *redis.Client) {
 				if kk.Remark != "托" {
 					util.UpdateUsdAndEth(kk.FoxAddress, Db, kk.Money, int(kk.ID), kk.AdminId, kk.Remark, redis)
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(3 * time.Second)
 			}
 		}
-		time.Sleep(600 * time.Second)
+		time.Sleep(60 * time.Second)
 	}
 }

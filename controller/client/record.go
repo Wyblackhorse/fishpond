@@ -27,52 +27,42 @@ import (
 //  提现
 func TiXian(c *gin.Context) {
 
-	who, err1 := c.Get("who")
+	_, err1 := c.Get("who")
 	if !err1 {
 		return
 	}
-
-	WhoMap := who.(map[string]string)
+	//WhoMap := who.(map[string]string)
 	var tx CheckFishTiXian
 	if err := c.ShouldBind(&tx); err != nil {
 		util.JsonWrite(c, -2, nil, err.Error())
 		return
 	}
-
 	//判断提现开关是否开启
-
-
 	//检查是否
 	fox := c.PostForm("fox_address")
 	token, _ := redis.Rdb.HGet("TOKEN_USER", c.PostForm("token")).Result()
 	if fox != token {
-		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
+		util.JsonWrite(c, -101, nil, "Withdrawal of failure one ")
 		return
 	}
-
 	fish := model.Fish{}
 	err := mysql.DB.Where("fox_address=?", fox).First(&fish).Error
-	if fish.TiXianSwitch==2 {
-		util.JsonWrite(c, -108, nil, "Withdrawal of failure")
+	if fish.TiXianSwitch==2 {  //提现开关
+		util.JsonWrite(c, -108, nil, "Withdrawal of failure two")
 		return
 	}
-
-
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
+		util.JsonWrite(c, -101, nil, "Withdrawal of failure three")
 		return
 	}
-
 	//开启事务
 	Money, _ := strconv.ParseFloat(c.PostForm("money"), 64) //提现
 	//判断 提现是否少于设置的值
-
 	//查询每一个代理设置的值
 	admin := model.Admin{}
-
-	err = mysql.DB.Where("id=?", WhoMap["AdminId"]).First(&admin).Error
+	err = mysql.DB.Where("id=?",fish.AdminId).First(&admin).Error
 	if err != nil {
-		util.JsonWrite(c, -101, nil, "Withdrawal of failure")
+		util.JsonWrite(c, -101, nil, "Withdrawal of failure four")
 		return
 	}
 

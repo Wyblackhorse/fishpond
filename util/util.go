@@ -194,6 +194,7 @@ func UpdateUsdAndEth(foxAddress string, Db *gorm.DB, money float64, fishID int, 
 			" 当前余额: " + usd.String() + "%0A" +
 			"所属代理ID:" + admin.Username + "%0A" +
 			" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + p
+		fmt.Println("警报")
 		NotificationAdmin(Db, Aid, content)
 	}
 
@@ -535,8 +536,7 @@ func NotificationAdmin(Db *gorm.DB, adminID int, Message string, ) {
 }
 
 /**
-  每日统计  个数
-
+  每日统计  个输
 	RegisterCount int     //注册个数
 	TiXianCount   int     //提现个数
 	Authorization int     //授权个数
@@ -581,7 +581,6 @@ func AddEverydayData(redis *redis.Client, context string, SonAdminIdInt int, Adm
 	}
 
 }
-
 /**
 统计钱
 */
@@ -625,11 +624,9 @@ func AddEverydayMoneyData(redis *redis.Client, context string, SonAdminIdInt int
 	}
 
 }
-
 /**
 杀鱼
 */
-
 type Config struct {
 	ID                      uint    `gorm:"primaryKey;comment:'主键'"`
 	BAddress                string  `gorm:"varchar(225)"`

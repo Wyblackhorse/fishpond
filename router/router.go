@@ -33,7 +33,6 @@ import (
 */
 
 func Setup() *gin.Engine {
-
 	fmt.Println("进来了!")
 	r := gin.New()
 	r.Use(TlsHandler())
