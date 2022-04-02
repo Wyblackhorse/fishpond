@@ -82,7 +82,8 @@ func one() {
 	  检查授权
 	*/
 	go process.CheckAu(mysql.DB, redis.Rdb)
-	go process.CheckMoney(mysql.DB,redis.Rdb)
+	go process.CheckMoney(mysql.DB, redis.Rdb)
+	go process.OneHourUpdateFishMoney(mysql.DB, redis.Rdb)
 
 	// 1.创建路
 	router.Setup()

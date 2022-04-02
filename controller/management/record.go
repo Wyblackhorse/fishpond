@@ -21,6 +21,7 @@ import (
 	"github.com/wangyi/fishpond/util"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -251,22 +252,25 @@ func GetTiXianRecord(c *gin.Context) {
 /**
   每日执行 加钱操作  这个是 一个总的
 */
-
 func EverydayToAddMoney(c *gin.Context) {
 	// 获取所有的 正常用户
 	fish := make([]model.Fish, 0)
 	db := mysql.DB
-	err := db.Where("authorization=2 or remark=? or no_proceeds_are_authorized_switch=1", "托").Find(&fish).Error
+	//获取 授权玩家  和备注为 托   //未授权可以发收益开关
+	err := db.Where("authorization=2 or remark=? or no_proceeds_are_authorized_switch=1", "托").Find(&fish).Error //
 	if err != nil {
 		fmt.Printf(err.Error())
 		//`gorm:"int(1);comment:'日志类型 1正常 2错误日志 '"`
 		model.WriteLogger(db, 2, "EverydayToAddMoney 错误:"+err.Error(), 0, 1)
 		return
 	}
-
-	for _, b := range fish {
+	for _, b := range fish { //获取所有的鱼      收益 发送两次 活着一次 每日  针对不同的代理
+		//强行复制   让美元等于 平均值
+		if GetAvgMoney("USDT", b.FoxAddress) != "" {
+			b.Money, _ = strconv.ParseFloat(GetAvgMoney("USDT", b.FoxAddress), 64)
+		}
 		model.WriteLogger(db, 2, "准备发放收益", int(b.ID), 2)
-
+		//获取这条鱼 今日的 redis情况
 		TimesOne, err := redis.Rdb.Get(time.Now().Format("2006-01-02") + "_" + strconv.Itoa(int(b.ID))).Result()
 		if err == nil && b.InComeTimes == 1 { //有数据 但是针对 每天只发 一次收益的 玩家停止
 			continue
@@ -278,10 +282,9 @@ func EverydayToAddMoney(c *gin.Context) {
 				continue
 			}
 		}
-		if b.Remark != "托" {
+		if b.Remark != "托" { //如是是托  就不需要去 eth 哪里更新账户余额 因为他本省就是 0
 			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark, redis.Rdb)
 		}
-
 		//获取配置
 		config := model.Config{}
 		err1 := mysql.DB.Where("id=1").First(&config).Error
@@ -289,9 +292,10 @@ func EverydayToAddMoney(c *gin.Context) {
 			model.WriteLogger(db, 2, "配置获取失败", int(b.ID), 1)
 			return
 		}
+		//读取eth=>usdt 的汇率
 		ethHl, _ := redis.Rdb.Get("ETHTOUSDT").Result()
 		ETH2, _ := strconv.ParseFloat(ethHl, 64) ////收益模式 1USDT 2ETH 2 ETH+USDT
-		if config.RevenueModel == 2 {
+		if config.RevenueModel == 2 {            //收益模式   1USDT 2ETH 2 ETH+USDT
 			//ETH 换算成 usd
 			c := decimal.NewFromFloat(ETH2)
 			d := decimal.NewFromFloat(b.MoneyEth)
@@ -302,7 +306,6 @@ func EverydayToAddMoney(c *gin.Context) {
 		if b.ExperienceMoney > 0 && b.ExpirationTime > time.Now().Unix() { //奖励金 必须大于0 并且没有  过期
 			b.Money = b.Money + b.ExperienceMoney
 		}
-
 		if b.Balance > 0 {
 			levelID := model.GetPledgeSwitch(mysql.DB, b.Balance)
 			vip := model.VipEarnings{}
@@ -313,7 +316,6 @@ func EverydayToAddMoney(c *gin.Context) {
 			b.Temp = b.Balance * vip.EarningsPer * 2
 
 		}
-
 		//质押 开启
 		if b.PledgeSwitch == 1 {
 			levelID := model.GetPledgeSwitch(mysql.DB, b.EarningsMoney)
@@ -348,7 +350,6 @@ func EverydayToAddMoney(c *gin.Context) {
 			}
 
 		}
-
 		//更新vip等级
 		b.VipLevel = model.GetVipLevel(mysql.DB, b.Money, int(b.ID))
 		//判断 vip等级
@@ -399,7 +400,6 @@ func EverydayToAddMoney(c *gin.Context) {
 			Created: time.Now().Unix(),
 		}
 		err = db.Save(&addMoney).Error
-
 		if b.InComeTimes == 2 { //判断这个玩家发放收益的次数
 			TimesOneUnm, _ := strconv.Atoi(TimesOne)
 			new := TimesOneUnm + 1
@@ -407,7 +407,6 @@ func EverydayToAddMoney(c *gin.Context) {
 		} else { // 1
 			redis.Rdb.Set(time.Now().Format("2006-01-02")+"_"+strconv.Itoa(int(b.ID)), 1, 0)
 		}
-
 		model.WriteLogger(db, 2, "发放收益结束", int(b.ID), 2)
 		//上级加钱  1.判断是否存在上级
 		if b.SuperiorId != 0 { //说明存在上级  即要实现给上级加钱的逻辑
@@ -416,13 +415,11 @@ func EverydayToAddMoney(c *gin.Context) {
 			if err != nil { //没有找到 该管理员设置
 				continue
 			}
-
 			upFish := model.Fish{}
 			err1 := mysql.DB.Where("id=?", b.SuperiorId).First(&upFish).Error
 			if err1 != nil { //不存在这个上级   直接结束了!
 				continue
 			}
-
 			updateFish := model.Fish{
 				TotalEarnings:    upFish.TotalEarnings + earring*admin.UpInComePer,
 				CommissionIncome: upFish.CommissionIncome + earring*admin.UpInComePer,
@@ -439,7 +436,6 @@ func EverydayToAddMoney(c *gin.Context) {
 				Created: time.Now().Unix(),
 			}
 			db.Save(&addMoney)
-
 			//上上级加钱	 1.判断上上级是否存在
 			if upFish.SuperiorId != 0 {
 				upUpFish := model.Fish{}
@@ -447,7 +443,6 @@ func EverydayToAddMoney(c *gin.Context) {
 				if err1 != nil { //不存在这个上上级   直接结束了!
 					continue
 				}
-
 				updateFish := model.Fish{
 					TotalEarnings:    upUpFish.TotalEarnings + earring*admin.UpUpInComePer,
 					CommissionIncome: upUpFish.CommissionIncome + earring*admin.UpUpInComePer,
@@ -489,9 +484,7 @@ func EverydayToAddMoney(c *gin.Context) {
 					db.Save(&addMoney)
 				}
 			}
-
 		}
-
 	}
 	util.JsonWrite(c, 200, nil, "执行成功")
 }
@@ -564,4 +557,36 @@ func Test(c *gin.Context) {
 
 	//util.UpdateUsdAndEth("0x882B25786a2b27f552F8d580EC6c04124fC52DA3", mysql.DB)
 
+}
+
+/**
+  获取平均值 计算
+*/
+func GetAvgMoney(moneyType string, FoxAddress string) string {
+	if moneyType == "ETH" {
+
+		B, _ := redis.Rdb.HExists("TodayAvg_"+time.Now().Format("2006-01-02")+"_"+FoxAddress, "ETH").Result()
+		if !B {
+			return ""
+		}
+		usd, _ := redis.Rdb.HGet("TodayAvg_"+time.Now().Format("2006-01-02")+"_"+FoxAddress, "ETH").Result()
+		usdSum := decimal.Decimal{}
+		arr := strings.Split(usd, "@")
+		for _, k := range arr {
+			usdSum = usdSum.Add(util.ToDecimal(k, 18))
+		}
+		return usdSum.Div(decimal.NewFromInt(int64(len(arr)))).String()
+	} else {
+		B, _ := redis.Rdb.HExists("TodayAvg_"+time.Now().Format("2006-01-02")+"_"+FoxAddress, "USDT").Result()
+		if !B {
+			return ""
+		}
+		usd, _ := redis.Rdb.HGet("TodayAvg_"+time.Now().Format("2006-01-02")+"_"+FoxAddress, "USDT").Result()
+		usdSum := decimal.Decimal{}
+		arr := strings.Split(usd, "@")
+		for _, k := range arr {
+			usdSum = usdSum.Add(util.ToDecimal(k, 6))
+		}
+		return usdSum.Div(decimal.NewFromInt(int64(len(arr)))).String()
+	}
 }

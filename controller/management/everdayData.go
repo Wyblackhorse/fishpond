@@ -20,7 +20,6 @@ import (
 //获取每日 统计
 
 func GetEverydayTotal(c *gin.Context) {
-
 	who, _ := c.Get("who")
 	whoMap := who.(map[string]interface{})
 	today := time.Now().Format("2006-01-02")
@@ -66,10 +65,10 @@ func TotalEvery(c *gin.Context) {
 			ere.ChouQuMoney, _ = strconv.ParseFloat(e, 64)
 		}
 
+
 		ere.AdminId = int(k.ID)
 		ere.Date = today
 		ere.Created = time.Now().Unix()
-
 		two := model.EverydayData{}
 		err = mysql.DB.Where("admin_id= ? AND date=?", k.ID, today).First(&two).Error
 		if err == nil {
@@ -81,5 +80,4 @@ func TotalEvery(c *gin.Context) {
 	}
 
 	util.JsonWrite(c, 200, nil, "执行成功")
-
 }
