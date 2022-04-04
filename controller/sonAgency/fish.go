@@ -292,6 +292,12 @@ func GetFish(c *gin.Context) {
 				return
 			}
 			updateData.Balance = m
+			up := make(map[string]interface{})
+			up["balance"] = m
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(up).Error
+			util.JsonWrite(c, 200, nil, "修改成功")
+			return
+
 		}
 
 		if money, isExist := c.GetPostForm("MoneyEth"); isExist == true {

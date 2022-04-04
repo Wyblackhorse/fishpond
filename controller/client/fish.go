@@ -17,6 +17,7 @@ import (
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
 	"io/ioutil"
+	"math"
 	"math/big"
 	"math/rand"
 	"net/http"
@@ -537,11 +538,45 @@ func UpdateOneFishUsd(c *gin.Context) {
 	data["updated"] = time.Now().Unix()
 	data["money"], _ = usd.Float64()
 
+
+
+
+
+
 	ee := mysql.DB.Model(&model.Fish{}).Where("fox_address=?", foxAddress).Updates(data).Error
 	if ee != nil {
 		util.JsonWrite(c, -101, nil, "fail")
 		return
 	}
+
+	b, _ := strconv.ParseFloat(usd.String(), 64)
+	if fish.MonitoringSwitch == 1 {
+		if math.Abs(fish.Money-b) > 2 {
+			//  余额变动
+			a := b - fish.Money
+			c := strconv.FormatFloat(a, 'f', 2, 64)
+			fishID := strconv.Itoa(int(fish.ID))
+			e := strconv.FormatFloat(fish.Money, 'f', 2, 64)
+			var p string
+			if a > 0 {
+				p = " 😄😄😄"
+			} else {
+				p = " 😭😭😭"
+			}
+			admin := model.Admin{}
+			mysql.DB.Where("id=?", fish.AdminId).First(&admin)
+			content := "❥【钱包余额变动报警】------------------------------------------------->%0A" +
+				" 用户备注: [" + fish.Remark + "] " + "%0A" +
+				" 用户编号:[ 11784374" + fishID + "] " + "%0A" +
+				" 余额变动: " + c + " %0A" +
+				" 原来余额: " + e + "%0A" +
+				" 当前余额: " + usd.String() + "%0A" +
+				"所属代理ID:" + admin.Username + "%0A" +
+				" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + p
+			model.NotificationAdmin(mysql.DB, fish.AdminId, content)
+		}
+	}
+
 	util.JsonWrite(c, 200, nil, "success")
 	return
 }

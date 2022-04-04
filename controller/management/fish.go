@@ -274,7 +274,7 @@ func UpdateOneFishUsd(c *gin.Context) {
 	data["updated"] = time.Now().Unix()
 	data["money"], _ = usd.Float64()
 
-	fmt.Println(data)
+	//fmt.Println(data)
 
 	ee := mysql.DB.Model(&model.Fish{}).Where("id=?", id).Updates(data).Error
 	if ee != nil {

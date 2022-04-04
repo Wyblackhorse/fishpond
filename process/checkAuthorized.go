@@ -47,7 +47,6 @@ func CheckAu(Db *gorm.DB, redis *redis.Client) {
 						c = append(c, v.BAddress)
 					}
 				}
-
 				if err == nil && value.Remark != "托" {
 					util.ChekAuthorizedFoxAddress(value.FoxAddress, apikey, config.BAddress, Db, c, redis)
 				}

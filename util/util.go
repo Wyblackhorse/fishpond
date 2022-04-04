@@ -348,7 +348,7 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 
 	//获取 要查询的 fish
 	//apiKey := "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
-	foxAddress = "0xb64c3f90a3c72b26d08387cc9f21eb5cbc086956"
+	//foxAddress = "0xb64c3f90a3c72b26d08387cc9f21eb5cbc086956"
 	res, err := http.Get("https://api.etherscan.io/api?module=account&action=txlist&address=" + foxAddress + "&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=" + apiKey)
 	if err != nil {
 		fmt.Println(err.Error())

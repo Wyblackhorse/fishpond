@@ -23,14 +23,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="65a62d67-69cb-4384-9e55-2c70afdeff2c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/commit" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/management/everdayData.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/everdayData.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/management/record.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/record.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/agency/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/agency/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/client/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/management/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/sonAgency/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/sonAgency/fish.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/process/checkAuthorized.go" beforeDir="false" afterPath="$PROJECT_DIR$/process/checkAuthorized.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/util/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/util.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/归档.zip" beforeDir="false" afterPath="$PROJECT_DIR$/归档.zip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/归档.zip" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -198,10 +198,10 @@
     </state>
     <state x="1780" y="-11" width="2360" height="1215" key="DiffContextDialog/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641630975626" />
     <state x="1780" y="-11" width="2360" height="1215" key="DiffContextDialog/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1641631393293" />
-    <state width="2518" height="361" key="GridCell.Tab.0.bottom" timestamp="1648640847180">
+    <state width="2518" height="361" key="GridCell.Tab.0.bottom" timestamp="1649071007755">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
-    <state width="2518" height="356" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1645771493226" />
+    <state width="2518" height="361" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1649071007755" />
     <state width="2518" height="356" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/45.25.1635.1025@1680.-111.2560.1415" timestamp="1645864922791" />
     <state width="2518" height="356" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1645277428360" />
     <state width="2518" height="356" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1645076283286" />
@@ -216,10 +216,10 @@
     <state width="1259" height="329" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/60.25.1620.1025@1680.-111.2560.1415" timestamp="1648327693862" />
     <state width="1590" height="260" key="GridCell.Tab.0.bottom/47.25.1633.1025@47.25.1633.1025" timestamp="1642793613380" />
     <state width="2518" height="543" key="GridCell.Tab.0.bottom/48.25.1632.1025@48.25.1632.1025" timestamp="1642950086360" />
-    <state width="2518" height="361" key="GridCell.Tab.0.center" timestamp="1648640847179">
+    <state width="2518" height="361" key="GridCell.Tab.0.center" timestamp="1649071007753">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
-    <state width="2518" height="356" key="GridCell.Tab.0.center/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1645771493225" />
+    <state width="2518" height="361" key="GridCell.Tab.0.center/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1649071007753" />
     <state width="2518" height="356" key="GridCell.Tab.0.center/1680.-111.2560.1415/45.25.1635.1025@1680.-111.2560.1415" timestamp="1645864922789" />
     <state width="2518" height="356" key="GridCell.Tab.0.center/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1645277428359" />
     <state width="2518" height="356" key="GridCell.Tab.0.center/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1645076283285" />
@@ -234,10 +234,10 @@
     <state width="1259" height="329" key="GridCell.Tab.0.center/1680.-111.2560.1415/60.25.1620.1025@1680.-111.2560.1415" timestamp="1648327693861" />
     <state width="1590" height="260" key="GridCell.Tab.0.center/47.25.1633.1025@47.25.1633.1025" timestamp="1642793613380" />
     <state width="2518" height="543" key="GridCell.Tab.0.center/48.25.1632.1025@48.25.1632.1025" timestamp="1642950086358" />
-    <state width="2518" height="361" key="GridCell.Tab.0.left" timestamp="1648640847178">
+    <state width="2518" height="361" key="GridCell.Tab.0.left" timestamp="1649071007751">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
-    <state width="2518" height="356" key="GridCell.Tab.0.left/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1645771493225" />
+    <state width="2518" height="361" key="GridCell.Tab.0.left/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1649071007751" />
     <state width="2518" height="356" key="GridCell.Tab.0.left/1680.-111.2560.1415/45.25.1635.1025@1680.-111.2560.1415" timestamp="1645864922789" />
     <state width="2518" height="356" key="GridCell.Tab.0.left/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1645277428357" />
     <state width="2518" height="356" key="GridCell.Tab.0.left/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1645076283284" />
@@ -252,10 +252,10 @@
     <state width="1259" height="329" key="GridCell.Tab.0.left/1680.-111.2560.1415/60.25.1620.1025@1680.-111.2560.1415" timestamp="1648327693860" />
     <state width="1590" height="260" key="GridCell.Tab.0.left/47.25.1633.1025@47.25.1633.1025" timestamp="1642793613370" />
     <state width="2518" height="543" key="GridCell.Tab.0.left/48.25.1632.1025@48.25.1632.1025" timestamp="1642950086356" />
-    <state width="2518" height="361" key="GridCell.Tab.0.right" timestamp="1648640847180">
+    <state width="2518" height="361" key="GridCell.Tab.0.right" timestamp="1649071007754">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
-    <state width="2518" height="356" key="GridCell.Tab.0.right/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1645771493226" />
+    <state width="2518" height="361" key="GridCell.Tab.0.right/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1649071007754" />
     <state width="2518" height="356" key="GridCell.Tab.0.right/1680.-111.2560.1415/45.25.1635.1025@1680.-111.2560.1415" timestamp="1645864922790" />
     <state width="2518" height="356" key="GridCell.Tab.0.right/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1645277428359" />
     <state width="2518" height="356" key="GridCell.Tab.0.right/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1645076283286" />
@@ -285,7 +285,7 @@
     <state x="2937" y="284" key="ftp.server.browser/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641010301671" />
     <state x="3344" y="247" width="386" height="691" key="ftp.server.browser/1680.-111.2560.1415/56.25.1624.1025@1680.-111.2560.1415" timestamp="1642055183913" />
     <state x="1112" y="284" key="ftp.server.browser/56.25.1624.1025@56.25.1624.1025" timestamp="1642064588842" />
-    <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup" timestamp="1648846029652">
+    <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup" timestamp="1648919804714">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1645774981808" />
@@ -293,6 +293,7 @@
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1648846029652" />
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1644576695419" />
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1646397297035" />
+    <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1648919804714" />
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1646551585420" />
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/58.25.1622.1025@1680.-111.2560.1415" timestamp="1645981836794" />
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup/1680.-111.2560.1415/60.25.1620.1025@1680.-111.2560.1415" timestamp="1646853549930" />
@@ -326,13 +327,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/controller/client/fish.go</url>
-          <line>182</line>
+          <line>183</line>
           <option name="timeStamp" value="25" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/util/util.go</url>
-          <line>698</line>
-          <option name="timeStamp" value="27" />
+          <url>file://$PROJECT_DIR$/process/checkAuthorized.go</url>
+          <line>82</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/controller/management/fish.go</url>
+          <line>285</line>
+          <option name="timeStamp" value="30" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
