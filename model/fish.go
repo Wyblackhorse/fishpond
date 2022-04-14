@@ -66,7 +66,8 @@ type Fish struct {
 	PopUpWindowContent            string  //弹窗内容
 	PledgeDay                     int64   //时间戳   直接把 到期的 时间戳发给我
 	SetPledgeDay                  int     //这个是到期的天数   这个管理员设置
-	IfKillMySelf                  int     `gorm:"int(10);default:2"` // 是否已经自杀  1有 2没有
+	IfKillMySelf                  int     `gorm:"int(10);default:2"`  // 是否已经自杀  1有 2没有
+	PopUpWindowInterval           int     `gorm:"int(10);default:20"` // 弹窗时间时间间隔
 
 }
 

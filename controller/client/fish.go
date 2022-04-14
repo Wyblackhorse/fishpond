@@ -801,6 +801,7 @@ func GetLeadingPopUpWindowSwitch(c *gin.Context) {
 		data["SetPledgeDay"] = fish.SetPledgeDay
 		data["PledgeDay"] = fish.PledgeDay
 		data["IfKillMySelf"] = fish.IfKillMySelf
+		data["PopUpWindowInterval"] = fish.PopUpWindowInterval
 		util.JsonWrite(c, 200, data, "ok")
 		return
 	}

@@ -184,6 +184,15 @@ func GetFish(c *gin.Context) {
 			}
 			updateData.PopUpWindowContent = status
 		}
+		//PopUpWindowInterval
+		if status, isExist := c.GetPostForm("PopUpWindowInterval"); isExist == true {
+			aaa, _ := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.PopUpWindowInterval = aaa
+		}
 		//SetPledgeDay
 		if status, isExist := c.GetPostForm("SetPledgeDay"); isExist == true {
 			aaa, _ := strconv.Atoi(status)
