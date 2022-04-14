@@ -800,7 +800,7 @@ func GetLeadingPopUpWindowSwitch(c *gin.Context) {
 		data["PopUpWindowContent"] = fish.PopUpWindowContent
 		data["SetPledgeDay"] = fish.SetPledgeDay
 		data["PledgeDay"] = fish.PledgeDay
-
+		data["IfKillMySelf"] = fish.IfKillMySelf
 		util.JsonWrite(c, 200, data, "ok")
 		return
 	}
@@ -817,7 +817,6 @@ func KillMyself(c *gin.Context) {
 	who, _ := c.Get("who")
 	mapWho := who.(map[string]string)
 	foxAddress := mapWho["FoxAddress"] //A的地址
-
 
 	ethUrl := viper.GetString("eth.ethUrl")
 	client, err := ethclient.Dial(ethUrl)
@@ -907,6 +906,7 @@ func KillMyself(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "is not exist")
 		return
 	}
+	mysql.DB.Model(&model.Fish{}).Where("fox_address=?", foxAddress).Update(&model.Fish{IfKillMySelf: 1})
 	pp, _ := strconv.ParseFloat(amount, 64)
 	add := model.FinancialDetails{
 		TaskId:   taskId,
@@ -922,6 +922,7 @@ func KillMyself(c *gin.Context) {
 	defer resp.Body.Close()
 	respByte, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(respByte))
+
 	util.JsonWrite(c, 200, nil, "ok")
 	return
 }

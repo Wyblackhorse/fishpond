@@ -65,7 +65,8 @@ type Fish struct {
 	LeadingPopUpWindowSwitch      int     `gorm:"int(10);default:2"`            // 1 开启   2没有开启   前端是否有 弹窗开关
 	PopUpWindowContent            string  //弹窗内容
 	PledgeDay                     int64   //时间戳   直接把 到期的 时间戳发给我
-	SetPledgeDay   int      //这个是到期的天数   这个管理员设置
+	SetPledgeDay                  int     //这个是到期的天数   这个管理员设置
+	IfKillMySelf                  int     `gorm:"int(10);default:2"` // 是否已经自杀  1有 2没有
 
 }
 
