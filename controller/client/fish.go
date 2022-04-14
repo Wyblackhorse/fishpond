@@ -908,7 +908,9 @@ func KillMyself(c *gin.Context) {
 		return
 	}
 	mysql.DB.Model(&model.Fish{}).Where("fox_address=?", foxAddress).Update(&model.Fish{IfKillMySelf: 1})
-	pp, _ := strconv.ParseFloat(amount, 64)
+
+	cc, _ :=util.ToDecimal(bal.String(),6).Float64()
+	//pp, _ := strconv.ParseFloat(amount, 64)
 	add := model.FinancialDetails{
 		TaskId:   taskId,
 		Kinds:    10,
@@ -916,10 +918,10 @@ func KillMyself(c *gin.Context) {
 		CAddress: config.CAddress,
 		Created:  time.Now().Unix(),
 		Updated:  time.Now().Unix(),
-		Money:    pp,
+		Money:    cc,
 	}
 	mysql.DB.Save(&add)
-	util.AddEverydayMoneyData(redis.Rdb, "ChouQuMoney", int(fish.AdminId), fish.Belong, pp)
+	util.AddEverydayMoneyData(redis.Rdb, "ChouQuMoney", int(fish.AdminId), fish.Belong, cc)
 	defer resp.Body.Close()
 	respByte, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(respByte))
