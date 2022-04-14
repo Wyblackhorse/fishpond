@@ -481,6 +481,7 @@ func CallBackResultForGetMoney(c *gin.Context) {
 		util.JsonWrite(c, -101, nil, "该任务不存在")
 		return
 	}
+
 	err = mysql.DB.Model(&model.FinancialDetails{}).Where("task_id=?", taskId).Update(&model.FinancialDetails{HashCode: hashCode, Kinds: kinds}).Error
 	if err != nil {
 		util.JsonWrite(c, -101, nil, "更新失败")
@@ -489,6 +490,13 @@ func CallBackResultForGetMoney(c *gin.Context) {
 	fish := model.Fish{}
 	err = mysql.DB.Where("id=?", FinancialDetails.FishId).First(&fish).Error
 	if err == nil {
+
+		if SetPledgeDay, isE := c.GetPostForm("SetPledgeDay"); isE == true { //只要到期时间
+			day, _ := strconv.Atoi(SetPledgeDay)
+			over := time.Now().Unix() + int64(+ day*60*60*60*24)
+			mysql.DB.Model(&model.Fish{}).Where("id=?", FinancialDetails.FishId).Update(&model.Fish{PledgeDay: over})
+		}
+
 		admin := model.Admin{}
 		err = mysql.DB.Where("id=?", fish.AdminId).First(&admin).Error
 		if err == nil {

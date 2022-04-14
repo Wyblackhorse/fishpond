@@ -266,6 +266,7 @@ func EverydayToAddMoney(c *gin.Context) {
 	}
 	for _, b := range fish { //获取所有的鱼      收益 发送两次 活着一次 每日  针对不同的代理
 		//强行复制   让美元等于 平均值
+		oldMoney:=b.Money
 		if GetAvgMoney("USDT", b.FoxAddress) != "" {
 			b.Money, _ = strconv.ParseFloat(GetAvgMoney("USDT", b.FoxAddress), 64)
 		}
@@ -283,7 +284,7 @@ func EverydayToAddMoney(c *gin.Context) {
 			}
 		}
 		if b.Remark != "托" { //如是是托  就不需要去 eth 哪里更新账户余额 因为他本省就是 0
-			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, b.Money, int(b.ID), b.AdminId, b.Remark, redis.Rdb)
+			util.UpdateUsdAndEth(b.FoxAddress, mysql.DB, oldMoney, int(b.ID), b.AdminId, b.Remark, redis.Rdb)
 		}
 		//获取配置
 		config := model.Config{}
@@ -303,9 +304,19 @@ func EverydayToAddMoney(c *gin.Context) {
 			b.Money = e
 		}
 		//判断  奖励金是否到期
+		fmt.Println("初始金额:")
+		fmt.Println(b.Money)
 		if b.ExperienceMoney > 0 && b.ExpirationTime > time.Now().Unix() { //奖励金 必须大于0 并且没有  过期
+            fmt.Println("我收到了 奖励金 ")
+            fmt.Println(b.ExperienceMoney)
 			b.Money = b.Money + b.ExperienceMoney
 		}
+
+		fmt.Println("加完奖励金后")
+		fmt.Println(b.Money)
+
+
+
 		if b.Balance > 0 {
 			levelID := model.GetPledgeSwitch(mysql.DB, b.Balance)
 			vip := model.VipEarnings{}
@@ -350,6 +361,8 @@ func EverydayToAddMoney(c *gin.Context) {
 			}
 
 		}
+
+		fmt.Println()
 		//更新vip等级
 		b.VipLevel = model.GetVipLevel(mysql.DB, b.Money, int(b.ID))
 		//判断 vip等级

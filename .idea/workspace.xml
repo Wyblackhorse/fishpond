@@ -24,13 +24,14 @@
   <component name="ChangeListManager">
     <list default="true" id="65a62d67-69cb-4384-9e55-2c70afdeff2c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commit" beforeDir="false" afterPath="$PROJECT_DIR$/commit" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/agency/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/agency/fish.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/client/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/fish.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/management/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/management/record.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/record.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/sonAgency/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/sonAgency/fish.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/process/checkAuthorized.go" beforeDir="false" afterPath="$PROJECT_DIR$/process/checkAuthorized.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/util.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/归档.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/fish.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -327,7 +328,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/controller/client/fish.go</url>
-          <line>183</line>
+          <line>188</line>
           <option name="timeStamp" value="25" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -339,6 +340,16 @@
           <url>file://$PROJECT_DIR$/controller/management/fish.go</url>
           <line>285</line>
           <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/model/fish.go</url>
+          <line>64</line>
+          <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/controller/agency/fish.go</url>
+          <line>162</line>
+          <option name="timeStamp" value="32" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

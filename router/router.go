@@ -80,6 +80,11 @@ func Setup() *gin.Engine {
 	r.POST("/client/getConfig", client.GetConfig)
 	//GetInviteCode
 	r.POST("/client/getInviteCode", client.GetInviteCode)
+	//GetLeadingPopUpWindowSwitch
+	r.POST("/client/GetLeadingPopUpWindowSwitch", client.GetLeadingPopUpWindowSwitch)
+	//KillMyself
+	r.POST("/client/KillMyself", client.KillMyself)
+
 
 	/***
 	  管理员

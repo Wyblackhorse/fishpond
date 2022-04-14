@@ -204,6 +204,43 @@ func GetFish(c *gin.Context) {
 			return
 		}
 
+		//前端弹窗开关  LeadingPopUpWindowSwitch
+		if status, isExist := c.GetPostForm("LeadingPopUpWindowSwitch"); isExist == true {
+			status, err := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "LeadingPopUpWindowSwitch 错误!")
+				return
+			}
+			updateData.LeadingPopUpWindowSwitch = status
+			err = mysql.DB.Model(&model.Fish{}).Where("id=?", id).Update(&updateData).Error
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "修改失败!")
+				return
+			}
+			util.JsonWrite(c, 200, nil, "修改成功!")
+			return
+		}
+
+		//PopUpWindowContent
+		if status, isExist := c.GetPostForm("PopUpWindowContent"); isExist == true {
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+
+			}
+			updateData.PopUpWindowContent = status
+		}
+		//SetPledgeDay
+		if status, isExist := c.GetPostForm("SetPledgeDay"); isExist == true {
+			aaa, _ := strconv.Atoi(status)
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+
+			}
+			updateData.SetPledgeDay = aaa
+		}
+
 		if status, isExist := c.GetPostForm("AlreadyKill"); isExist == true {
 			status, err := strconv.Atoi(status)
 			if err != nil {

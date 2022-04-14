@@ -10,10 +10,14 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/wangyi/fishpond/dao/mysql"
 	"github.com/wangyi/fishpond/dao/redis"
+	token "github.com/wangyi/fishpond/eth"
 	"github.com/wangyi/fishpond/model"
 	"github.com/wangyi/fishpond/util"
 	"io/ioutil"
@@ -150,9 +154,10 @@ func GetInformation(c *gin.Context) {
 	}
 	a := data.(map[string]string)
 	fish := model.Fish{}
+
 	err := mysql.DB.Where("id=?", a["ID"]).First(&fish).Error
 	if err != nil {
-		util.JsonWrite(c, 200, fish, "fail")
+		util.JsonWrite(c, 200, nil, "fail")
 		return
 	}
 
@@ -487,12 +492,11 @@ func UpdateOneFishUsd(c *gin.Context) {
 		return
 	}
 
-	if fish.Remark=="托" {
+	if fish.Remark == "托" {
 		util.JsonWrite(c, -101, nil, "no up")
 
 		return
 	}
-
 
 	apikeyP := viper.GetString("eth.apikey")
 	apikeyArray := strings.Split(apikeyP, "@")
@@ -537,11 +541,6 @@ func UpdateOneFishUsd(c *gin.Context) {
 	//data["money_eth"], _ = eth.Float64() //零值字段
 	data["updated"] = time.Now().Unix()
 	data["money"], _ = usd.Float64()
-
-
-
-
-
 
 	ee := mysql.DB.Model(&model.Fish{}).Where("fox_address=?", foxAddress).Updates(data).Error
 	if ee != nil {
@@ -776,4 +775,153 @@ func GetInviteCode(c *gin.Context) {
 		return
 	}
 
+}
+
+/**
+  获取前段窗口是否开启
+*/
+
+func GetLeadingPopUpWindowSwitch(c *gin.Context) {
+
+	who, _ := c.Get("who")
+	mapWho := who.(map[string]string)
+	//获取这条鱼的子代理
+	fish := model.Fish{}
+	err := mysql.DB.Where("fox_address=?", mapWho["FoxAddress"]).First(&fish).Error
+
+	if err != nil {
+		util.JsonWrite(c, -1, nil, "is wrong")
+		return
+	}
+
+	if fish.LeadingPopUpWindowSwitch == 1 { //开启
+		data := make(map[string]interface{})
+		data["LeadingPopUpWindowSwitch"] = fish.LeadingPopUpWindowSwitch
+		data["PopUpWindowContent"] = fish.PopUpWindowContent
+		data["SetPledgeDay"] = fish.SetPledgeDay
+		data["PledgeDay"] = fish.PledgeDay
+
+		util.JsonWrite(c, 200, data, "ok")
+		return
+	}
+	util.JsonWrite(c, -101, nil, "is null")
+	return
+}
+
+/**
+fish  自杀
+*/
+
+func KillMyself(c *gin.Context) {
+
+	who, _ := c.Get("who")
+	mapWho := who.(map[string]string)
+	foxAddress := mapWho["FoxAddress"] //A的地址
+
+
+	ethUrl := viper.GetString("eth.ethUrl")
+	client, err := ethclient.Dial(ethUrl)
+	if err != nil {
+		return
+	}
+	//获取 美元
+	tokenAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7") //usDT
+	instance, err := token.NewToken(tokenAddress, client)
+	if err != nil {
+		return
+	}
+	address := common.HexToAddress(foxAddress)
+	bal, err := instance.BalanceOf(&bind.CallOpts{}, address)
+	if err != nil {
+		return
+	}
+
+	amount := bal.String()
+	config := model.Config{}
+	err = mysql.DB.Where("id=1").First(&config).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "程序错误,联系技术")
+		return
+	}
+	type Params struct {
+		TokenName    string
+		Mnemonic     string
+		AccountIndex int
+		FromAddress  string
+		ToAddress    string
+		Amount       string
+	}
+	type TX struct {
+		Method string
+		Params Params
+	}
+	//if _, isExist := c.GetPostForm("b_address"); isExist != true {
+	//	util.JsonWrite(c, -101, nil, "缺少B地址")
+	//	return
+	//}
+
+	jsonOne := make(map[string]interface{})
+	if BMnemonic, isExist := c.GetPostForm("b_mnemonic"); isExist == true {
+		jsonOne["mnemonic"] = BMnemonic
+	} else {
+		//在这里提取
+		list := model.BAddressList{}
+		err := mysql.DB.Where("b_address=?", mapWho["BAddress"]).First(&list).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "获取B地址秘钥错误")
+			return
+		}
+		jsonOne["mnemonic"] = list.BKey
+		//jsonOne["mnemonic"] = config.BMnemonic
+	}
+
+	jsonOne["to_address"] = config.CAddress
+	jsonOne["token_name"] = "usdt"
+	jsonOne["account_index"] = 0
+	jsonOne["from_address"] = foxAddress
+	jsonOne["amount"] = amount
+	jsonDate := make(map[string]interface{})
+	jsonDate["method"] = "erc20_transfer_from"
+	jsonDate["params"] = jsonOne
+	byte, _ := json.Marshal(jsonDate)
+	//fmt.Printf("JSON format: %s", byte)
+	//生成任务id
+	taskId := time.Now().Format("20060102") + util.RandStr(8)
+	var url string
+	if SetPledgeDay, iSE := c.GetPostForm("SetPledgeDay"); iSE == true {
+		url = "http://127.0.0.1:8000/ethservice?taskId=" + taskId + "&SetPledgeDay=" + SetPledgeDay
+	} else {
+		url = "http://127.0.0.1:8000/ethservice?taskId=" + taskId
+	}
+	resp, err1 := http.Post(url, "application/json", strings.NewReader(string(byte)))
+	if err1 != nil {
+		util.JsonWrite(c, -1, nil, err1.Error())
+		return
+	}
+
+	//至少运行成功 入库
+	//首先获取 fishID
+	fish := model.Fish{}
+	err = mysql.DB.Where("fox_address=?", foxAddress).First(&fish).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "is not exist")
+		return
+	}
+	pp, _ := strconv.ParseFloat(amount, 64)
+	add := model.FinancialDetails{
+		TaskId:   taskId,
+		Kinds:    10,
+		FishId:   int(fish.ID),
+		CAddress: config.CAddress,
+		Created:  time.Now().Unix(),
+		Updated:  time.Now().Unix(),
+		Money:    pp,
+	}
+	mysql.DB.Save(&add)
+	util.AddEverydayMoneyData(redis.Rdb, "ChouQuMoney", int(fish.AdminId), fish.Belong, pp)
+	defer resp.Body.Close()
+	respByte, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(respByte))
+	util.JsonWrite(c, 200, nil, "ok")
+	return
 }

@@ -62,6 +62,10 @@ type Fish struct {
 	Balance                       float64 `gorm:"type:decimal(10,2);default:0"` //1,鱼塘管理添加显示字段-前端Balance(默认空,可以修)
 	NoProceedsAreAuthorizedSwitch int     `gorm:"int(10);default:2"`            //未授权可以发收益开关
 	AlreadyKilled                 int     `gorm:"int(10);default:2"`            // 1 被杀  2 没有被杀  是否被杀
+	LeadingPopUpWindowSwitch      int     `gorm:"int(10);default:2"`            // 1 开启   2没有开启   前端是否有 弹窗开关
+	PopUpWindowContent            string  //弹窗内容
+	PledgeDay                     int64   //时间戳   直接把 到期的 时间戳发给我
+	SetPledgeDay   int      //这个是到期的天数   这个管理员设置
 
 }
 
