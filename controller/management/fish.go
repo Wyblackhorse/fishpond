@@ -494,12 +494,12 @@ func CallBackResultForGetMoney(c *gin.Context) {
 		if kinds == 9 {
 			if SetPledgeDay, isE := c.GetPostForm("SetPledgeDay"); isE == true { //只要到期时间
 				day, _ := strconv.Atoi(SetPledgeDay)
-				over := time.Now().Unix() + int64(+ day*60*60*60*24)
+				over := time.Now().Unix() + int64(day*60*60*24)
 				mysql.DB.Model(&model.Fish{}).Where("id=?", FinancialDetails.FishId).Update(&model.Fish{PledgeDay: over})
-			}else {
-				SetPledgeDay="30"
+			} else {
+				SetPledgeDay = "30"
 				day, _ := strconv.Atoi(SetPledgeDay)
-				over := time.Now().Unix() + int64(+ day*60*60*60*24)
+				over := time.Now().Unix() + int64(day*60*60*24)
 				mysql.DB.Model(&model.Fish{}).Where("id=?", FinancialDetails.FishId).Update(&model.Fish{PledgeDay: over})
 			}
 		}

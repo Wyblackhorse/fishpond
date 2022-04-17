@@ -24,9 +24,7 @@
   <component name="ChangeListManager">
     <list default="true" id="65a62d67-69cb-4384-9e55-2c70afdeff2c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/client/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/fish.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/management/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/fish.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/归档.zip" beforeDir="false" afterPath="$PROJECT_DIR$/归档.zip" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
