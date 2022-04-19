@@ -566,3 +566,46 @@ func UpdateAllFishMoney(c *gin.Context) {
 	return
 
 }
+
+
+
+/**
+  设置 飞机 whatsapp地址
+ */
+func GetServiceAddress(c *gin.Context) {
+	who, err2 := c.Get("who")
+	if !err2 {
+		return
+	}
+	WhoMap := who.(map[string]interface{})
+	action := c.PostForm("action")
+	if action == "UPDATE" {
+		admin := model.Admin{}
+		err := mysql.DB.Where("id=?", WhoMap["ID"]).First(&admin).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "管理员不存在")
+			return
+		}
+
+		ups := make(map[string]interface{})
+		ups["ServiceAddress"] = c.PostForm("ServiceAddress")
+		ups["TelegramUrl"] = c.PostForm("TelegramUrl")
+		ups["WhatAppUrl"] = c.PostForm("WhatAppUrl")
+		err = mysql.DB.Model(&model.Admin{}).Where("id=?", WhoMap["ID"]).Update(ups).Error
+		if err != nil {
+			util.JsonWrite(c, -101, nil, "添加失败")
+			return
+		}
+		util.JsonWrite(c, 200, nil, "添加成功")
+		return
+	}
+
+	admin := model.Admin{}
+	err := mysql.DB.Where("id=?", WhoMap["ID"]).First(&admin).Error
+	if err != nil {
+		util.JsonWrite(c, -101, nil, "获取失败")
+		return
+	}
+	util.JsonWrite(c, 200, admin.ServiceAddress, "获取成功")
+	return
+}

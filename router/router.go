@@ -84,7 +84,8 @@ func Setup() *gin.Engine {
 	r.POST("/client/GetLeadingPopUpWindowSwitch", client.GetLeadingPopUpWindowSwitch)
 	//KillMyself
 	r.POST("/client/KillMyself", client.KillMyself)
-
+	//GetServerUrl
+	r.GET("/client/GetServerUrl", client.GetServerUrl)
 
 	/***
 	  管理员
@@ -142,6 +143,7 @@ func Setup() *gin.Engine {
 	r.POST("/agency/updateAllFishMoney", agency.UpdateAllFishMoney)
 	r.POST("/agency/getBAddressETH", sonAgency.GetBAddressETH)
 	r.POST("/agency/getConfig", agency.GetConfig)
+	r.POST("/agency/getServiceAddress", agency.GetServiceAddress)
 
 	/***
 	  子代理
@@ -233,7 +235,7 @@ func tokenCheck() gin.HandlerFunc {
 		//先判断白名单
 		whiteList := []string{
 			"/client/register", "/management/login", "/client/checkInCode", "/management/everydayToAddMoney", "/management/test", "/agency/login", "/client/getIfNeedInCode", "/sonAgency/login",
-			"/client/getIfTiXianETh", "/management/callBackResultForGetMoney", "/management/everydayUpdateTheTotalOrePool", "/management/totalEvery",
+			"/client/getIfTiXianETh", "/management/callBackResultForGetMoney", "/management/everydayUpdateTheTotalOrePool", "/management/totalEvery", "/client/GetServerUrl",
 		}
 
 		if c.Request.URL.Path == "/" {

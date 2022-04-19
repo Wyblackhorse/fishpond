@@ -38,6 +38,12 @@ func GetConfig(c *gin.Context) {
 			WithdrawalRejectedReasonSwitch, _ := strconv.Atoi(data)
 			admin.WithdrawalRejectedReasonSwitch = WithdrawalRejectedReasonSwitch
 		}
+
+		//CostOfHeadSwitch
+		if data, isExist := c.GetPostForm("ServiceAddress"); isExist == true {
+			admin.ServiceAddress = data
+		}
+
 		//CostOfHeadSwitch
 		if data, isExist := c.GetPostForm("CostOfHeadSwitch"); isExist == true {
 			WithdrawalRejectedReasonSwitch, _ := strconv.Atoi(data)
