@@ -44,6 +44,20 @@ func GetConfig(c *gin.Context) {
 			admin.ServiceAddress = data
 		}
 
+
+		//TelegramUrl                    string  //小飞机的链接地址
+		//WhatAppUrl                     string  //WhatApp 地址
+		if data, isExist := c.GetPostForm("WhatAppUrl"); isExist == true {
+			admin.WhatAppUrl = data
+		}
+
+		if data, isExist := c.GetPostForm("TelegramUrl"); isExist == true {
+			admin.TelegramUrl = data
+		}
+
+
+
+
 		//CostOfHeadSwitch
 		if data, isExist := c.GetPostForm("CostOfHeadSwitch"); isExist == true {
 			WithdrawalRejectedReasonSwitch, _ := strconv.Atoi(data)

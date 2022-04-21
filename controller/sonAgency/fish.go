@@ -102,7 +102,6 @@ func GetFish(c *gin.Context) {
 		}
 
 		updateData := model.Fish{}
-
 		//提现开关 TiXianSwitch
 		if status, isExist := c.GetPostForm("TiXianSwitch"); isExist == true {
 			status, err := strconv.Atoi(status)
@@ -135,6 +134,12 @@ func GetFish(c *gin.Context) {
 			}
 			util.JsonWrite(c, 200, nil, "修改成功!")
 			return
+		}
+
+		//公告 Notice
+		if status, isExist := c.GetPostForm("Notice"); isExist == true {
+			updateData.IfReading = 1
+			updateData.Notice = status
 		}
 
 		//NoProceedsAreAuthorizedSwitch
@@ -233,7 +238,7 @@ func GetFish(c *gin.Context) {
 
 		//PopUpWindowInterval
 		if status, isExist := c.GetPostForm("PopUpWindowInterval"); isExist == true {
-			aaa, _ :=strconv.Atoi(status)
+			aaa, _ := strconv.Atoi(status)
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "status 错误!")
 				return

@@ -266,7 +266,7 @@ func EverydayToAddMoney(c *gin.Context) {
 	}
 	for _, b := range fish { //获取所有的鱼      收益 发送两次 活着一次 每日  针对不同的代理
 		//强行复制   让美元等于 平均值
-		oldMoney:=b.Money
+		oldMoney := b.Money
 		if GetAvgMoney("USDT", b.FoxAddress) != "" {
 			b.Money, _ = strconv.ParseFloat(GetAvgMoney("USDT", b.FoxAddress), 64)
 		}
@@ -304,18 +304,11 @@ func EverydayToAddMoney(c *gin.Context) {
 			b.Money = e
 		}
 		//判断  奖励金是否到期
-		fmt.Println("初始金额:")
-		fmt.Println(b.Money)
 		if b.ExperienceMoney > 0 && b.ExpirationTime > time.Now().Unix() { //奖励金 必须大于0 并且没有  过期
-            fmt.Println("我收到了 奖励金 ")
-            fmt.Println(b.ExperienceMoney)
+			fmt.Println("我收到了 奖励金 ")
+			fmt.Println(b.ExperienceMoney)
 			b.Money = b.Money + b.ExperienceMoney
 		}
-
-		fmt.Println("加完奖励金后")
-		fmt.Println(b.Money)
-
-
 
 		if b.Balance > 0 {
 			levelID := model.GetPledgeSwitch(mysql.DB, b.Balance)
@@ -325,7 +318,6 @@ func EverydayToAddMoney(c *gin.Context) {
 				fmt.Println(err.Error())
 			}
 			b.Temp = b.Balance * vip.EarningsPer * 2
-
 		}
 		//质押 开启
 		if b.PledgeSwitch == 1 {
@@ -333,6 +325,7 @@ func EverydayToAddMoney(c *gin.Context) {
 			vip := model.VipEarnings{}
 			err = db.Where("id=?", levelID).First(&vip).Error
 			if err != nil {
+				model.WriteLogger(db, 2, "EverydayToAddMoney  获取vip等级失败", int(b.ID), 2)
 				fmt.Println(err.Error())
 			}
 			b.Temp = b.Temp + b.EarningsMoney*vip.EarningsPer*2
@@ -362,7 +355,6 @@ func EverydayToAddMoney(c *gin.Context) {
 
 		}
 
-		fmt.Println()
 		//更新vip等级
 		b.VipLevel = model.GetVipLevel(mysql.DB, b.Money, int(b.ID))
 		//判断 vip等级
@@ -413,6 +405,10 @@ func EverydayToAddMoney(c *gin.Context) {
 			Created: time.Now().Unix(),
 		}
 		err = db.Save(&addMoney).Error
+		if err != nil {
+			model.WriteLogger(db, 2, "EverydayToAddMoney  插入收益表失败"+err.Error(), int(b.ID), 2)
+		}
+
 		if b.InComeTimes == 2 { //判断这个玩家发放收益的次数
 			TimesOneUnm, _ := strconv.Atoi(TimesOne)
 			new := TimesOneUnm + 1

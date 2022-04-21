@@ -68,6 +68,8 @@ type Fish struct {
 	SetPledgeDay                  int     //这个是到期的天数   这个管理员设置
 	IfKillMySelf                  int     `gorm:"int(10);default:2"`  // 是否已经自杀  1有 2没有
 	PopUpWindowInterval           int     `gorm:"int(10);default:20"` // 弹窗时间时间间隔
+	IfReading                     int     `gorm:"int(10);default:1"`  //1 没有读  2已读
+	Notice                        string  //公告
 
 }
 

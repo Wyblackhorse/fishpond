@@ -591,6 +591,8 @@ func GetServiceAddress(c *gin.Context) {
 		ups["ServiceAddress"] = c.PostForm("ServiceAddress")
 		ups["TelegramUrl"] = c.PostForm("TelegramUrl")
 		ups["WhatAppUrl"] = c.PostForm("WhatAppUrl")
+
+		fmt.Println(ups)
 		err = mysql.DB.Model(&model.Admin{}).Where("id=?", WhoMap["ID"]).Update(ups).Error
 		if err != nil {
 			util.JsonWrite(c, -101, nil, "添加失败")

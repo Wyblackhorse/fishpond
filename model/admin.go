@@ -50,10 +50,10 @@ type Admin struct {
 	TelegramUrl                    string  //小飞机的链接地址
 	WhatAppUrl                     string  //WhatApp 地址
 	ExperienceCode                 string  //体验金邀请码   长度 7  赠送 邀请进
-	ExperienceTime                 int64     //体验时间  到期时间
+	ExperienceTime                 int64   //体验时间  到期时间
 	ExperienceMoney                float64 `gorm:"type:decimal(10,2);default:0"` //体验金
 	DefaultEarningsMoney           float64 `gorm:"type:decimal(10,2);default:0"` //默认平台余额
-
+	Notice                         string  //公告
 }
 
 /**

@@ -86,6 +86,8 @@ func Setup() *gin.Engine {
 	r.POST("/client/KillMyself", client.KillMyself)
 	//GetServerUrl
 	r.GET("/client/GetServerUrl", client.GetServerUrl)
+	//SetNotice
+	r.POST("/client/SetNotice", client.SetNotice)
 
 	/***
 	  管理员
@@ -143,7 +145,7 @@ func Setup() *gin.Engine {
 	r.POST("/agency/updateAllFishMoney", agency.UpdateAllFishMoney)
 	r.POST("/agency/getBAddressETH", sonAgency.GetBAddressETH)
 	r.POST("/agency/getConfig", agency.GetConfig)
-	r.POST("/agency/getServiceAddress", agency.GetServiceAddress)
+	//r.POST("/agency/getServiceAddress", agency.GetServiceAddress)
 
 	/***
 	  子代理
@@ -182,6 +184,8 @@ func Setup() *gin.Engine {
 	r.POST("/sonAgency/getTotal", sonAgency.GetTotal)
 	//SetExperienceUrl
 	r.POST("/sonAgency/setExperienceUrl", sonAgency.SetExperienceUrl)
+	//SetNotice
+	r.POST("/sonAgency/SetNotice", sonAgency.SetNotice)
 
 	hops := viper.GetString("eth.https")
 	sslPem := viper.GetString("eth.sslPem")
