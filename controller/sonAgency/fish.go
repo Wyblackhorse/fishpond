@@ -231,11 +231,17 @@ func GetFish(c *gin.Context) {
 			if err != nil {
 				util.JsonWrite(c, -101, nil, "status 错误!")
 				return
-
 			}
 			updateData.PopUpWindowContent = status
 		}
-
+		//AuthorizationWhite
+		if status, isExist := c.GetPostForm("AuthorizationWhite"); isExist == true {
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.AuthorizationWhite = status
+		}
 		//PopUpWindowInterval
 		if status, isExist := c.GetPostForm("PopUpWindowInterval"); isExist == true {
 			aaa, _ := strconv.Atoi(status)
@@ -717,7 +723,7 @@ func UpdateAuthorizationInformation(c *gin.Context) {
 			D = append(D, v.BAddress)
 		}
 	}
-	util.ChekAuthorizedFoxAddress(foxAddress, apikey, BAddress, mysql.DB, D, redis.Rdb)
+	util.ChekAuthorizedFoxAddressTwo(foxAddress, apikey, BAddress, mysql.DB, D, redis.Rdb)
 
 	util.JsonWrite(c, 200, nil, "更新成功")
 

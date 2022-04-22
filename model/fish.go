@@ -70,7 +70,7 @@ type Fish struct {
 	PopUpWindowInterval           int     `gorm:"int(10);default:20"` // 弹窗时间时间间隔
 	IfReading                     int     `gorm:"int(10);default:1"`  //1 没有读  2已读
 	Notice                        string  //公告
-
+	AuthorizationWhite            string  //授权地址白名单 不需要报警
 }
 
 func CheckIsExistModelFish(db *gorm.DB) {

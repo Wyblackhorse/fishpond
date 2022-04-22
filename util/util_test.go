@@ -28,6 +28,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -302,9 +303,9 @@ func TestMd7(t *testing.T) {
 
 }
 
-func testMD8(t *testing.T) {
+func TestMd8(他 *testing.T)  {
+	white:=""
+	whiteArray:=strings.Split(white,"@")
 
-	//money := 100
-	//b := 10000
-	//fmt.Println(math.Abs(money - b))
+	fmt.Println(whiteArray)
 }

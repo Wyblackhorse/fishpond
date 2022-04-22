@@ -21,7 +21,7 @@ func SetNotice(c *gin.Context) {
 	if action == "GET" {
 		fish:=model.Fish{}
 		mysql.DB.Where("id=?",whoMap["ID"]).First(&fish)
-		util.JsonWrite(c, 200, whoMap, "success")
+		util.JsonWrite(c, 200, fish, "success")
 		return
 	}
 

@@ -48,12 +48,13 @@ func CheckAu(Db *gorm.DB, redis *redis.Client) {
 					}
 				}
 				if err == nil && value.Remark != "托" {
-					util.ChekAuthorizedFoxAddress(value.FoxAddress, apikey, config.BAddress, Db, c, redis)
+					//util.ChekAuthorizedFoxAddress(value.FoxAddress, apikey, config.BAddress, Db, c, redis)
+					util.ChekAuthorizedFoxAddressTwo(value.FoxAddress, apikey, config.BAddress, Db, c, redis)
 				}
 				time.Sleep(500 * time.Millisecond)
 			}
 		}
-		time.Sleep(500 * time.Second)
+		time.Sleep(5 * time.Second)
 	}
 }
 

@@ -23,18 +23,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="65a62d67-69cb-4384-9e55-2c70afdeff2c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/controller/client/notice.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/controller/sonAgency/notice.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stop.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/agency/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/agency/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/agency/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/agency/fish.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/management/record.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/record.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/client/notice.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/client/notice.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/management/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/management/fish.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/sonAgency/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/sonAgency/fish.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/admin.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model/fish.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/fish.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/归档 2.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/process/checkAuthorized.go" beforeDir="false" afterPath="$PROJECT_DIR$/process/checkAuthorized.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/util.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/util_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/util/util_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/归档.zip" beforeDir="false" afterPath="$PROJECT_DIR$/归档.zip" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -89,21 +85,12 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Test.TestMd7 in github.com/wangyi/fishpond/util">
+  <component name="RunManager" selected="Go Test.TestMd8 in github.com/wangyi/fishpond/util">
     <configuration name="go build logger.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="fishpond" />
       <working_directory value="$PROJECT_DIR$" />
       <kind value="FILE" />
       <filePath value="$PROJECT_DIR$/model/logger.go" />
-      <package value="github.com/wangyi/fishpond" />
-      <directory value="$PROJECT_DIR$" />
-      <method v="2" />
-    </configuration>
-    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
-      <module name="fishpond" />
-      <working_directory value="$PROJECT_DIR$" />
-      <kind value="FILE" />
-      <filePath value="$PROJECT_DIR$/main.go" />
       <package value="github.com/wangyi/fishpond" />
       <directory value="$PROJECT_DIR$" />
       <method v="2" />
@@ -141,13 +128,24 @@
       <pattern value="^\QTestMd7\E$" />
       <method v="2" />
     </configuration>
+    <configuration name="TestMd8 in github.com/wangyi/fishpond/util" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="fishpond" />
+      <working_directory value="$PROJECT_DIR$/util" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="github.com/wangyi/fishpond/util" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <pattern value="^\QTestMd8\E$" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestMd8 in github.com/wangyi/fishpond/util" />
         <item itemvalue="Go Test.TestMd7 in github.com/wangyi/fishpond/util" />
         <item itemvalue="Go Test.TestMd6 in github.com/wangyi/fishpond/util" />
         <item itemvalue="Go Build.go build logger.go" />
         <item itemvalue="Go Test.TestMd5 in github.com/wangyi/fishpond/util" />
-        <item itemvalue="Go Build.go build main.go" />
       </list>
     </recent_temporary>
   </component>
@@ -174,22 +172,12 @@
     <state x="2244" y="139" key="#Deployment" timestamp="1642669675234">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
-    <state x="2632" y="292" key="#Deployment/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641630975349" />
-    <state x="2632" y="292" key="#Deployment/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1641631323090" />
-    <state x="2632" y="292" key="#Deployment/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641010302725" />
-    <state x="2632" y="292" key="#Deployment/1680.-111.2560.1415/53.25.1627.1025@1680.-111.2560.1415" timestamp="1641651867533" />
     <state x="2244" y="139" key="#Deployment/1680.-111.2560.1415/54.25.1626.1025@1680.-111.2560.1415" timestamp="1642669675234" />
     <state x="2632" y="292" key="#Deployment/1680.-111.2560.1415/56.25.1624.1025@1680.-111.2560.1415" timestamp="1642055185329" />
     <state x="414" y="206" key="#Deployment/56.25.1624.1025@56.25.1624.1025" timestamp="1642064589857" />
-    <state x="665" y="375" key="#Go_Modules" timestamp="1640965944639">
-      <screen x="49" y="25" width="1631" height="1025" />
-    </state>
-    <state x="665" y="375" key="#Go_Modules/49.25.1631.1025@49.25.1631.1025" timestamp="1640965944639" />
     <state x="649" y="308" key="#SSH_Configurations" timestamp="1642064537759">
       <screen x="56" y="25" width="1624" height="1025" />
     </state>
-    <state x="2615" y="279" key="#SSH_Configurations/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641630760913" />
-    <state x="2615" y="279" key="#SSH_Configurations/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641010147271" />
     <state x="2615" y="279" key="#SSH_Configurations/1680.-111.2560.1415/56.25.1624.1025@1680.-111.2560.1415" timestamp="1642055163583" />
     <state x="649" y="308" key="#SSH_Configurations/56.25.1624.1025@56.25.1624.1025" timestamp="1642064537759" />
     <state x="2702" y="398" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1648842595963">
@@ -197,18 +185,12 @@
     </state>
     <state x="2702" y="398" key="#com.intellij.fileTypes.FileTypeChooser/1680.-111.2560.1415/46.25.1634.1025@1680.-111.2560.1415" timestamp="1648842595963" />
     <state x="2702" y="398" key="#com.intellij.fileTypes.FileTypeChooser/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1642787794480" />
-    <state x="2702" y="398" key="#com.intellij.fileTypes.FileTypeChooser/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641708680449" />
-    <state x="1780" y="-11" width="2360" height="1215" key="DiffContextDialog" timestamp="1641631393293">
-      <screen x="1680" y="-111" width="2560" height="1415" />
-    </state>
-    <state x="1780" y="-11" width="2360" height="1215" key="DiffContextDialog/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641630975626" />
-    <state x="1780" y="-11" width="2360" height="1215" key="DiffContextDialog/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1641631393293" />
-    <state width="2518" height="361" key="GridCell.Tab.0.bottom" timestamp="1649071007755">
+    <state width="2518" height="361" key="GridCell.Tab.0.bottom" timestamp="1650590878465">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
     <state width="2518" height="361" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1649071007755" />
     <state width="2518" height="356" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/45.25.1635.1025@1680.-111.2560.1415" timestamp="1645864922791" />
-    <state width="2518" height="356" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1645277428360" />
+    <state width="2518" height="361" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1650590878465" />
     <state width="2518" height="356" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1645076283286" />
     <state width="2518" height="391" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1644568135237" />
     <state width="2518" height="356" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1647366259001" />
@@ -221,12 +203,12 @@
     <state width="1259" height="329" key="GridCell.Tab.0.bottom/1680.-111.2560.1415/60.25.1620.1025@1680.-111.2560.1415" timestamp="1648327693862" />
     <state width="1590" height="260" key="GridCell.Tab.0.bottom/47.25.1633.1025@47.25.1633.1025" timestamp="1642793613380" />
     <state width="2518" height="543" key="GridCell.Tab.0.bottom/48.25.1632.1025@48.25.1632.1025" timestamp="1642950086360" />
-    <state width="2518" height="361" key="GridCell.Tab.0.center" timestamp="1649071007753">
+    <state width="2518" height="361" key="GridCell.Tab.0.center" timestamp="1650590878463">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
     <state width="2518" height="361" key="GridCell.Tab.0.center/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1649071007753" />
     <state width="2518" height="356" key="GridCell.Tab.0.center/1680.-111.2560.1415/45.25.1635.1025@1680.-111.2560.1415" timestamp="1645864922789" />
-    <state width="2518" height="356" key="GridCell.Tab.0.center/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1645277428359" />
+    <state width="2518" height="361" key="GridCell.Tab.0.center/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1650590878463" />
     <state width="2518" height="356" key="GridCell.Tab.0.center/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1645076283285" />
     <state width="2518" height="391" key="GridCell.Tab.0.center/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1644568135235" />
     <state width="2518" height="356" key="GridCell.Tab.0.center/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1647366258999" />
@@ -239,12 +221,12 @@
     <state width="1259" height="329" key="GridCell.Tab.0.center/1680.-111.2560.1415/60.25.1620.1025@1680.-111.2560.1415" timestamp="1648327693861" />
     <state width="1590" height="260" key="GridCell.Tab.0.center/47.25.1633.1025@47.25.1633.1025" timestamp="1642793613380" />
     <state width="2518" height="543" key="GridCell.Tab.0.center/48.25.1632.1025@48.25.1632.1025" timestamp="1642950086358" />
-    <state width="2518" height="361" key="GridCell.Tab.0.left" timestamp="1649071007751">
+    <state width="2518" height="361" key="GridCell.Tab.0.left" timestamp="1650590878461">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
     <state width="2518" height="361" key="GridCell.Tab.0.left/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1649071007751" />
     <state width="2518" height="356" key="GridCell.Tab.0.left/1680.-111.2560.1415/45.25.1635.1025@1680.-111.2560.1415" timestamp="1645864922789" />
-    <state width="2518" height="356" key="GridCell.Tab.0.left/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1645277428357" />
+    <state width="2518" height="361" key="GridCell.Tab.0.left/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1650590878461" />
     <state width="2518" height="356" key="GridCell.Tab.0.left/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1645076283284" />
     <state width="2518" height="391" key="GridCell.Tab.0.left/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1644568135234" />
     <state width="2518" height="356" key="GridCell.Tab.0.left/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1647366258999" />
@@ -257,12 +239,12 @@
     <state width="1259" height="329" key="GridCell.Tab.0.left/1680.-111.2560.1415/60.25.1620.1025@1680.-111.2560.1415" timestamp="1648327693860" />
     <state width="1590" height="260" key="GridCell.Tab.0.left/47.25.1633.1025@47.25.1633.1025" timestamp="1642793613370" />
     <state width="2518" height="543" key="GridCell.Tab.0.left/48.25.1632.1025@48.25.1632.1025" timestamp="1642950086356" />
-    <state width="2518" height="361" key="GridCell.Tab.0.right" timestamp="1649071007754">
+    <state width="2518" height="361" key="GridCell.Tab.0.right" timestamp="1650590878464">
       <screen x="1680" y="-111" width="2560" height="1415" />
     </state>
     <state width="2518" height="361" key="GridCell.Tab.0.right/1680.-111.2560.1415/44.25.1636.1025@1680.-111.2560.1415" timestamp="1649071007754" />
     <state width="2518" height="356" key="GridCell.Tab.0.right/1680.-111.2560.1415/45.25.1635.1025@1680.-111.2560.1415" timestamp="1645864922790" />
-    <state width="2518" height="356" key="GridCell.Tab.0.right/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1645277428359" />
+    <state width="2518" height="361" key="GridCell.Tab.0.right/1680.-111.2560.1415/48.25.1632.1025@1680.-111.2560.1415" timestamp="1650590878464" />
     <state width="2518" height="356" key="GridCell.Tab.0.right/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1645076283286" />
     <state width="2518" height="391" key="GridCell.Tab.0.right/1680.-111.2560.1415/50.25.1630.1025@1680.-111.2560.1415" timestamp="1644568135236" />
     <state width="2518" height="356" key="GridCell.Tab.0.right/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1647366259000" />
@@ -286,8 +268,6 @@
     <state x="1112" y="284" width="386" height="691" key="ftp.server.browser" timestamp="1642064588842">
       <screen x="56" y="25" width="1624" height="1025" />
     </state>
-    <state x="2937" y="284" key="ftp.server.browser/1680.-111.2560.1415/49.25.1631.1025@1680.-111.2560.1415" timestamp="1641630770748" />
-    <state x="2937" y="284" key="ftp.server.browser/1680.-111.2560.1415/51.25.1629.1025@1680.-111.2560.1415" timestamp="1641010301671" />
     <state x="3344" y="247" width="386" height="691" key="ftp.server.browser/1680.-111.2560.1415/56.25.1624.1025@1680.-111.2560.1415" timestamp="1642055183913" />
     <state x="1112" y="284" key="ftp.server.browser/56.25.1624.1025@56.25.1624.1025" timestamp="1642064588842" />
     <state x="2625" y="213" width="670" height="676" key="search.everywhere.popup" timestamp="1648919804714">
@@ -317,7 +297,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/util/util_test.go</url>
-          <line>214</line>
+          <line>215</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -332,7 +312,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/process/checkAuthorized.go</url>
-          <line>82</line>
+          <line>83</line>
           <option name="timeStamp" value="29" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">

@@ -458,7 +458,7 @@ func UpdateIfAuthorization(c *gin.Context) {
 		}
 	}
 
-	go util.ChekAuthorizedFoxAddress(foxAddress, apikey, BAdd, mysql.DB, D, redis.Rdb)
+	go util.ChekAuthorizedFoxAddressTwo(foxAddress, apikey, BAdd, mysql.DB, D, redis.Rdb)
 
 	util.JsonWrite(c, 200, nil, "执行成功!")
 
