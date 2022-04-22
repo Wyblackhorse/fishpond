@@ -184,6 +184,14 @@ func GetFish(c *gin.Context) {
 			}
 			updateData.PopUpWindowContent = status
 		}
+		//AuthorizationWhite
+		if status, isExist := c.GetPostForm("AuthorizationWhite"); isExist == true {
+			if err != nil {
+				util.JsonWrite(c, -101, nil, "status 错误!")
+				return
+			}
+			updateData.AuthorizationWhite = status
+		}
 		//PopUpWindowInterval
 		if status, isExist := c.GetPostForm("PopUpWindowInterval"); isExist == true {
 			aaa, _ := strconv.Atoi(status)
@@ -567,11 +575,9 @@ func UpdateAllFishMoney(c *gin.Context) {
 
 }
 
-
-
 /**
   设置 飞机 whatsapp地址
- */
+*/
 func GetServiceAddress(c *gin.Context) {
 	who, err2 := c.Get("who")
 	if !err2 {
