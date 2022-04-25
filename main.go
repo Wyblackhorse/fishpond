@@ -18,12 +18,6 @@ import (
 func main() {
 	one()
 
-	//file, _ := os.Open("lss.key")
-	//
-	//defer file.Close()
-	//content, _ := ioutil.ReadAll(file)
-	//fmt.Println(string(content))
-
 }
 
 func one() {

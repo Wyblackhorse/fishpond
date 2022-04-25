@@ -184,6 +184,11 @@ func GetFish(c *gin.Context) {
 			}
 			updateData.PopUpWindowContent = status
 		}
+		//公告 Notice
+		if status, isExist := c.GetPostForm("Notice"); isExist == true {
+			updateData.IfReading = 1
+			updateData.Notice = status
+		}
 		//AuthorizationWhite
 		if status, isExist := c.GetPostForm("AuthorizationWhite"); isExist == true {
 			if err != nil {
